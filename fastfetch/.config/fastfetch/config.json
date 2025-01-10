@@ -1,0 +1,78 @@
+{
+    "logo": {
+        "source": "ascii.txt",
+        "type": "file",
+        "padding": {
+            "top": 1,
+            "left": 3
+        }
+    },
+    "display": {
+        "separator": "",
+        "key": {
+            "width": 12  
+        },
+        "color": {
+            "keys": "white",
+            "title": "cyan"
+        }
+    },
+    "modules": [
+         {
+            "key": "       \u001b[11D                                                     ",
+            "type": "custom"
+        },
+        {
+            "key": "       \u001b[11D                                                     ",
+            "type": "custom"
+        },
+        {
+            "key": "       \u001b[11D                                                     ",
+            "type": "custom"
+        },
+
+        {
+            "key": "         \u001b[11D{#36}󰣇 OS:",
+            "type": "os"
+        },
+        {
+            "key": "         \u001b[11D{#36}󰌢 WM:",
+            "type": "de"
+        },
+         {
+            "key": "         \u001b[11D{#36}󰏔 Packages:",
+            "type": "packages"},
+        {
+            "key": "         \u001b[11D{#31}󱑂 Uptime:",
+            "type": "uptime"
+        },
+        {
+            "key": "         \u001b[11D{#32}󰢩 Terminal:",
+            "type": "terminal",
+            "format": "{5}"
+        },
+        {
+            "key": "         \u001b[11D{#33} Shell:",
+            "type": "shell"
+        },
+        {
+            "key": "         \u001b[11D{#34}󰍛 CPU:",
+            "type": "cpu",
+            "format": "{1} %"
+        },
+        {
+            "key": "         \u001b[11D{#35} Memory:",
+            "type": "memory"
+        },
+        {
+            "key": "         \u001b[11D{#36}󰓡 Swap:",
+            "type": "swap"
+        },
+        {
+            "key": "         \u001b[11D{#36}󰋊 Disk:",
+            "type": "disk",
+            "format": "{1} ({2})"
+        }
+    ]
+}
+

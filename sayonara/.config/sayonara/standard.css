@@ -1,0 +1,38 @@
+/* Set background color to black */
+QWidget {
+    background-color: #000000;
+    color: #FFFFFF; /* Set text color to white for contrast */
+}
+
+/* Adjust specific widget colors if needed */
+QMenuBar {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+QToolBar {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+QStatusBar {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+/* Adjust any specific buttons and dialogs */
+QPushButton, QComboBox, QLineEdit {
+    background-color: #121212; /* A little bit lighter for input fields */
+    color: #FFFFFF;
+}
+
+QPushButton:hover {
+    background-color: #333333;
+}
+
+/* Ensure no alternating colors */
+QListView, QTableView {
+    background-color: #000000;
+    alternate-background-color: #000000; /* Ensure the same color is used */
+    color: #FFFFFF;
+}

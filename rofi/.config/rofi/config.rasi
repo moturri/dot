@@ -1,0 +1,6 @@
+@theme "/home/m/.config/rofi/dark.rasi"
+
+configuration {
+    modi: "drun,run";
+    show-icons: true;
+}

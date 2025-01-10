@@ -1,0 +1,43 @@
+! Set font size and family
+XTerm*faceName: JetBrainsMonoNL Nerd Font
+XTerm*faceSize: 12
+XTerm*renderFont: true
+
+XTerm*foreground: white
+XTerm*background: black
+XTerm*color0:  #000000
+XTerm*color1:  #ff5555
+XTerm*color2:  #50fa7b
+XTerm*color3:  #f1fa8c
+XTerm*color4:  #bd93f9
+XTerm*color5:  #ff79c6
+XTerm*color6:  #8be9fd
+XTerm*color7:  #d0d0d0
+XTerm*color8:  #6272a4
+XTerm*color9:  #ff5555
+XTerm*color10: #50fa7b
+XTerm*color11: #f1fa8c
+XTerm*color12: #bd93f9
+XTerm*color13: #ff79c6
+XTerm*color14: #8be9fd
+XTerm*color15: #ffffff
+
+! Text rendering
+XTerm*boldMode: true
+XTerm*utf8: 2
+XTerm*allowBoldFonts: true 
+
+! Other customizations
+XTerm*scrollTtyOutput: false
+XTerm*scrollTtyKey: true
+XTerm*VT100*eightBitInput: true
+
+! Cursor customization
+XTerm*cursorBlink: true
+XTerm*pointerColor: #f8f8f2       ! Pointer color for better visibility
+XTerm*cursorUnderline: true       ! Use underline cursor style
+
+! Improve performance
+XTerm*fastScroll: true
+XTerm*jumpScroll: true
+
