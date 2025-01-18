@@ -1,4 +1,6 @@
-from libqtile.config import Click, Drag, DropDown, Group, Key, ScratchPad
+from libqtile import layout
+from libqtile.config import (Click, Drag, DropDown, Group, Key, Match,
+                             ScratchPad)
 from libqtile.lazy import lazy
 
 mod = "mod4"
@@ -75,31 +77,100 @@ mouse.extend(
 )
 
 
-group_names = [
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-]
-group_labels = [
-    "󰣇",
-    "",
-    "",
-    "󰊠",
-    "󰇮",
-    "󰉌",
-    "󰌠",
-    "󰊤",
-    "󰡨",
+layout_theme = {
+    "margin": 8,
+    "border_width": 0,
+    # "border_focus": colors[2],
+    # "border_normal": colors[0],
+}
+
+
+layouts = [
+    layout.MonadTall(**layout_theme),
+    layout.MonadWide(**layout_theme),
+    layout.MonadThreeCol(**layout_theme),
+    layout.Max(**layout_theme),
 ]
 
 
-groups = [Group(name, label=label) for name, label in zip(group_names, group_labels)]
+groups = [
+    Group(
+        name="1",
+        label="󰣇",
+        layouts=[
+            layout.MonadThreeCol(**layout_theme),
+            layout.MonadTall(**layout_theme),
+            layout.MonadWide(**layout_theme),
+        ],
+        matches=[Match(wm_class="firefox")],
+    ),
+    Group(
+        name="2",
+        label="",
+        layouts=[
+            layout.MonadThreeCol(**layout_theme),
+            layout.MonadTall(**layout_theme),
+        ],
+        matches=[
+            Match(wm_class="alacritty"),
+            Match(wm_class="wezterm"),
+        ],
+    ),
+    Group(
+        name="3",
+        label="",
+        layouts=[layout.MonadThreeCol(**layout_theme)],
+        matches=[
+            Match(wm_class="VirtualBox Manager"),
+        ],
+    ),
+    Group(
+        name="4",
+        label="󰊠",
+        layouts=[layout.MonadThreeCol(**layout_theme)],
+        matches=[
+            Match(wm_class="octopi"),
+        ],
+    ),
+    Group(
+        name="5",
+        label="󰇮",
+        layouts=[layout.MonadTall(**layout_theme)],
+        matches=[
+            Match(wm_class="Mail"),
+        ],
+    ),
+    Group(
+        name="6",
+        label="󰉌",
+        layouts=[layout.MonadWide(**layout_theme)],
+        matches=[
+            Match(wm_class="libreoffice"),
+        ],
+    ),
+    Group(
+        name="7",
+        label="󰃽",
+    ),
+    Group(
+        name="8",
+        label="󰒃",
+        layouts=[layout.MonadThreeCol(**layout_theme)],
+        matches=[
+            Match(wm_class="bitwarden"),
+        ],
+    ),
+    Group(
+        name="9",
+        label="󰌳",
+        layouts=[layout.MonadThreeCol(**layout_theme)],
+        matches=[
+            Match(wm_class="cider"),
+            Match(wm_class="sayonara"),
+        ],
+    ),
+]
+
 
 for i in groups:
     keys.extend(
