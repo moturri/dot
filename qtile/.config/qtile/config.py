@@ -3,24 +3,8 @@ import subprocess
 
 from bars import main, misc  # rangi
 from keybinds import *
-from libqtile import bar, hook, layout
+from libqtile import bar, hook, layout, qtile
 from libqtile.config import Match, Screen
-
-layout_theme = {
-    "margin": 8,
-    "border_width": 0,
-    # "border_focus": colors[2],
-    # "border_normal": colors[0],
-}
-
-
-layouts = [
-    layout.MonadTall(**layout_theme),
-    layout.MonadWide(**layout_theme),
-    layout.MonadThreeCol(**layout_theme),
-    layout.Max(**layout_theme),
-]
-
 
 widget_defaults = dict(
     font="Inter Variable Bold",
@@ -74,6 +58,12 @@ auto_minimize = True
 wl_input_rules = None
 wl_xcursor_theme = None
 wl_xcursor_size = 24
+
+
+if qtile.core.name == "x11":
+    term = "kitty"
+elif qtile.core.name == "wayland":
+    term = "wezterm"
 
 
 @hook.subscribe.startup_once
