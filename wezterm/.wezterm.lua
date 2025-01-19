@@ -12,7 +12,7 @@ config.unicode_version = 14
 config.enable_kitty_graphics = true
 config.front_end = "OpenGL"
 config.force_reverse_video_cursor = true
-config.window_background_opacity = 1
+config.window_background_opacity = 0.9
 config.max_fps = 120
 
 config.hide_tab_bar_if_only_one_tab = true

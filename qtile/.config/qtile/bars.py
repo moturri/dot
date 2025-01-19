@@ -13,7 +13,7 @@ black = [
 
 rangi = black
 
-decor = {
+wdecor = {
     "background": rangi[0],
     "foreground": rangi[1],
     "decorations": [
@@ -89,22 +89,20 @@ def batt():
 def vol():
     try:
         result = subprocess.run(
-            ["pactl", "get-sink-volume", "@DEFAULT_SINK@"],
+            ["amixer", "get", "Master"],
             capture_output=True,
             text=True,
             check=True,
         )
-        volume_info = result.stdout.strip().split()
-        volume_percentage = int(volume_info[4][:-1])
+        output = result.stdout.strip()
 
-        if volume_percentage > 150:
-            volume_percentage = 150
-        if volume_percentage == 0:
+        volume_line = [line for line in output.splitlines() if "Playback" in line][-1]
+        volume_percentage = int(volume_line.split("[")[1].split("%")[0])
+        is_muted = "[off]" in volume_line
+
+        if is_muted or volume_percentage == 0:
             icon = "  "
             color = "brown"
-        elif volume_percentage > 125:
-            icon = "󰕾  "
-            color = "crimson"
         elif volume_percentage > 100:
             icon = "󰕾  "
             color = "peru"
@@ -134,7 +132,7 @@ def main():
     return [
         widget.Clock(
             format="%e %b   %H:%M ",
-            **decor,
+            **wdecor,
         ),
         widget.Spacer(
             length=10,
@@ -143,10 +141,10 @@ def main():
             update_interval=0.1,
             func=vol,
             mouse_callbacks={
-                "Button4": lazy.spawn("pactl set-sink-volume @DEFAULT_SINK@ +5% "),
-                "Button5": lazy.spawn("pactl set-sink-volume @DEFAULT_SINK@ -5%"),
+                "Button4": lazy.spawn("amixer set Master 5%+"),
+                "Button5": lazy.spawn("amixer set Master 5%-"),
             },
-            **decor,
+            **wdecor,
         ),
         widget.Spacer(),
         widget.GroupBox(
@@ -154,7 +152,7 @@ def main():
             highlight_method="text",
             fontsize=18,
             disable_drag=True,
-            **decor,
+            **wdecor,
         ),
         widget.Spacer(
             length=10,
@@ -174,7 +172,7 @@ def main():
         widget.GenPollText(
             func=batt,
             update_interval=1,
-            **decor,
+            **wdecor,
         ),
         widget.Spacer(
             length=10,
@@ -192,7 +190,7 @@ def main():
                 "Button4": lazy.spawn("brightnessctl set +5%"),
                 "Button5": lazy.spawn("brightnessctl set 5%-"),
             },
-            **decor,
+            **wdecor,
         ),
     ]
 
@@ -201,7 +199,7 @@ def misc():
     return [
         widget.Clock(
             format=" %H:%M ",
-            **decor,
+            **wdecor,
         ),
         widget.Spacer(),
         widget.GroupBox(
@@ -209,7 +207,7 @@ def misc():
             highlight_method="text",
             fontsize=18,
             disable_drag=True,
-            **decor,
+            **wdecor,
         ),
         widget.Spacer(
             length=10,

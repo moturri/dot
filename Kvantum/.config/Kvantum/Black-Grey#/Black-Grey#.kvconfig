@@ -58,8 +58,8 @@ small_icon_size=16
 submenu_overlap=0
 toolbar_icon_size=16
 tooltip_delay=-1
-transient_groove=false
-transient_scrollbar=false
+transient_groove=true
+transient_scrollbar=true
 tree_branch_line=false
 vertical_spin_indicators=false
 

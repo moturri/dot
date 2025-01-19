@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from bars import main, misc  # rangi
+from bars import main, misc
 from keybinds import *
 from libqtile import bar, hook, layout, qtile
 from libqtile.config import Match, Screen
@@ -15,13 +15,13 @@ lucid = "#00000000"
 
 screens = [
     Screen(
-        wallpaper="/mnt/sda2/Library/UnixImgs/arc.gif",
-        wallpaper_mode="fill",
+        wallpaper="/mnt/sda2/Library/UnixImgs/off.png",
+        wallpaper_mode="stretch",
         top=bar.Bar(main(), 28, background=lucid, margin=[4, 8, 0, 8]),
     ),
     Screen(
-        wallpaper="/mnt/sda2/Library/UnixImgs/arc.jpg",
-        wallpaper_mode="fill",
+        wallpaper="/mnt/sda2/Library/UnixImgs/hack.png",
+        wallpaper_mode="stretch",
         top=bar.Bar(misc(), 28, background=lucid, margin=[4, 8, 0, 8]),
     ),
 ]

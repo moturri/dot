@@ -1,3 +1,4 @@
+# from bars import rangi
 from libqtile import layout
 from libqtile.config import (Click, Drag, DropDown, Group, Key, Match,
                              ScratchPad)
@@ -39,19 +40,23 @@ keys = [
     Key(
         [],
         "XF86AudioLowerVolume",
-        lazy.spawn("pactl set-sink-volume @DEFAULT_SINK@ -5%"),
+        lazy.spawn("amixer set Master 5%-"),
     ),
     Key(
         [],
         "XF86AudioRaiseVolume",
-        lazy.spawn("pactl set-sink-volume @DEFAULT_SINK@ +5%"),
+        lazy.spawn("amixer set Master 5%+"),
     ),
     Key(
         [],
         "XF86AudioMicMute",
-        lazy.spawn("pactl set-source-mute @DEFAULT_SOURCE@ toggle"),
+        lazy.spawn("amixer set Capture toggle"),
     ),
-    Key([], "XF86AudioMute", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")),
+    Key(
+        [],
+        "XF86AudioMute",
+        lazy.spawn("amixer set Master toggle"),
+    ),
 ]
 
 
@@ -77,19 +82,19 @@ mouse.extend(
 )
 
 
-layout_theme = {
+ldecor = {
     "margin": 8,
     "border_width": 0,
-    # "border_focus": colors[2],
-    # "border_normal": colors[0],
+    # "border_focus": rangi[2],
+    # "border_normal": rangi[0],
 }
 
 
 layouts = [
-    layout.MonadTall(**layout_theme),
-    layout.MonadWide(**layout_theme),
-    layout.MonadThreeCol(**layout_theme),
-    layout.Max(**layout_theme),
+    layout.MonadTall(**ldecor),
+    layout.MonadWide(**ldecor),
+    layout.MonadThreeCol(**ldecor),
+    layout.Max(**ldecor),
 ]
 
 
@@ -98,9 +103,9 @@ groups = [
         name="1",
         label="󰣇",
         layouts=[
-            layout.MonadThreeCol(**layout_theme),
-            layout.MonadTall(**layout_theme),
-            layout.MonadWide(**layout_theme),
+            layout.MonadThreeCol(**ldecor),
+            layout.MonadTall(**ldecor),
+            layout.MonadWide(**ldecor),
         ],
         matches=[Match(wm_class="firefox")],
     ),
@@ -108,18 +113,18 @@ groups = [
         name="2",
         label="",
         layouts=[
-            layout.MonadThreeCol(**layout_theme),
-            layout.MonadTall(**layout_theme),
+            layout.MonadThreeCol(**ldecor),
+            layout.MonadTall(**ldecor),
         ],
         matches=[
             Match(wm_class="alacritty"),
-            Match(wm_class="wezterm"),
+            Match(wm_class="org.wezfurlong.wezterm"),
         ],
     ),
     Group(
         name="3",
         label="",
-        layouts=[layout.MonadThreeCol(**layout_theme)],
+        layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="VirtualBox Manager"),
         ],
@@ -127,7 +132,7 @@ groups = [
     Group(
         name="4",
         label="󰊠",
-        layouts=[layout.MonadThreeCol(**layout_theme)],
+        layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="octopi"),
         ],
@@ -135,7 +140,7 @@ groups = [
     Group(
         name="5",
         label="󰇮",
-        layouts=[layout.MonadTall(**layout_theme)],
+        layouts=[layout.MonadTall(**ldecor)],
         matches=[
             Match(wm_class="Mail"),
         ],
@@ -143,7 +148,7 @@ groups = [
     Group(
         name="6",
         label="󰉌",
-        layouts=[layout.MonadWide(**layout_theme)],
+        layouts=[layout.MonadWide(**ldecor)],
         matches=[
             Match(wm_class="libreoffice"),
         ],
@@ -155,7 +160,7 @@ groups = [
     Group(
         name="8",
         label="󰒃",
-        layouts=[layout.MonadThreeCol(**layout_theme)],
+        layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="bitwarden"),
         ],
@@ -163,7 +168,7 @@ groups = [
     Group(
         name="9",
         label="󰌳",
-        layouts=[layout.MonadThreeCol(**layout_theme)],
+        layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="cider"),
             Match(wm_class="sayonara"),
