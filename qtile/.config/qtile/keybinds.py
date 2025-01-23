@@ -24,7 +24,7 @@ keys = [
     Key([mod], "o", lazy.layout.maximize()),
     Key([mod, "shift"], "space", lazy.layout.flip()),
     Key([mod, "shift"], "Return", lazy.layout.toggle_split()),
-    Key([mod], "e", lazy.spawn(terminal)),
+    Key([mod], "Return", lazy.spawn(terminal)),
     Key([mod], "Tab", lazy.next_layout()),
     Key([mod], "w", lazy.window.kill()),
     Key([mod], "f", lazy.window.toggle_fullscreen()),
@@ -107,7 +107,7 @@ groups = [
             layout.MonadTall(**ldecor),
             layout.MonadWide(**ldecor),
         ],
-        matches=[Match(wm_class="firefox")],
+        matches=[],
     ),
     Group(
         name="2",
@@ -123,19 +123,23 @@ groups = [
     ),
     Group(
         name="3",
-        label="",
-        layouts=[layout.MonadThreeCol(**ldecor)],
+        label="󰈹",
+        layouts=[
+            layout.MonadTall(**ldecor),
+            layout.MonadThreeCol(**ldecor),
+            layout.MonadWide(**ldecor),
+        ],
         matches=[
-            Match(wm_class="VirtualBox Manager"),
+            Match(wm_class="firefox"),
+            Match(wm_class="brave-browser"),
+            Match(wm_class="zen"),
         ],
     ),
     Group(
         name="4",
         label="󰊠",
         layouts=[layout.MonadThreeCol(**ldecor)],
-        matches=[
-            Match(wm_class="octopi"),
-        ],
+        matches=[Match(wm_class="VirtualBox Manager")],
     ),
     Group(
         name="5",
@@ -148,9 +152,12 @@ groups = [
     Group(
         name="6",
         label="󰉌",
-        layouts=[layout.MonadWide(**ldecor)],
+        layouts=[layout.MonadTall(**ldecor), layout.MonadWide(**ldecor)],
         matches=[
             Match(wm_class="libreoffice"),
+            Match(wm_class="libreoffice-writer"),
+            Match(wm_class="org.pwmt.zathura"),
+            Match(wm_class="octopi"),
         ],
     ),
     Group(
@@ -163,6 +170,8 @@ groups = [
         layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="bitwarden"),
+            Match(wm_class="firewall-config"),
+            Match(wm_class="gnome-disks"),
         ],
     ),
     Group(
@@ -231,8 +240,8 @@ groups.append(
 
 
 scratches = {
-    "term": "g",
-    "mixer": "u",
+    "term": "e",
+    "mixer": "p",
     "btop": "b",
     "yazi": "y",
 }

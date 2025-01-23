@@ -15,14 +15,14 @@ lucid = "#00000000"
 
 screens = [
     Screen(
-        wallpaper="/mnt/sda2/Library/UnixImgs/off.png",
+        wallpaper="/mnt/sda2/Library/UnixImgs/arc.gif",
         wallpaper_mode="stretch",
-        top=bar.Bar(main(), 28, background=lucid, margin=[4, 8, 0, 8]),
+        top=bar.Bar(main(), 28, background=lucid, margin=[0, 0, 0, 0]),
     ),
     Screen(
         wallpaper="/mnt/sda2/Library/UnixImgs/hack.png",
         wallpaper_mode="stretch",
-        top=bar.Bar(misc(), 28, background=lucid, margin=[4, 8, 0, 8]),
+        top=bar.Bar(misc(), 28, background=lucid, margin=[0, 0, 0, 0]),
     ),
 ]
 

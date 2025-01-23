@@ -19,3 +19,5 @@ This repository will be updated regularly as Arch Qtile is my daily driver.
 
 ```bash
 git clone https://github.com/moturri/dot.git ~/.dot
+```
+
