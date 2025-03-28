@@ -19,7 +19,7 @@
 }
 
 window {
-    location:       southeast;
+    location:       south;
     width:          480;
     border-radius:  24px;
 

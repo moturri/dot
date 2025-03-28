@@ -139,7 +139,10 @@ groups = [
         name="4",
         label="󰊠",
         layouts=[layout.MonadThreeCol(**ldecor)],
-        matches=[Match(wm_class="VirtualBox Manager")],
+        matches=[
+            Match(wm_class="VirtualBox Manager"),
+            Match(wm_class="octopi"),
+        ],
     ),
     Group(
         name="5",
@@ -152,17 +155,24 @@ groups = [
     Group(
         name="6",
         label="󰉌",
-        layouts=[layout.MonadTall(**ldecor), layout.MonadWide(**ldecor)],
+        layouts=[
+            layout.MonadTall(**ldecor),
+            layout.MonadThreeCol(**ldecor),
+            layout.MonadWide(**ldecor),
+        ],
         matches=[
             Match(wm_class="libreoffice"),
             Match(wm_class="libreoffice-writer"),
             Match(wm_class="org.pwmt.zathura"),
-            Match(wm_class="octopi"),
         ],
     ),
     Group(
         name="7",
-        label="󰃽",
+        label="󰠹",
+        matches=[
+            Match(wm_class="stremio"),
+            Match(wm_class="mpv"),
+        ],
     ),
     Group(
         name="8",
@@ -172,6 +182,7 @@ groups = [
             Match(wm_class="bitwarden"),
             Match(wm_class="firewall-config"),
             Match(wm_class="gnome-disks"),
+            Match(wm_class="timeshift-gtk"),
         ],
     ),
     Group(
@@ -181,6 +192,8 @@ groups = [
         matches=[
             Match(wm_class="cider"),
             Match(wm_class="sayonara"),
+            Match(wm_class="galaxybudsclient"),
+            Match(wm_class="spotify"),
         ],
     ),
 ]

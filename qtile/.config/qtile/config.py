@@ -15,14 +15,14 @@ lucid = "#00000000"
 
 screens = [
     Screen(
-        wallpaper="/mnt/sda2/Library/UnixImgs/arc.gif",
+        wallpaper="/mnt/sda2/Library/UnixImgs/arc.jpg",
         wallpaper_mode="stretch",
-        top=bar.Bar(main(), 28, background=lucid, margin=[0, 0, 0, 0]),
+        top=bar.Bar(main(), 28, background=lucid, margin=[0, 8, 0, 8]),
     ),
     Screen(
-        wallpaper="/mnt/sda2/Library/UnixImgs/hack.png",
+        wallpaper="/mnt/sda2/Library/UnixImgs/arc.jpg",
         wallpaper_mode="stretch",
-        top=bar.Bar(misc(), 28, background=lucid, margin=[0, 0, 0, 0]),
+        top=bar.Bar(misc(), 28, background=lucid, margin=[0, 8, 0, 8]),
     ),
 ]
 
@@ -44,7 +44,7 @@ floating_layout = layout.Floating(
         Match(title="pinentry"),
         Match(wm_class="arandr"),
         Match(wm_class="blueman-manager"),
-        Match(wm_class="localsend_app"),
+        Match(wm_class="localsend"),
         Match(wm_class="wihotspot"),
         Match(wm_class="nm-connection-editor"),
     ],

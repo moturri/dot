@@ -14,14 +14,10 @@ return {
         filtered_items = {
           visible = true,
           hide_dotfiles = false,
-          hide_gitignored = false,
+          -- hide_gitignored = false,
         },
       },
 
-      window = {
-        position = "right",
-        width = 40,
-      },
       default_component_configs = {
         name = {
           trailing_slash = true,

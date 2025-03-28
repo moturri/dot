@@ -134,9 +134,10 @@ unset key
 
 export TERMINAL="kitty"
 export EDITOR="nvim"
+
 alias ls="eza --icons=always"
-alias fastfetch="fastfetch -c .config/fastfetch/config.json"
-alias vi="vim"
+# alias fastfetch="fastfetch -c .config/fastfetch/config.json"
+alias vi="nvim"
 alias lta="eza -lTag --icons"
 alias lta2="eza -lTag --level=2 --icons"
 alias lta3="eza -lTag --level=3 --icons"
@@ -178,3 +179,6 @@ local cmd=$(tldr --list | awk '/^\S/ {print $1}' | fzf \
 }
 
 bindkey -s '^F' 'tlldr\n'  
+
+export LIBVA_DRIVER_NAME=iHD
+export VDPAU_DRIVER=va_gl

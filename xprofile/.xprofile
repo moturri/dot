@@ -5,5 +5,8 @@ xrandr --newmode "1800x1012_60.00"  150.50  1800 1912 2096 2392  1012 1015 1025 
 xrandr --addmode eDP1 "1800x1012_60.00"
 xrandr --output eDP1 --mode "1800x1012_60.00" 
 
-export MOZ_WEBRENDER=1
+# xrandr --newmode "1600x900_60.00"  118.25  1600 1688 1856 2112  900 903 908 934 -hsync +vsync
+# xrandr --addmode eDP1 "1600x900_60.00"
+# xrandr --output eDP1 --mode "1600x900_60.00"
+# export MOZ_WEBRENDER=1
 

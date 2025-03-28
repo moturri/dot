@@ -71,7 +71,7 @@ def batt():
         color = "palegreen"
     elif battery_percentage > 40:
         icon = "  "
-        color = "tan"
+        color = "orange"
     elif battery_percentage > 20:
         icon = "  "
         color = "coral"
@@ -114,7 +114,7 @@ def vol():
             color = "tan"
         elif volume_percentage > 40:
             icon = "󰕾  "
-            color = "skyblue"
+            color = "dodgerblue"
         elif volume_percentage > 20:
             icon = "󰖀  "
             color = "orchid"

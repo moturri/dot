@@ -35,7 +35,7 @@ return {
         ignore_install = {}, -- Specify parsers to ignore installing
 
         highlight = {
-          enable = true, -- Enable highlighting
+          enable = true,                        -- Enable highlighting
           additional_vim_regex_highlighting = false, -- Disable additional Vim regex highlighting
         },
         indent = {
@@ -46,7 +46,7 @@ return {
           keymaps = {
             init_selection = "<C-space>", -- Start incremental selection
             node_incremental = "<C-space>", -- Increment selection
-            scope_incremental = "<C-s>", -- Increment to the scope
+            scope_incremental = "<C-s>",  -- Increment to the scope
             node_decremental = "<C-backspace>", -- Decrement selection
           },
         },
@@ -56,7 +56,7 @@ return {
         textobjects = {
           select = {
             enable = true,
-            lookahead = true, -- Automatically jump forward to textobj
+            lookahead = true,      -- Automatically jump forward to textobj
             keymaps = {
               ["af"] = "@function.outer", -- Select outer function
               ["if"] = "@function.inner", -- Select inner function
@@ -66,10 +66,10 @@ return {
           },
         },
         context_commentstring = {
-          enable = true, -- Enable integration with 'JoosepAlviste/nvim-ts-context-commentstring'
+          enable = true,     -- Enable integration with 'JoosepAlviste/nvim-ts-context-commentstring'
           enable_autocmd = false, -- Disable autocmd for context commentstring
         },
-        modules = {}, -- Specify any additional modules if needed
+        modules = {},        -- Specify any additional modules if needed
       })
     end,
   },
