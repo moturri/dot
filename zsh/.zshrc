@@ -132,7 +132,7 @@ unset key
 # }}} End configuration added by Zim install
 
 
-export TERMINAL="xterm-kitty"
+export TERMINAL="kitty"
 export EDITOR="nvim"
 
 alias ls="eza --icons=always"

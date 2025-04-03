@@ -47,6 +47,7 @@ floating_layout = layout.Floating(
         Match(wm_class="localsend"),
         Match(wm_class="wihotspot"),
         Match(wm_class="nm-connection-editor"),
+        Match(wm_class="Thunar"),
     ],
 )
 
@@ -59,12 +60,10 @@ wl_input_rules = None
 wl_xcursor_theme = None
 wl_xcursor_size = 24
 
-
-if qtile.core.name == "x11":
-    term = "kitty"
-elif qtile.core.name == "wayland":
-    term = "wezterm"
-
+# if qtile.core.name == "x11":
+#     term = "kitty"
+# elif qtile.core.name == "wayland":
+#     term = "wezterm"
 
 @hook.subscribe.startup_once
 def autostart():

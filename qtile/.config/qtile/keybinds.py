@@ -247,6 +247,9 @@ groups.append(
                 y=0.1,
                 opacity=0.9,
             ),
+            DropDown(
+                "thunar", "thunar", width=0.6, height=0.6, x=0.2, y=0.1, opacity=0.9
+            ),
         ],
     )
 )
@@ -257,6 +260,7 @@ scratches = {
     "mixer": "p",
     "btop": "b",
     "yazi": "y",
+    "thunar": "d",
 }
 
 for name, key in scratches.items():
