@@ -166,6 +166,11 @@ def main():
             txt_minimized="󰖰 ",
         ),
         widget.Prompt(),
+        widget.Net(
+             interface="wlan0",
+             format="{down:.0f}{down_suffix} ↓↑ {up:.0f}{up_suffix}",
+             update_interval=2,
+        ),
         widget.Spacer(
             length=10,
         ),

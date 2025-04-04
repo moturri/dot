@@ -33,8 +33,6 @@ return {
 					keymap("n", "<leader>gr", vim.lsp.buf.references, opts)
 					keymap("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 					keymap("n", "<leader>rn", vim.lsp.buf.rename, opts)
-					keymap("n", "[d", vim.diagnostic.goto_prev, opts)
-					keymap("n", "]d", vim.diagnostic.goto_next, opts)
 					keymap("n", "<leader>f", function()
 						vim.lsp.buf.format({ async = true })
 					end, opts)
