@@ -1,0 +1,49 @@
+/* Set background color to black for the main application */
+QWidget {
+    background-color: #000000;
+    color: #FFFFFF; /* White text for contrast */
+}
+
+/* Menu bar and toolbar styling */
+QMenuBar {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+QToolBar {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+QStatusBar {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+/* Button and input field styling */
+QPushButton, QComboBox, QLineEdit {
+    background-color: #121212; /* Dark input fields */
+    color: #FFFFFF;
+}
+
+QPushButton:hover {
+    background-color: #333333;
+}
+
+/* List views (including genre) */
+QListView, QTableView {
+    background-color: #000000; /* Solid black background */
+    color: #FFFFFF; /* White text */
+    alternate-background-color: #000000; /* Ensures alternating rows are not shown */
+}
+
+/* Specific to genre list item */
+QListView::item {
+    background-color: #000000; /* Ensure all items (including genre) have the same background */
+    border: none; /* Remove borders if any */
+}
+
+/* Hover effect for list items */
+QListView::item:hover {
+    background-color: #000000; /* Change background on hover */
+}
