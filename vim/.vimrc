@@ -50,13 +50,6 @@ nnoremap <C-n> :NERDTreeToggle<CR>
 filetype plugin indent on
 syntax enable
 
-"set backup          " Enable backup files
-"set backupdir=~/.vim/backup// " Set backup directory
-"set directory=~/.vim/swap//    " Set swap file directory
 set undodir=~/.vim/undo//
 set clipboard+=unnamedplus
-
-highlight Comment cterm=italic gui=italic
-highlight Identifier cterm=bold gui=bold
-highlight Statement cterm=bold gui=bold
 

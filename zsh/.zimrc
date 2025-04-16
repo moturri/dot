@@ -18,22 +18,31 @@ zmodule input
 zmodule termtitle
 # Utility aliases and functions. Adds colour to ls, grep and less.
 zmodule utility
+# Configures fzf for faster fetching of files and directories names.
 zmodule fzf
+# Provides archive and unarchive functions for easy archive manipulation.
 zmodule archive
+# Manages all python venvs in one place.
 zmodule pvenv
+# Sets up zoxide in zsh.
 zmodule kiesman99/zim-zoxide
+# Adds aliases and better defaults for exa.
 # zmodule exa
+# Provides a convenient way to load ssh-agent.
+# zmodule zsh
+# Shown when there is no command and user presses ENTER.
+# zmodule magic-enter
 
 #
 # Prompt
 #
 
-# Exposes to prompts how long the last command took to execute, used by asciiship.
-zmodule duration-info
-# Exposes git repository status information to prompts, used by asciiship.
+# zmodule duration-info
+# zmodule eriner
+zmodule agnoster
 zmodule git-info
 zmodule prompt-pwd
-zmodule eriner
+
 
 #
 # Completion

@@ -233,12 +233,21 @@ groups.append(
         [
             DropDown("term", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9),
             DropDown(
-                "mixer", "pavucontrol", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
+                "pavu", "pavucontrol", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
             ),
             # DropDown("net", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9),
             DropDown(
-                "btop",
-                "kitty -e btop",
+                "obsidian",
+                "obsidian",
+                width=0.8,
+                height=0.8,
+                x=0.1,
+                y=0.1,
+                opacity=1,
+            ),
+            DropDown(
+                "htop",
+                "kitty -e htop",
                 width=0.8,
                 height=0.8,
                 x=0.1,
@@ -264,9 +273,10 @@ groups.append(
 
 scratches = {
     "term": "e",
-    "mixer": "p",
+    "pavu": "p",
     # "net": "v",
-    "btop": "b",
+    "obsidian": "b",
+    "htop": "v",
     "yazi": "y",
     "thunar": "d",
 }
@@ -552,9 +562,9 @@ auto_fullscreen = True
 focus_on_window_activation = "smart"
 reconfigure_screens = True
 auto_minimize = True
-wl_input_rules = None
-wl_xcursor_theme = None
-wl_xcursor_size = 24
+# wl_input_rules = None
+# wl_xcursor_theme = None
+# wl_xcursor_size = 24
 
 # if qtile.core.name == "x11":
 #     term = "kitty"

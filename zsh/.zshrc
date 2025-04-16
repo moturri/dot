@@ -134,6 +134,8 @@ unset key
 
 export TERMINAL="kitty"
 export EDITOR="nvim"
+export VISUAL="nvim"
+
 
 alias ls="eza --icons=always"
 alias vi="nvim"
@@ -143,34 +145,14 @@ alias lta3="eza -lTag --level=3 --icons"
 
 
 cht() {
-    curl -s "https://cheat.sh/$1"
+    curl -s "https://cht.sh/$1"
 }
 
 
-# zoxide with fzf
-zz() {
-    local dir
-    dir=$(zoxide query -l | fzf --height 40% --reverse --inline-info --preview "ls -la --color=always {}" --preview-window=right:60%) || return
-    cd "$dir" || return
-}
-# bindkey -s '^[z' 'zz\n'
-
-
-#fzf-history-widget
-fzf-history-widget() {
-    local selected=$(fc -l 1 | tac | awk '{$1=""; print substr($0,2)}' | fzf --height 40% --reverse --border)
-    if [[ -n $selected ]]; then
-        BUFFER=$selected
-        CURSOR=${#BUFFER}
-    fi
-    zle redisplay
-}
-zle -N fzf-history-widget
-
-
-tlldr() {
+# Fuzzy search with fzf and tldr integration
+tldrr() {
   local cmd=$(tldr --list | awk '/^\S/ {print $1}' | fzf \
-    --height=40% \
+    --height=80% \
     --reverse \
     --border \
     --preview="tldr --color always {}" \
@@ -180,16 +162,16 @@ tlldr() {
   fi
 }
 
-# Create a zsh widget that runs tlldr
-function tlldr-widget() {
-  zle -I                     # Clears any pending input
-  tlldr                      # Calls your fzf-based function
-  zle reset-prompt           # Refreshes the prompt after running
+# Zsh widget to run tldrr
+function tldrr-widget() {
+  zle -I                     # Clears any pending input (resets the line editor)
+  tldrr                      # Call the fzf-based function to search tldr pages
+  zle reset-prompt           # Refresh the prompt after running tldr
 }
 
-# Register it as a widget
-zle -N tlldr-widget
+# Register the widget
+zle -N tldrr-widget
 
-# Bind it to Ctrl+F
-bindkey '^F' tlldr-widget
+# Bind to Ctrl+F
+bindkey '^F' tldrr-widget
 
