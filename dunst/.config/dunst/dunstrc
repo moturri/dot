@@ -1,49 +1,58 @@
 [global]
+# Font and formatting
 font = InterVariable Medium 11
 format = "<b>%s</b>\n%b"
-
-sort = yes
-alignment = left
-show_age_threshold = 60
 word_wrap = yes
 ignore_newline = no
-hide_duplicate_count = true
-sticky_history = yes
+
+# Notification display
+alignment = left
+show_age_threshold = 60
 history_length = 20
+sticky_history = yes
+hide_duplicate_count = true
+sort = yes
+shrink = no
+markup = full
+timeout = 10
 
-title = "Dunst"
-class = "Dunst"
-
+# Appearance
 corner_radius = 12
 padding = 16
 horizontal_padding = 24
-frame_width = 2
-frame_color = "#1a1a1a"
 separator_height = 2
 separator_color = frame
+frame_width = 0
+frame_color = "#1a1a1a"
+transparency = 10
+
+# Placement
+origin = top-right
+offset = (10, 35)
 follow = mouse
 
-transparency = 10
-origin = top-right
-offset = (10,35)
-indicate_hidden = yes
-shrink = no
-
+# Icon settings
 icon_position = left
 min_icon_size = 32
 max_icon_size = 64
 icon_theme = BeautySolar
 
+# Mouse actions
 mouse_left_click = close_current
 mouse_right_click = close_all
 mouse_middle_click = do_action
 
+# Idle timeout
 idle_threshold = 120
+
+# X11 properties
+title = "Dunst"
+class = "Dunst"
 
 [urgency_low]
 background = "#000000"
 foreground = "#888888"
-timeout = 8
+timeout = 10
 
 [urgency_normal]
 background = "#000000"
@@ -53,5 +62,4 @@ timeout = 10
 [urgency_critical]
 background = "#000000"
 foreground = "#ff5555"
-frame_color = "#ff5555"
-timeout = 12
+timeout = 30
