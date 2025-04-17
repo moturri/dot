@@ -9,7 +9,7 @@ from libqtile.lazy import lazy
 
 widget_defaults = dict(
     font="Inter Variable Bold",
-    fontsize=14,
+    fontsize=15,
 )
 
 lucid = "#00000000"

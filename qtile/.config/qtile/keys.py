@@ -227,9 +227,9 @@ groups.append(
         "scratchpad",
         [
             DropDown("term", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9),
-            # DropDown(
-            #     "pavu", "pavucontrol", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
-            # ),
+            DropDown(
+                "pavu", "pavucontrol", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
+            ),
             # DropDown("net", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9),
             DropDown(
                 "obsidian",
@@ -277,10 +277,10 @@ groups.append(
 
 scratches = {
     "term": "e",
-    # "pavu": "p",
+    "pavu": "u",
     # "net": "v",
     "obsidian": "p",
-    "helvum": "c",
+    "helvum": "v",
     # "htop": "v",
     # "yazi": "y",
     "thunar": "d",

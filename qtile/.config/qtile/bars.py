@@ -1,7 +1,7 @@
 import os
+import re
 import subprocess
 
-from libqtile import bar, hook, layout
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
@@ -38,35 +38,35 @@ def bright():
     )
 
     if result.returncode != 0 or max_brightness.returncode != 0:
-        return "👾 %"
+        return "󰳲 "
 
     current_brightness = int(result.stdout.strip())
     max_brightness = int(max_brightness.stdout.strip())
     brightness_percentage = int((current_brightness / max_brightness) * 100)
 
     if brightness_percentage > 80:
-        icon = "🌞 "
+        icon = "󰃠 "
         color = "gold"
     elif brightness_percentage > 60:
-        icon = "🌤️ "
+        icon = "󰃟 "
         color = "darkorange"
     elif brightness_percentage > 40:
-        icon = "🌥️ "
+        icon = "󰅟 "
         color = "dodgerblue"
     elif brightness_percentage > 20:
-        icon = "🌙 "
+        icon = "󰃝 "
         color = "peru"
     else:
-        icon = "🌒 "
+        icon = "󰃜 "
         color = "dimgrey"
 
-    return f'<span foreground="{color}">{icon} {brightness_percentage}%</span>'
+    return f'<span foreground="{color}">{icon}  {brightness_percentage}%</span>'
 
 
 def batt():
     result = subprocess.run(["acpi"], capture_output=True, text=True)
     if result.returncode != 0:
-        return "💀 %"
+        return "󰈸 %"
 
     output = result.stdout.strip().split(", ")
     battery_percentage = int(output[1].replace("%", "").strip())
@@ -88,10 +88,10 @@ def batt():
         color = "red"
 
     if battery_state == "Charging":
-        icon = "⚡ " + icon
+        icon = " " + icon
         color = "aqua"
 
-    return f'<span foreground="{color}">{icon}  {battery_percentage}%</span>'
+    return f'<span foreground="{color}">{icon} {battery_percentage}%</span>'
 
 
 def vol():
@@ -112,28 +112,72 @@ def vol():
             icon = "  "
             color = "brown"
         elif volume_percentage > 100:
-            icon = "󰕾  "
+            icon = "󰕾 "
             color = "peru"
         elif volume_percentage > 80:
-            icon = "󰕾  "
+            icon = "󰕾 "
             color = "tomato"
         elif volume_percentage > 60:
-            icon = "󰕾  "
+            icon = "󰕾 "
             color = "tan"
         elif volume_percentage > 40:
-            icon = "󰕾  "
+            icon = "󰕾 "
             color = "dodgerblue"
         elif volume_percentage > 20:
-            icon = "󰖀  "
+            icon = "󰖀 "
             color = "orchid"
         else:
-            icon = "󰕿  "
+            icon = "󰕿 "
             color = "dimgrey"
 
         return f'<span foreground="{color}">{icon} {volume_percentage}%</span>'
 
     except subprocess.CalledProcessError:
         return "󰕿 %"
+
+
+def mic():
+    try:
+        result = subprocess.run(
+            ["amixer", "get", "Capture"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        output = result.stdout
+
+        # Search for the last capture line with a percentage and on/off status
+        matches = re.findall(r"\[(\d+)%\] \[(on|off)\]", output)
+        if not matches:
+            return '<span foreground="grey"> 0%</span>'
+
+        volume, state = matches[-1]
+        volume = int(volume)
+        is_muted = state == "off"
+
+        if is_muted or volume == 0:
+            icon = "  "
+            color = "brown"
+        elif volume > 80:
+            icon = " "
+            color = "tomato"
+        elif volume > 60:
+            icon = " "
+            color = "tan"
+        elif volume > 40:
+            icon = " "
+            color = "dodgerblue"
+        elif volume > 20:
+            icon = " "
+            color = "orchid"
+        else:
+            icon = " "
+            color = "dimgrey"
+
+        return f'<span foreground="{color}">{icon} {volume}%</span>'
+
+    except subprocess.CalledProcessError:
+        return '<span foreground="grey"> Error</span>'
 
 
 def main():
@@ -151,6 +195,20 @@ def main():
             mouse_callbacks={
                 "Button4": lazy.spawn("amixer set Master 5%+"),
                 "Button5": lazy.spawn("amixer set Master 5%-"),
+                "Button2": lazy.spawn("amixer set Master toggle"),
+            },
+            **wdecor,
+        ),
+        widget.Spacer(
+            length=10,
+        ),
+        widget.GenPollText(
+            update_interval=0.1,
+            func=mic,
+            mouse_callbacks={
+                "Button4": lazy.spawn("amixer set Capture 5%+"),
+                "Button5": lazy.spawn("amixer set Capture 5%-"),
+                "Button2": lazy.spawn("amixer set Capture toggle"),
             },
             **wdecor,
         ),
