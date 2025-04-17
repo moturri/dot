@@ -1,4 +1,4 @@
-from libqtile import layout
+from libqtile import layout, qtile
 from libqtile.config import (Click, Drag, DropDown, Group, Key, Match,
                              ScratchPad, Screen)
 from libqtile.lazy import lazy
@@ -80,7 +80,6 @@ mouse.extend(
     ]
 )
 
-
 ldecor = {
     "margin": 8,
     "border_width": 0,
@@ -101,20 +100,11 @@ groups = [
     Group(
         name="1",
         label="󰣇",
-        layouts=[
-            layout.MonadThreeCol(**ldecor),
-            layout.MonadTall(**ldecor),
-            layout.MonadWide(**ldecor),
-        ],
-        matches=[],
+        # matches=[],
     ),
     Group(
         name="2",
         label="",
-        layouts=[
-            layout.MonadThreeCol(**ldecor),
-            layout.MonadTall(**ldecor),
-        ],
         matches=[
             Match(wm_class="alacritty"),
             Match(wm_class="org.wezfurlong.wezterm"),
@@ -123,11 +113,6 @@ groups = [
     Group(
         name="3",
         label="󰈹",
-        layouts=[
-            layout.MonadTall(**ldecor),
-            layout.MonadThreeCol(**ldecor),
-            layout.MonadWide(**ldecor),
-        ],
         matches=[
             Match(wm_class="firefox"),
             Match(wm_class="brave-browser"),
@@ -137,7 +122,6 @@ groups = [
     Group(
         name="4",
         label="󰊠",
-        layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="VirtualBox Manager"),
             Match(wm_class="octopi"),
@@ -146,7 +130,6 @@ groups = [
     Group(
         name="5",
         label="󰇮",
-        layouts=[layout.MonadTall(**ldecor)],
         matches=[
             Match(wm_class="Mail"),
         ],
@@ -154,11 +137,6 @@ groups = [
     Group(
         name="6",
         label="󰉌",
-        layouts=[
-            layout.MonadTall(**ldecor),
-            layout.MonadThreeCol(**ldecor),
-            layout.MonadWide(**ldecor),
-        ],
         matches=[
             Match(wm_class="libreoffice"),
             Match(wm_class="libreoffice-writer"),
@@ -178,7 +156,6 @@ groups = [
     Group(
         name="8",
         label="󰒃",
-        layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="bitwarden"),
             Match(wm_class="firewall-config"),
@@ -189,7 +166,6 @@ groups = [
     Group(
         name="9",
         label="󰌳",
-        layouts=[layout.MonadThreeCol(**ldecor)],
         matches=[
             Match(wm_class="cider"),
             Match(wm_class="sayonara"),
@@ -198,7 +174,6 @@ groups = [
         ],
     ),
 ]
-
 
 for i in groups:
     keys.extend(
@@ -221,15 +196,14 @@ for i in groups:
         ]
     )
 
-
 groups.append(
     ScratchPad(
         "scratchpad",
         [
             DropDown("term", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9),
-            DropDown(
-                "pavu", "pavucontrol", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
-            ),
+            # DropDown(
+            #     "pavu", "pavucontrol", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
+            # ),
             # DropDown("net", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9),
             DropDown(
                 "obsidian",
@@ -249,15 +223,15 @@ groups.append(
                 y=0.1,
                 opacity=0.9,
             ),
-            # DropDown(
-            #     "htop",
-            #     "kitty -e htop",
-            #     width=0.8,
-            #     height=0.8,
-            #     x=0.1,
-            #     y=0.1,
-            #     opacity=0.9,
-            # ),
+            DropDown(
+                "htop",
+                "kitty -e htop",
+                width=0.8,
+                height=0.8,
+                x=0.1,
+                y=0.1,
+                opacity=0.9,
+            ),
             # DropDown(
             #     "yazi",
             #     "kitty -e yazi",
@@ -276,12 +250,12 @@ groups.append(
 
 
 scratches = {
-    "term": "e",
-    "pavu": "u",
+    "term": "c",
+    # "pavu": "u",
     # "net": "v",
     "obsidian": "p",
     "helvum": "v",
-    # "htop": "v",
+    "htop": "b",
     # "yazi": "y",
     "thunar": "d",
 }
