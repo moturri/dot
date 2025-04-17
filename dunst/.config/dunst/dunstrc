@@ -1,44 +1,57 @@
 [global]
-    # General configuration
-    font = "Inter 10"  # Set font to Inter, size 10
-    background = "#1e1e1e"  # OLED dark background (very dark grey)
-    foreground = "#ffffff"  # White text
-    opacity = 0.85  # Transparency level (85%)
-    timeout = 5  # Timeout in seconds before the notification disappears
-    geometry = "x10+10-10"  # Position notifications at top-right with space for Qtile bar
-    maxwidth = 300  # Max width of notifications (adjust as needed)
+font = InterVariable Medium 11
+format = "<b>%s</b>\n%b"
 
-    # Allow clicking on notifications to dismiss them
-    click_to_close = yes
+sort = yes
+alignment = left
+show_age_threshold = 60
+word_wrap = yes
+ignore_newline = no
+hide_duplicate_count = true
+sticky_history = yes
+history_length = 20
 
-    # Keep notifications on top of other windows
-    stack_max = 3  # Show maximum 3 notifications stacked
+title = "Dunst"
+class = "Dunst"
 
-    # Do not show notifications for the following event types
-    notification_history = 1  # Limit number of historical notifications
+corner_radius = 12
+padding = 16
+horizontal_padding = 24
+frame_width = 2
+frame_color = "#1a1a1a"
+separator_height = 2
+separator_color = frame
+follow = mouse
+
+transparency = 10
+origin = top-right
+offset = (10,35)
+indicate_hidden = yes
+shrink = no
+
+icon_position = left
+min_icon_size = 32
+max_icon_size = 64
+icon_theme = BeautySolar
+
+mouse_left_click = close_current
+mouse_right_click = close_all
+mouse_middle_click = do_action
+
+idle_threshold = 120
 
 [urgency_low]
-    background = "#4e9a06"  # Green for low urgency
-    foreground = "#ffffff"  # White text
+background = "#000000"
+foreground = "#888888"
+timeout = 8
 
 [urgency_normal]
-    background = "#edd400"  # Yellow for normal urgency
-    foreground = "#000000"  # Black text
+background = "#000000"
+foreground = "#dddddd"
+timeout = 10
 
 [urgency_critical]
-    background = "#cc0000"  # Red for critical urgency
-    foreground = "#ffffff"  # White text
-
-[progress_bar]
-    background = "#555555"  # Dark background for progress bar
-    foreground = "#eeeeee"  # Light color for progress bar
-
-[theme]
-    # Optional themes you can tweak further
-    border_width = 2
-    border_color = "#ffffff"  # White border around notifications
-    corner_radius = 5  # Rounded corners for the notifications
-    padding = 10  # Padding inside the notification box
-    vertical_gap = 5  # Space between stacked notifications
-    horizontal_gap = 10  # Space between the notification and screen edge
-
+background = "#000000"
+foreground = "#ff5555"
+frame_color = "#ff5555"
+timeout = 12
