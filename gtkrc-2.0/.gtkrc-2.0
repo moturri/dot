@@ -1,11 +1,8 @@
-# DO NOT EDIT! This file will be overwritten by LXAppearance.
-# Any customization should be done in ~/.gtkrc-2.0.mine instead.
-
 include "/home/m/.gtkrc-2.0.mine"
 gtk-theme-name="FlatDark"
 gtk-icon-theme-name="BeautySolar"
-gtk-font-name="Inter Variable Medium 12"
-gtk-cursor-theme-name="material_dark_cursors"
+gtk-font-name="Inter Variable Semi-Bold 12"
+gtk-cursor-theme-name="material_cursors"
 gtk-cursor-theme-size=0
 gtk-toolbar-style=GTK_TOOLBAR_BOTH
 gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
@@ -15,5 +12,5 @@ gtk-enable-event-sounds=0
 gtk-enable-input-feedback-sounds=0
 gtk-xft-antialias=1
 gtk-xft-hinting=1
-gtk-xft-hintstyle="hintfull"
+gtk-xft-hintstyle="hintslight"
 gtk-xft-rgba="rgb"
