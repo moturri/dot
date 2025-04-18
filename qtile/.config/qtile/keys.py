@@ -1,6 +1,6 @@
-from libqtile import layout, qtile
+from libqtile import layout
 from libqtile.config import (Click, Drag, DropDown, Group, Key, Match,
-                             ScratchPad, Screen)
+                             ScratchPad)
 from libqtile.lazy import lazy
 
 mod = "mod4"
@@ -86,7 +86,6 @@ ldecor = {
     # "border_focus": rangi[2],
     # "border_normal": rangi[0],
 }
-
 
 layouts = [
     layout.MonadTall(**ldecor),
@@ -224,8 +223,8 @@ groups.append(
                 opacity=0.9,
             ),
             DropDown(
-                "htop",
-                "kitty -e htop",
+                "btop",
+                "kitty -e btop",
                 width=0.8,
                 height=0.8,
                 x=0.1,
@@ -250,12 +249,12 @@ groups.append(
 
 
 scratches = {
-    "term": "c",
+    "term": "e",
     # "pavu": "u",
     # "net": "v",
     "obsidian": "p",
     "helvum": "v",
-    "htop": "b",
+    "btop": "b",
     # "yazi": "y",
     "thunar": "d",
 }
