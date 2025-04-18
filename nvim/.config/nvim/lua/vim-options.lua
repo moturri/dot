@@ -52,13 +52,8 @@ opt.modifiable = true
 
 -- Key mappings
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
-vim.keymap.set("n", "<c-k>", ":wincmd k<CR>")
-vim.keymap.set("n", "<c-j>", ":wincmd j<CR>")
-vim.keymap.set("n", "<c-h>", ":wincmd h<CR>")
-vim.keymap.set("n", "<c-l>", ":wincmd l<CR>")
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>")
-vim.api.nvim_set_keymap("n", "<C-W>,", ":vertical resize -10<CR>", { noremap = true })
-vim.api.nvim_set_keymap("n", "<C-W>.", ":vertical resize +10<CR>", { noremap = true })
+
 
 -- Remember folds
 vim.cmd([[

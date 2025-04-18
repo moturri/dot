@@ -1,5 +1,6 @@
 return {
   "goolord/alpha-nvim",
+  version = "*",
   dependencies = {
     "nvim-tree/nvim-web-devicons",
   },

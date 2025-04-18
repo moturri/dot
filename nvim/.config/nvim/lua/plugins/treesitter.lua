@@ -2,6 +2,7 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    version = "*",
     config = function()
       require("nvim-treesitter.configs").setup({
         -- List of parsers to install
@@ -21,13 +22,12 @@ return {
           "vue",
           "rust",
           "markdown",
-          "json",
           "sql",
           "css",
           "yaml",
           "toml",
           "terraform",
-          "gitignore", -- Common for Git projects
+          "gitignore",
           "markdown_inline",
         },
         sync_install = false, -- Install parsers synchronously (only applied to `ensure_installed`)
@@ -74,3 +74,4 @@ return {
     end,
   },
 }
+
