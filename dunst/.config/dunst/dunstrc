@@ -8,13 +8,13 @@ ignore_newline = no
 # Notification display
 alignment = left
 show_age_threshold = 60
+show_indicators = no
 history_length = 20
 sticky_history = yes
 hide_duplicate_count = true
 sort = yes
 shrink = no
 markup = full
-timeout = 10
 
 # Appearance
 corner_radius = 12
@@ -23,7 +23,7 @@ horizontal_padding = 24
 separator_height = 2
 separator_color = frame
 frame_width = 0
-frame_color = "#1a1a1a"
+# frame_color = "#1a1a1a"
 transparency = 10
 
 # Placement
