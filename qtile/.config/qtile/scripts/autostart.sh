@@ -2,7 +2,8 @@
 
 picom &
 parcellite &
-/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+
 nm-applet &
-pkill dunst && dunst &
+/usr/lib/xfce-polkit/xfce-polkit &
+dunst &
 # firewall-applet &
