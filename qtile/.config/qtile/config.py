@@ -12,6 +12,20 @@ widget_defaults = dict(
     fontsize=15,
 )
 
+ldecor = {
+    "margin": 8,
+    "border_width": 0,
+    # "border_focus": rangi[2],
+    # "border_normal": rangi[0],
+}
+
+layouts = [
+    layout.MonadTall(**ldecor),
+    layout.MonadWide(**ldecor),
+    layout.MonadThreeCol(**ldecor),
+    layout.Max(**ldecor),
+]
+
 lucid = "#00000000"
 
 screens = [
@@ -48,10 +62,10 @@ floating_layout = layout.Floating(
         Match(wm_class="localsend"),
         Match(wm_class="firetools"),
         # Match(wm_class="iwgtk"),
-        Match(wm_class="gufw.py"),
+        # Match(wm_class="gufw.py"),
         # Match(wm_class="wihotspot"),
         Match(wm_class="nm-connection-editor"),
-        Match(wm_class="Thunar"),
+        # Match(wm_class="Thunar"),
     ],
 )
 
