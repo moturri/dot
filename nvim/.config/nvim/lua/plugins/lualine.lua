@@ -1,9 +1,14 @@
 return {
   {
     "nvim-lualine/lualine.nvim",
-    dependencies = { "kyazdani42/nvim-web-devicons" },
-    version = "*",
+    dependencies = {
+      "kyazdani42/nvim-web-devicons",
+      "SmiteshP/nvim-navic",
+      "j-hui/fidget.nvim",
+    },
     config = function()
+      local navic = require("nvim-navic")
+
       require("lualine").setup({
         options = {
           icons_enabled = true,
@@ -11,56 +16,70 @@ return {
           component_separators = { left = "", right = "" },
           section_separators = { left = "", right = "" },
           disabled_filetypes = {
-            statusline = { "NvimTree", "packer", "Telescope" },
+            statusline = { "NvimTree", "packer", "TelescopePrompt" },
             winbar = {},
           },
-          ignore_focus = {},
           always_divide_middle = true,
           globalstatus = true,
-          refresh = {
-            statusline = 100,
-            tabline = 100,
-            winbar = 100,
-          },
         },
+
         sections = {
-          lualine_a = { "mode" },
+          lualine_a = {
+            { "mode", icon = "" },
+          },
           lualine_b = {
-            "branch",
-            "diff",
+            { "branch", icon = "" },
             {
-              "diagnostics",
-              sources = { "nvim_lsp", "nvim_diagnostic" },
-              sections = { "error", "warn", "info", "hint" },
-              diagnostics_color = {
-                error = "DiagnosticError",
-                warn = "DiagnosticWarn",
-                info = "DiagnosticInfo",
-                hint = "DiagnosticHint",
+              "diff",
+              symbols = {
+                added = " ",
+                modified = " ",
+                removed = " ",
               },
-              symbols = { error = " ", warn = " ", info = " ", hint = " " },
+              colored = true,
             },
             {
-              "lsp_progress",
-              display_components = { "spinner", "title", "message" },
-              spinner_symbols = { "⠋", "⠙", "⠹", "⠸", "⠰", "⠆", "⠇", "⠘", "⠊" },
+              "diagnostics",
+              sources = { "nvim_lsp" },
+              symbols = {
+                error = " ",
+                warn  = " ",
+                info  = " ",
+                hint  = " ",
+              },
             },
           },
           lualine_c = {
-            "filename",
             {
-              "lsp_progress",
-              display_components = { "spinner" },
-              spinner_symbols = { "⠋", "⠙", "⠹", "⠸", "⠰", "⠆", "⠇", "⠘", "⠊" },
+              "filename",
+              file_status = true,
+              path = 1,
+              symbols = {
+                modified = " [+]",
+                readonly = " ",
+                unnamed = "[No Name]",
+              },
+            },
+            {
+              function()
+                return navic.is_available() and navic.get_location() or ""
+              end,
+              cond = navic.is_available,
+              color = { fg = "#61afef" }, -- matches onedark's blue
             },
           },
           lualine_x = {
-            "encoding",
-            "fileformat",
             "filetype",
             {
+              "encoding",
+              cond = function()
+                return vim.bo.fileencoding ~= "utf-8"
+              end,
+            },
+            "fileformat",
+            {
               "python_env",
-              color = { fg = "#ff8700", bg = "#282828", gui = "bold" },
+              color = { fg = "#ff8700", gui = "bold" },
               cond = function()
                 return vim.bo.filetype == "python"
               end,
@@ -70,37 +89,36 @@ return {
               cond = function()
                 return vim.fn.executable("node") == 1
               end,
-              color = { fg = "#7ebf7f", bg = "#282828", gui = "italic" },
+              color = { fg = "#7ebf7f", gui = "italic" },
             },
           },
           lualine_y = {
-            "progress",
+            { "progress" },
           },
-          lualine_z = { "location" },
+          lualine_z = {
+            { "location" },
+          },
         },
+
         inactive_sections = {
-          lualine_a = {},
-          lualine_b = {},
           lualine_c = { "filename" },
           lualine_x = { "location" },
-          lualine_y = {},
-          lualine_z = {},
         },
+
         tabline = {
           lualine_a = { "buffers" },
           lualine_b = { "branch" },
-          lualine_c = {},
-          lualine_x = {},
-          lualine_y = {},
           lualine_z = { "tabs" },
         },
-        winbar = {},
-        inactive_winbar = {},
+
         extensions = {
           "nvim-tree",
           "quickfix",
+          "fugitive",
+          "toggleterm",
         },
       })
     end,
   },
 }
+
