@@ -8,21 +8,21 @@ return {
     config = function()
       require("gitsigns").setup({
         signs = {
-          add = { text = "▎" },
-          change = { text = "▎" },
-          delete = { text = "契" },
-          topdelete = { text = "契" },
-          changedelete = { text = "▎" },
-          untracked = { text = "▎" },
+          add          = { text = "" },  -- nf-fa-plus
+          change       = { text = "" },  -- nf-oct-diff
+          delete       = { text = "" },  -- nf-oct-diff_removed
+          topdelete    = { text = "" },
+          changedelete = { text = "󰐕" },  -- nf-md-git_compare
+          untracked    = { text = "" },  -- nf-oct-file_added
         },
         preview_config = {
-          border = "rounded",   -- Rounded border for preview
+          border = "rounded",
         },
-        current_line_blame = false, -- Disable current line blame
+        current_line_blame = false,
         current_line_blame_opts = {
-          virt_text = true,     -- Use virtual text for blame
-          virt_text_pos = "eol", -- Position of virtual text
-          delay = 500,          -- Delay for displaying blame
+          virt_text = true,
+          virt_text_pos = "eol",
+          delay = 500,
         },
         on_attach = function(bufnr)
           local gs = package.loaded.gitsigns
