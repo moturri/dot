@@ -20,14 +20,14 @@ def bright():
         icon = "󰃠 "
         color = "gold"
     elif brightness_percentage > 60:
-        icon = "󰃟 "
+        icon = "󰃝 "
         color = "darkorange"
     elif brightness_percentage > 40:
-        icon = "󰅟 "
+        icon = "󰃟 "
         color = "orchid"
     elif brightness_percentage > 20:
-        icon = "󰃝 "
-        color = "dodgerblue"
+        icon = "󰃞 "
+        color = "pink"
     else:
         icon = "󰃜 "
         color = "dimgrey"
@@ -82,7 +82,7 @@ def vol():
 
         if is_muted or volume_percentage == 0:
             icon = "  "
-            color = "brown"
+            color = "dimgrey"
         elif volume_percentage > 100:
             icon = "󰕾 "
             color = "peru"
