@@ -3,12 +3,6 @@ from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
 
-widget_defaults = dict(
-    font="Inter Variable Bold",
-    fontsize=14,
-)
-
-
 black = [
     "#0d0d0d",
     "#d3d3d3",
@@ -84,13 +78,18 @@ def main():
             interface="wlp1s0",
             format="{down:.0f}{down_suffix} ↓↑ {up:.0f}{up_suffix}",
             update_interval=2,
+            **wdecor,
         ),
         widget.Spacer(
             length=10,
         ),
         widget.GenPollText(
-            func=batt,
-            update_interval=1,
+            func=bright,
+            update_interval=0.1,
+            mouse_callbacks={
+                "Button4": lazy.spawn("brightnessctl set +5%"),
+                "Button5": lazy.spawn("brightnessctl set 5%-"),
+            },
             **wdecor,
         ),
         widget.Spacer(
@@ -103,12 +102,8 @@ def main():
             length=10,
         ),
         widget.GenPollText(
-            func=bright,
-            update_interval=0.1,
-            mouse_callbacks={
-                "Button4": lazy.spawn("brightnessctl set +5%"),
-                "Button5": lazy.spawn("brightnessctl set 5%-"),
-            },
+            func=batt,
+            update_interval=1,
             **wdecor,
         ),
     ]
