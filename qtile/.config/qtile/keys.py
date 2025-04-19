@@ -1,4 +1,3 @@
-from libqtile import layout
 from libqtile.config import (Click, Drag, DropDown, Group, Key, Match,
                              ScratchPad)
 from libqtile.lazy import lazy
@@ -26,12 +25,12 @@ keys = [
     Key([mod], "Return", lazy.spawn(terminal)),
     Key([mod], "Tab", lazy.next_layout()),
     Key([mod], "w", lazy.window.kill()),
-    Key([mod], "f", lazy.window.toggle_fullscreen()),
-    Key([mod], "t", lazy.window.toggle_floating()),
+    Key([], "F11", lazy.window.toggle_fullscreen()),
+    Key([], "F4", lazy.window.toggle_floating()),
     Key([mod, "control"], "r", lazy.reload_config()),
     Key([mod, "control"], "q", lazy.shutdown()),
     Key([mod], "r", lazy.spawncmd()),
-    Key([mod], "a", lazy.spawn("rofi -show run")),
+    Key([mod], "a", lazy.spawn("rofi -show drun")),
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 5%-")),
@@ -79,20 +78,6 @@ mouse.extend(
         Drag([mod], "Button5", lazy.layout.down(), start=lazy.layout.next()),
     ]
 )
-
-ldecor = {
-    "margin": 8,
-    "border_width": 0,
-    # "border_focus": rangi[2],
-    # "border_normal": rangi[0],
-}
-
-layouts = [
-    layout.MonadTall(**ldecor),
-    layout.MonadWide(**ldecor),
-    layout.MonadThreeCol(**ldecor),
-    layout.Max(**ldecor),
-]
 
 
 groups = [
@@ -199,14 +184,34 @@ groups.append(
     ScratchPad(
         "scratchpad",
         [
-            DropDown("term", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9),
-            # DropDown(
-            #     "pavu", "pavucontrol", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
-            # ),
-            # DropDown("net", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9),
             DropDown(
-                "obsidian",
-                "obsidian",
+                "kitty", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9
+            ),
+            DropDown(
+                "arandr", "arandr", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
+            ),
+            DropDown(
+                "localsend",
+                "localsend",
+                width=0.6,
+                height=0.6,
+                x=0.2,
+                y=0.1,
+                opacity=0.9,
+            ),
+            # DropDown("iwgtk", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9),
+            # DropDown(
+            #     "obsidian",
+            #     "obsidian",
+            #     width=0.8,
+            #     height=0.8,
+            #     x=0.1,
+            #     y=0.1,
+            #     opacity=1,
+            # ),
+            DropDown(
+                "cider",
+                "cider",
                 width=0.8,
                 height=0.8,
                 x=0.1,
@@ -249,15 +254,17 @@ groups.append(
 
 
 scratches = {
-    "term": "e",
-    # "pavu": "u",
-    # "net": "v",
-    "obsidian": "p",
+    "kitty": "k",
+    "arandr": "a",
+    "localsend": "u",
+    # "iwgtk": "i",
+    # "obsidian": "o",
+    "cider": "m",
     "helvum": "v",
     "btop": "b",
     # "yazi": "y",
-    "thunar": "d",
+    "thunar": "t",
 }
 
 for name, key in scratches.items():
-    keys.append(Key([mod], key, lazy.group["scratchpad"].dropdown_toggle(name)))
+    keys.append(Key([mod, "mod1"], key, lazy.group["scratchpad"].dropdown_toggle(name)))
