@@ -1,13 +1,15 @@
+
 * {
-    bg0:    #0d0d0d;   /* Background - pure black */
-    bg1:    #1A1A1A;   /* Darker background */
-    bg2:    #3D3D3D;   /* Dark muted background */
-    bg3:    #2C2C2C;   /* Even darker highlight background */
-    fg0:    #E6E6E6;   /* Light text color */
-    fg1:    #FFFFFF;   /* White text color */
-    fg2:    #A0A0A0;   /* Lighter gray for muted text */
-    fg3:    #5A5A5A;   /* Darker gray for muted text */
+    bg0:    #FFFFFF;   /* Background - pure white */
+    bg1:    #F2F2F2;   /* Light background */
+    bg2:    #E0E0E0;   /* Soft muted background */
+    bg3:    #F9F9F9;   /* Highlight background */
+    fg0:    #1A1A1A;   /* Main text - very dark */
+    fg1:    #000000;   /* Pure black text */
+    fg2:    #5A5A5A;   /* Muted gray text */
+    fg3:    #A0A0A0;   /* Light muted text */
 }
+
 * {
     font: "Inter Variable 12";
     background-color:   transparent;
@@ -19,7 +21,7 @@
 }
 
 window {
-    location:       south;
+    location:       center;
     width:          480;
     border-radius:  24px;
 
@@ -100,4 +102,3 @@ element-icon {
 element-text {
     text-color: inherit;
 }
-
