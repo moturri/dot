@@ -1,7 +1,7 @@
 #!/bin/bash
 
 picom &
-parcellite &
+greenclip daemon &
 
 nm-applet &
 /usr/lib/xfce-polkit/xfce-polkit &

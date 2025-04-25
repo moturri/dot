@@ -26,13 +26,25 @@ keys = [
     Key([mod], "Tab", lazy.next_layout()),
     Key([mod], "w", lazy.window.kill()),
     Key([], "F11", lazy.window.toggle_fullscreen()),
-    Key([], "F4", lazy.window.toggle_floating()),
+    Key([mod], "F4", lazy.window.toggle_floating()),
     Key([mod, "control"], "r", lazy.reload_config()),
     Key([mod, "control"], "q", lazy.shutdown()),
-    Key([mod], "r", lazy.spawncmd()),
-    Key([mod], "a", lazy.spawn("rofi -show drun")),
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
+    Key([mod, "control"], "w", lazy.spawn("i3lock -c 000000")),
+    # Key([mod], "r", lazy.spawncmd()),
+    Key([mod], "r", lazy.spawn("rofi -show drun")),
+    Key(
+        [mod],
+        "v",
+        lazy.spawn(
+            "rofi -modi 'clipboard:greenclip print' -show clipboard -run-command '{cmd}'"
+        ),
+    ),
+    Key([mod], "F1", lazy.spawn("/home/m/.config/rofi/scripts/rofi-power.sh")),
+    Key([mod], "z", lazy.spawn("rofi -show window")),
+    Key([mod], "d", lazy.spawn("/home/m/.config/rofi/scripts/rofi-websearch.sh")),
+    Key([mod], "f", lazy.spawn("/home/m/.config/rofi/scripts/rofi-filebrowser.sh")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 5%-")),
     Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set +5%")),
     Key(
@@ -152,9 +164,10 @@ groups = [
         label="󰌳",
         matches=[
             Match(wm_class="cider"),
-            Match(wm_class="sayonara"),
             Match(wm_class="galaxybudsclient"),
             Match(wm_class="spotify"),
+            Match(wm_class="easyeffects"),
+            Match(wm_class="strawberry"),
         ],
     ),
 ]
@@ -200,18 +213,36 @@ groups.append(
                 opacity=0.9,
             ),
             # DropDown("iwgtk", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9),
-            # DropDown(
-            #     "obsidian",
-            #     "obsidian",
-            #     width=0.8,
-            #     height=0.8,
-            #     x=0.1,
-            #     y=0.1,
-            #     opacity=1,
-            # ),
+            DropDown(
+                "obsidian",
+                "obsidian",
+                width=0.8,
+                height=0.8,
+                x=0.1,
+                y=0.1,
+                opacity=1,
+            ),
+            DropDown(
+                "octopi",
+                "/usr/bin/octopi",
+                width=0.8,
+                height=0.8,
+                x=0.1,
+                y=0.1,
+                opacity=1,
+            ),
             DropDown(
                 "cider",
                 "cider",
+                width=0.8,
+                height=0.8,
+                x=0.1,
+                y=0.1,
+                opacity=1,
+            ),
+            DropDown(
+                "spotify",
+                "spotify",
                 width=0.8,
                 height=0.8,
                 x=0.1,
@@ -227,15 +258,15 @@ groups.append(
                 y=0.1,
                 opacity=0.9,
             ),
-            DropDown(
-                "btop",
-                "kitty -e btop",
-                width=0.8,
-                height=0.8,
-                x=0.1,
-                y=0.1,
-                opacity=0.9,
-            ),
+            # DropDown(
+            #     "btop",
+            #     "kitty -e btop",
+            #     width=0.8,
+            #     height=0.8,
+            #     x=0.1,
+            #     y=0.1,
+            #     opacity=0.9,
+            # ),
             # DropDown(
             #     "yazi",
             #     "kitty -e yazi",
@@ -254,17 +285,21 @@ groups.append(
 
 
 scratches = {
-    "kitty": "k",
+    "kitty": "x",
     "arandr": "a",
-    "localsend": "u",
+    "localsend": "l",
     # "iwgtk": "i",
-    # "obsidian": "o",
+    "obsidian": "n",
+    "octopi": "o",
     "cider": "m",
-    "helvum": "v",
-    "btop": "b",
+    "spotify": "s",
+    "helvum": "h",
+    # "btop": "b",
     # "yazi": "y",
     "thunar": "t",
 }
 
 for name, key in scratches.items():
-    keys.append(Key([mod, "mod1"], key, lazy.group["scratchpad"].dropdown_toggle(name)))
+    keys.append(
+        Key([mod, "control"], key, lazy.group["scratchpad"].dropdown_toggle(name))
+    )

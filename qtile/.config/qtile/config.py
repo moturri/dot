@@ -1,11 +1,10 @@
 import os
 import subprocess
 
-from bars import *
-from keys import *
-from libqtile import bar, hook, layout, qtile
+from bars import main, misc
+from keys import groups, keys, mouse
+from libqtile import bar, hook, layout
 from libqtile.config import Match, Screen
-from libqtile.lazy import lazy
 
 widget_defaults = dict(
     font="Inter Variable Bold",
