@@ -6,30 +6,7 @@ return {
         config = function()
             require("nvim-treesitter.configs").setup({
                 -- List of parsers to install (choose parsers you actively use)
-                ensure_installed = {
-                    "c",
-                    "cpp",
-                    "xml",
-                    "go",
-                    "lua",
-                    "bash",
-                    "javascript",
-                    "python",
-                    "typescript",
-                    "html",
-                    "ruby",
-                    "json",
-                    "vue",
-                    "rust",
-                    "markdown",
-                    "sql",
-                    "css",
-                    "yaml",
-                    "toml",
-                    "terraform",
-                    "gitignore",
-                    "markdown_inline",
-                },
+                ensure_installed = {},
                 sync_install = false, -- Use async install for better performance
                 auto_install = true, -- Auto-install missing parsers
                 ignore_install = {}, -- Parsers to ignore installing (e.g., if you don't need them)
@@ -92,11 +69,11 @@ return {
                 },
 
                 -- Performance optimizations
-                modules = {
-                    -- Uncomment for performance optimizations for larger files
-                    -- textsubjects = { enable = false },
-                    -- rainbow = { enable = false },
-                },
+                -- modules = {
+                --     -- Uncomment for performance optimizations for larger files
+                --     textsubjects = { enable = false },
+                --     rainbow = { enable = false },
+                -- },
 
                 -- Ensure proper folding using Treesitter (for large code blocks)
                 fold = {

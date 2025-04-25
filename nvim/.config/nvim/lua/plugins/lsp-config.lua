@@ -3,7 +3,7 @@ return {
 		"williamboman/mason.nvim",
 		lazy = false,
 		config = function()
-      require("fidget").setup({})
+			require("fidget").setup({})
 			require("mason").setup()
 		end,
 	},
@@ -24,11 +24,11 @@ return {
 			local mason_lspconfig = require("mason-lspconfig")
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-			-- Optional: enhance capabilities for folding, etc.
-			capabilities.textDocument.foldingRange = {
-				dynamicRegistration = false,
-				lineFoldingOnly = true,
-			}
+			-- -- Optional: enhance capabilities for folding, etc.
+			-- capabilities.textDocument.foldingRange = {
+			-- 	dynamicRegistration = false,
+			-- 	lineFoldingOnly = true,
+			-- }
 
 			-- Attach function with navic + keymaps
 			local function on_attach(client, bufnr)
@@ -63,23 +63,6 @@ return {
 				-- Default setup for all servers
 				function(server_name)
 					lspconfig[server_name].setup(default_config)
-				end,
-
-				-- Custom setup for Lua
-				["lua_ls"] = function()
-					lspconfig.lua_ls.setup(vim.tbl_deep_extend("force", default_config, {
-						settings = {
-							Lua = {
-								runtime = { version = "LuaJIT" },
-								diagnostics = { globals = { "vim" } },
-								workspace = {
-									library = vim.api.nvim_get_runtime_file("", true),
-									checkThirdParty = false,
-								},
-								telemetry = { enable = false },
-							},
-						},
-					}))
 				end,
 			})
 		end,

@@ -8,7 +8,7 @@ opt.termguicolors = true
 opt.encoding = "UTF-8"
 opt.mouse = "a" -- Enable mouse support
 opt.timeoutlen = 500
-opt.scrolloff = 10 -- Keep 10 lines visible above/below cursor
+opt.scrolloff = 20 -- Keep 10 lines visible above/below cursor
 opt.list = true -- Show invisible characters like spaces and tabs
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" } -- Customize invisible characters
 opt.showmode = false -- Hide mode in command line (we use lualine for this)
@@ -22,13 +22,8 @@ opt.expandtab = true -- Use spaces instead of tabs
 opt.smartindent = true -- Enable smart indentation
 opt.autoindent = true -- Enable automatic indentation
 
--- Ensure Treesitter handles indentation properly
-vim.cmd([[
-  augroup treesitter_indentation
-    autocmd!
-    autocmd FileType * setlocal shiftwidth=2 softtabstop=2 tabstop=2 expandtab
-  augroup END
-]])
+-- Speed up scrolling
+-- opt.ttyfast = true
 
 -- Folding settings
 vim.o.foldmethod = "expr" -- Use expression for folding
