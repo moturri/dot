@@ -1,6 +1,6 @@
 #!/bin/bash
 
-query=$(rofi -dmenu -i -p "Search the web:")
+query=$(rofi -dmenu -i -p "󰇥 ")
 
 [ -z "$query" ] && exit
 

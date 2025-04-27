@@ -1,5 +1,5 @@
 configuration {
-    modi: "window,drun,run";
+    modi: "window,drun";
     show-icons: true;
 }
 
