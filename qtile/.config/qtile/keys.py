@@ -1,5 +1,4 @@
-from libqtile.config import (Click, Drag, DropDown, Group, Key, Match,
-                             ScratchPad)
+from libqtile.config import Click, Drag, DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
 mod = "mod4"
@@ -31,8 +30,7 @@ keys = [
     Key([mod, "control"], "q", lazy.shutdown()),
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
-    Key([mod, "control"], "w", lazy.spawn("i3lock -c 000000")),
-    # Key([mod], "r", lazy.spawncmd()),
+    Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
     Key([mod], "r", lazy.spawn("rofi -show drun")),
     Key(
         [mod],
@@ -43,10 +41,14 @@ keys = [
     ),
     Key([mod], "F1", lazy.spawn("/home/m/.config/rofi/scripts/rofi-power.sh")),
     Key([mod], "z", lazy.spawn("rofi -show window")),
-    Key([mod], "d", lazy.spawn("/home/m/.config/rofi/scripts/rofi-websearch.sh")),
-    Key([mod], "f", lazy.spawn("/home/m/.config/rofi/scripts/rofi-filebrowser.sh")),
-    Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 5%-")),
-    Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set +5%")),
+    Key(
+        [mod],
+        "t",
+        lazy.spawn("/home/m/.config/rofi/scripts/rofi-websearch.sh"),
+    ),
+    Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
+    Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 5")),
+    Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 5")),
     Key(
         [],
         "XF86AudioLowerVolume",
@@ -185,11 +187,6 @@ for i in groups:
                 i.name,
                 lazy.window.togroup(i.name, switch_group=True),
             ),
-            # Key(
-            #     [mod, "shift"],
-            #     i.name,
-            #     lazy.window.togroup(i.name),
-            # ),
         ]
     )
 
@@ -201,7 +198,7 @@ groups.append(
                 "kitty", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9
             ),
             DropDown(
-                "arandr", "arandr", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
+                "arandr", "arandr", width=0.4, height=0.4, x=0.3, y=0.1, opacity=0.9
             ),
             DropDown(
                 "localsend",
@@ -212,7 +209,6 @@ groups.append(
                 y=0.1,
                 opacity=0.9,
             ),
-            # DropDown("iwgtk", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9),
             DropDown(
                 "obsidian",
                 "obsidian",
@@ -232,15 +228,6 @@ groups.append(
                 opacity=1,
             ),
             DropDown(
-                "cider",
-                "cider",
-                width=0.8,
-                height=0.8,
-                x=0.1,
-                y=0.1,
-                opacity=1,
-            ),
-            DropDown(
                 "spotify",
                 "spotify",
                 width=0.8,
@@ -258,24 +245,6 @@ groups.append(
                 y=0.1,
                 opacity=0.9,
             ),
-            # DropDown(
-            #     "btop",
-            #     "kitty -e btop",
-            #     width=0.8,
-            #     height=0.8,
-            #     x=0.1,
-            #     y=0.1,
-            #     opacity=0.9,
-            # ),
-            # DropDown(
-            #     "yazi",
-            #     "kitty -e yazi",
-            #     width=0.8,
-            #     height=0.8,
-            #     x=0.1,
-            #     y=0.1,
-            #     opacity=0.9,
-            # ),
             DropDown(
                 "thunar", "thunar", width=0.6, height=0.6, x=0.2, y=0.1, opacity=0.9
             ),
@@ -288,14 +257,10 @@ scratches = {
     "kitty": "x",
     "arandr": "a",
     "localsend": "l",
-    # "iwgtk": "i",
     "obsidian": "n",
     "octopi": "o",
-    "cider": "m",
-    "spotify": "s",
+    "spotify": "m",
     "helvum": "h",
-    # "btop": "b",
-    # "yazi": "y",
     "thunar": "t",
 }
 
