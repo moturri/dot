@@ -4,20 +4,11 @@ import subprocess
 
 def bright():
     try:
-        # Get current and max brightness using brightnessctl
-        current = subprocess.run(
-            ["brightnessctl", "g"], capture_output=True, text=True, check=True
+        result = subprocess.run(
+            ["brillo", "-G"], capture_output=True, text=True, check=True
         )
-        maximum = subprocess.run(
-            ["brightnessctl", "m"], capture_output=True, text=True, check=True
-        )
+        percent = int(float(result.stdout.strip()))
 
-        current_val = int(current.stdout.strip())
-        max_val = int(maximum.stdout.strip())
-
-        percent = int((current_val / max_val) * 100)
-
-        # Determine icon and color based on brightness percentage
         if percent > 80:
             icon, color = "󰃠  ", "gold"
         elif percent > 60:
@@ -30,41 +21,36 @@ def bright():
             icon, color = "󰃜 ", "dimgrey"
 
         return f'<span foreground="{color}">{icon} {percent}%</span>'
-
-    except (subprocess.CalledProcessError, ValueError):
+    except Exception:
         return '<span foreground="grey">󰳲 --%</span>'
 
 
 def batt():
     try:
-        result = subprocess.run(["acpi"], capture_output=True, text=True, check=True)
-        output = result.stdout.strip()
+        base = "/sys/class/power_supply/BAT0/"
 
-        # Example ACPI output: "Battery 0: Discharging, 55%, 02:10:00 remaining"
-        parts = output.split(", ")
-        status = parts[0].split(": ")[1].strip()
-        percentage = int(parts[1].replace("%", "").strip())
+        with open(base + "capacity") as f:
+            battery_percentage = int(f.read().strip())
+        with open(base + "status") as f:
+            battery_status = f.read().strip()
 
-        # Choose icon and color based on percentage
-        if percentage > 80:
+        if battery_percentage > 80:
             icon, color = "  ", "lime"
-        elif percentage > 60:
+        elif battery_percentage > 60:
             icon, color = "  ", "palegreen"
-        elif percentage > 40:
+        elif battery_percentage > 40:
             icon, color = "  ", "orange"
-        elif percentage > 20:
+        elif battery_percentage > 20:
             icon, color = "  ", "coral"
         else:
             icon, color = "  ", "red"
 
-        # If charging, override icon and color
-        if "Charging" in status:
+        if battery_status == "Charging":
             icon = " " + icon
             color = "aqua"
 
-        return f'<span foreground="{color}">{icon} {percentage}%</span>'
-
-    except (subprocess.CalledProcessError, IndexError, ValueError):
+        return f'<span foreground="{color}">{icon} {battery_percentage}%</span>'
+    except Exception:
         return '<span foreground="grey">󰈸 --%</span>'
 
 
@@ -77,9 +63,8 @@ def vol():
             check=True,
         )
         output = result.stdout.strip()
-        lines = output.splitlines()
         playback_line = next(
-            (line for line in reversed(lines) if "Playback" in line), None
+            (line for line in reversed(output.splitlines()) if "Playback" in line), None
         )
 
         if not playback_line:
@@ -89,11 +74,8 @@ def vol():
         volume = int(volume_str)
         is_muted = "[off]" in playback_line
 
-        # Determine icon and color
         if is_muted or volume == 0:
             icon, color = "  ", "dimgrey"
-        elif volume > 100:
-            icon, color = "󰕾 ", "peru"
         elif volume > 80:
             icon, color = "󰕾 ", "tomato"
         elif volume > 60:
@@ -131,18 +113,49 @@ def mic():
 
         if is_muted or volume == 0:
             icon, color = "  ", "dimgrey"
-        elif volume > 80:
-            icon, color = " ", "tomato"
-        elif volume > 60:
-            icon, color = " ", "tan"
-        elif volume > 40:
-            icon, color = " ", "orchid"
-        elif volume > 20:
-            icon, color = " ", "dodgerblue"
         else:
-            icon, color = " ", "dimgrey"
+            if volume > 80:
+                icon, color = " ", "tomato"
+            elif volume > 60:
+                icon, color = " ", "tan"
+            elif volume > 40:
+                icon, color = " ", "orchid"
+            elif volume > 20:
+                icon, color = " ", "dodgerblue"
+            else:
+                icon, color = " ", "dimgrey"
 
         return f'<span foreground="{color}">{icon} {volume}%</span>'
 
     except subprocess.CalledProcessError:
         return '<span foreground="grey"> Error</span>'
+
+
+def load_avg():
+    try:
+        with open("/proc/loadavg") as f:
+            loads = list(map(float, f.read().split()[:3]))
+
+        def get_color(load):
+            if load < 2.0:
+                return "lime"
+            elif load < 4.0:
+                return "palegreen"
+            elif load < 6.0:
+                return "cyan"
+            elif load < 8.0:
+                return "orchid"
+            elif load < 10.0:
+                return "orange"
+            elif load < 12.0:
+                return "orangered"
+            else:
+                return "red"
+
+        colored_loads = [
+            f'<span foreground="{get_color(load)}">{load:.2f}</span>' for load in loads
+        ]
+
+        return f'<span foreground="lightsteelblue">  </span> {" ".join(colored_loads)}'
+    except Exception:
+        return '<span foreground="grey">  --</span>'
