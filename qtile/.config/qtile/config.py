@@ -2,7 +2,7 @@ import os
 import subprocess
 
 from bars import main, misc
-from keys import groups, keys, mouse
+from keys import *
 from libqtile import bar, hook, layout
 from libqtile.config import Match, Screen
 
@@ -60,11 +60,9 @@ floating_layout = layout.Floating(
         Match(wm_class="blueman-manager"),
         Match(wm_class="localsend"),
         Match(wm_class="firetools"),
-        # Match(wm_class="iwgtk"),
         # Match(wm_class="gufw.py"),
         # Match(wm_class="wihotspot"),
         Match(wm_class="nm-connection-editor"),
-        # Match(wm_class="Thunar"),
     ],
 )
 
@@ -77,16 +75,11 @@ auto_minimize = True
 # wl_xcursor_theme = None
 # wl_xcursor_size = 24
 
-# if qtile.core.name == "x11":
-#     term = "kitty"
-# elif qtile.core.name == "wayland":
-#     term = "wezterm"
-
 
 @hook.subscribe.startup_once
 def autostart():
-    autostartScript = os.path.expanduser("~/.config/qtile/scripts/autostart.sh")
-    monitorScript = os.path.expanduser("~/.config/qtile/scripts/monitors.sh")
+    autostartScript = os.path.expanduser("/home/m/.config/qtile/scripts/autostart.sh")
+    monitorScript = os.path.expanduser("/home/m/.config/qtile/scripts/monitors.sh")
     subprocess.run([autostartScript])
     subprocess.run([monitorScript])
 
