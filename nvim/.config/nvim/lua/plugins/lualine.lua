@@ -1,13 +1,14 @@
 return {
 	{
 		"nvim-lualine/lualine.nvim",
+		lazy = false, -- or true if you want it to load on event like "VeryLazy"
 		dependencies = {
 			"kyazdani42/nvim-web-devicons",
 			"SmiteshP/nvim-navic",
 			"j-hui/fidget.nvim",
 		},
 		config = function()
-			local navic = require("nvim-navic")
+			local ok_navic, navic = pcall(require, "nvim-navic")
 
 			require("lualine").setup({
 				options = {
@@ -60,13 +61,15 @@ return {
 								unnamed = "[No Name]",
 							},
 						},
-						{
+						ok_navic and {
 							function()
 								return navic.is_available() and navic.get_location() or ""
 							end,
-							cond = navic.is_available,
-							color = { fg = "#61afef" }, -- matches onedark's blue
-						},
+							cond = function()
+								return navic.is_available()
+							end,
+							color = { fg = "#61afef" },
+						} or nil,
 					},
 					lualine_x = {
 						"filetype",
@@ -92,12 +95,8 @@ return {
 							color = { fg = "#7ebf7f", gui = "italic" },
 						},
 					},
-					lualine_y = {
-						{ "progress" },
-					},
-					lualine_z = {
-						{ "location" },
-					},
+					lualine_y = { "progress" },
+					lualine_z = { "location" },
 				},
 
 				inactive_sections = {
