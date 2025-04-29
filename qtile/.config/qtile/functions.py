@@ -129,33 +129,3 @@ def mic():
 
     except subprocess.CalledProcessError:
         return '<span foreground="grey"> Error</span>'
-
-
-def load_avg():
-    try:
-        with open("/proc/loadavg") as f:
-            loads = list(map(float, f.read().split()[:3]))
-
-        def get_color(load):
-            if load < 2.0:
-                return "lime"
-            elif load < 4.0:
-                return "palegreen"
-            elif load < 6.0:
-                return "cyan"
-            elif load < 8.0:
-                return "orchid"
-            elif load < 10.0:
-                return "orange"
-            elif load < 12.0:
-                return "orangered"
-            else:
-                return "red"
-
-        colored_loads = [
-            f'<span foreground="{get_color(load)}">{load:.2f}</span>' for load in loads
-        ]
-
-        return f'<span foreground="lightsteelblue">  </span> {" ".join(colored_loads)}'
-    except Exception:
-        return '<span foreground="grey">  --</span>'
