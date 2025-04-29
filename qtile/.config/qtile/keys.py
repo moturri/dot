@@ -30,7 +30,6 @@ keys = [
     ),
     Key([mod], "F1", lazy.spawn("/home/m/.config/rofi/scripts/rofi-power.sh")),
     Key([mod], "F12", lazy.spawn("/home/m/.config/rofi/scripts/rofi-keys.sh")),
-    Key([mod], "F3", lazy.spawn("/home/m/.config/rofi/scripts/rofi-theme.sh")),
     Key([mod], "Tab", lazy.next_layout()),
     Key([mod], "w", lazy.window.kill()),
     Key([mod], "F11", lazy.window.toggle_fullscreen()),
