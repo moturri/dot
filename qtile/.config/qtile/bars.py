@@ -1,17 +1,10 @@
-from functions import batt, bright, load_avg, mic, vol
+from functions import batt, bright, mic, vol
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
 
-black = [
-    "#000000",
-    "#FFFFFF",
-    # "#383838",
-    # "#545454",
-]
 
-rangi = black
-
+rangi = ["#000000", "#FFFFFF"]
 wdecor = {
     "background": rangi[0],
     "foreground": rangi[1],
@@ -22,19 +15,35 @@ wdecor = {
 }
 
 
+common_widgets = [
+    widget.Clock(format="%e %b   %H:%M ", **wdecor),
+    widget.Spacer(length=10),
+    widget.GenPollText(
+        update_interval=0.2,
+        func=vol,
+        mouse_callbacks={
+            "Button4": lazy.spawn("amixer set Master 5%+"),
+            "Button5": lazy.spawn("amixer set Master 5%-"),
+            "Button2": lazy.spawn("amixer set Master toggle"),
+        },
+        **wdecor,
+    ),
+    widget.GenPollText(
+        update_interval=0.2,
+        func=mic,
+        mouse_callbacks={
+            "Button4": lazy.spawn("amixer set Capture 5%+"),
+            "Button5": lazy.spawn("amixer set Capture 5%-"),
+            "Button2": lazy.spawn("amixer set Capture toggle"),
+        },
+        **wdecor,
+    ),
+    widget.Spacer(),
+]
+
+
 def main():
-    return [
-        widget.Clock(
-            format="%e %b   %H:%M ",
-            **wdecor,
-        ),
-        widget.Spacer(length=10),
-        widget.GenPollText(
-            update_interval=5,
-            func=load_avg,
-            **wdecor,
-        ),
-        widget.Spacer(),
+    return common_widgets + [
         widget.GroupBox(
             hide_unused=True,
             highlight_method="text",
@@ -49,11 +58,9 @@ def main():
             no_metadata_text=" 󰝛 ",
             paused_text=" 󰝛 ",
             popup_hide_timeout=8,
-            width=30,
+            width=60,
             popup_controls=True,
-            mouse_callbacks={
-                "Button3": lazy.widget["mpris"].toggle_player(),
-            },
+            mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
             **wdecor,
         ),
         widget.TaskList(
@@ -65,61 +72,22 @@ def main():
             txt_minimized="󰖰 ",
         ),
         widget.GenPollText(
-            update_interval=0.1,
-            func=vol,
-            mouse_callbacks={
-                "Button4": lazy.spawn("amixer set Master 5%+"),
-                "Button5": lazy.spawn("amixer set Master 5%-"),
-                "Button2": lazy.spawn("amixer set Master toggle"),
-            },
-            **wdecor,
-        ),
-        widget.GenPollText(
-            update_interval=0.1,
-            func=mic,
-            mouse_callbacks={
-                "Button4": lazy.spawn("amixer set Capture 5%+"),
-                "Button5": lazy.spawn("amixer set Capture 5%-"),
-                "Button2": lazy.spawn("amixer set Capture toggle"),
-            },
-            **wdecor,
-        ),
-        widget.Spacer(length=10),
-        widget.Systray(
-            padding=10,
-        ),
-        widget.Spacer(length=10),
-        widget.GenPollText(
             func=bright,
-            update_interval=0.1,
+            update_interval=0.2,
             mouse_callbacks={
                 "Button4": lazy.spawn("brillo -A 5"),
                 "Button5": lazy.spawn("brillo -U 5"),
             },
             **wdecor,
         ),
+        widget.Systray(padding=10),
         widget.Spacer(length=10),
-        widget.GenPollText(
-            func=batt,
-            update_interval=1,
-            **wdecor,
-        ),
+        widget.GenPollText(func=batt, update_interval=1, **wdecor),
     ]
 
 
 def misc():
-    return [
-        widget.Clock(
-            format="%e %b   %H:%M ",
-            **wdecor,
-        ),
-        widget.Spacer(length=10),
-        widget.GenPollText(
-            update_interval=5,
-            func=load_avg,
-            **wdecor,
-        ),
-        widget.Spacer(),
+    return common_widgets + [
         widget.GroupBox(
             hide_unused=True,
             highlight_method="text",
@@ -133,12 +101,10 @@ def misc():
             format=" 󰝚 ",
             no_metadata_text=" 󰝛 ",
             paused_text=" 󰝛 ",
-            popup_hide_timeout=10,
-            width=30,
+            popup_hide_timeout=8,
+            width=60,
             popup_controls=True,
-            mouse_callbacks={
-                "Button3": lazy.widget["mpris"].toggle_player(),
-            },
+            mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
             **wdecor,
         ),
         widget.TaskList(
@@ -149,30 +115,5 @@ def misc():
             txt_maximized="󰏋 ",
             txt_minimized="󰖰 ",
         ),
-        widget.GenPollText(
-            update_interval=0.1,
-            func=vol,
-            mouse_callbacks={
-                "Button4": lazy.spawn("amixer set Master 5%+"),
-                "Button5": lazy.spawn("amixer set Master 5%-"),
-                "Button2": lazy.spawn("amixer set Master toggle"),
-            },
-            **wdecor,
-        ),
-        widget.GenPollText(
-            update_interval=0.1,
-            func=mic,
-            mouse_callbacks={
-                "Button4": lazy.spawn("amixer set Capture 5%+"),
-                "Button5": lazy.spawn("amixer set Capture 5%-"),
-                "Button2": lazy.spawn("amixer set Capture toggle"),
-            },
-            **wdecor,
-        ),
-        widget.Spacer(length=10),
-        widget.GenPollText(
-            func=batt,
-            update_interval=1,
-            **wdecor,
-        ),
+        widget.GenPollText(func=batt, update_interval=1, **wdecor),
     ]
