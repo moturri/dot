@@ -45,7 +45,6 @@ nnoremap <C-p> :FZF<CR>
 nnoremap <C-s> :w<CR>
 nnoremap <C-q> :q<CR>
 nnoremap <C-n> :NERDTreeToggle<CR>
-" nnoremap <F5> :UndotreeToggle<CR>  " Uncomment to toggle Undotree
 
 filetype plugin indent on
 syntax enable
