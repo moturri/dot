@@ -22,53 +22,31 @@ keys = [
     Key([mod, "shift"], "space", lazy.layout.flip()),
     Key([mod, "shift"], "Return", lazy.layout.toggle_split()),
     Key([mod], "Return", lazy.spawn(terminal)),
+    Key([mod], "r", lazy.spawn("rofi -show drun")),
+    Key([mod], "z", lazy.spawn("rofi -show window")),
+    Key([mod], "t", lazy.spawn("/home/m/.config/rofi/scripts/rofi-websearch.sh")),
+    Key(
+        [mod], "v", lazy.spawn("rofi -modi 'clipboard:greenclip print' -show clipboard")
+    ),
+    Key([mod], "F1", lazy.spawn("/home/m/.config/rofi/scripts/rofi-power.sh")),
+    Key([mod], "F12", lazy.spawn("/home/m/.config/rofi/scripts/rofi-keys.sh")),
+    Key([mod], "F3", lazy.spawn("/home/m/.config/rofi/scripts/rofi-theme.sh")),
     Key([mod], "Tab", lazy.next_layout()),
     Key([mod], "w", lazy.window.kill()),
-    Key([], "F11", lazy.window.toggle_fullscreen()),
+    Key([mod], "F11", lazy.window.toggle_fullscreen()),
     Key([mod], "F4", lazy.window.toggle_floating()),
     Key([mod, "control"], "r", lazy.reload_config()),
     Key([mod, "control"], "q", lazy.shutdown()),
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
-    Key([mod], "r", lazy.spawn("rofi -show drun")),
-    Key(
-        [mod],
-        "v",
-        lazy.spawn(
-            "rofi -modi 'clipboard:greenclip print' -show clipboard -run-command '{cmd}'"
-        ),
-    ),
-    Key([mod], "F1", lazy.spawn("/home/m/.config/rofi/scripts/rofi-power.sh")),
-    Key([mod], "z", lazy.spawn("rofi -show window")),
-    Key(
-        [mod],
-        "t",
-        lazy.spawn("/home/m/.config/rofi/scripts/rofi-websearch.sh"),
-    ),
-    Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 5")),
     Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 5")),
-    Key(
-        [],
-        "XF86AudioLowerVolume",
-        lazy.spawn("amixer set Master 5%-"),
-    ),
-    Key(
-        [],
-        "XF86AudioRaiseVolume",
-        lazy.spawn("amixer set Master 5%+"),
-    ),
-    Key(
-        [],
-        "XF86AudioMicMute",
-        lazy.spawn("amixer set Capture toggle"),
-    ),
-    Key(
-        [],
-        "XF86AudioMute",
-        lazy.spawn("amixer set Master toggle"),
-    ),
+    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer set Master 5%-")),
+    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer set Master 5%+")),
+    Key([], "XF86AudioMicMute", lazy.spawn("amixer set Capture toggle")),
+    Key([], "XF86AudioMute", lazy.spawn("amixer set Master toggle")),
+    Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
 ]
 
 
@@ -80,28 +58,35 @@ mouse = [
         start=lazy.window.get_position(),
     ),
     Drag(
-        [mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()
+        [mod],
+        "Button3",
+        lazy.window.set_size_floating(),
+        start=lazy.window.get_size(),
     ),
-    Click([mod], "Button2", lazy.window.bring_to_front()),
+    Click(
+        [mod],
+        "Button2",
+        lazy.window.bring_to_front(),
+    ),
+    Drag(
+        [mod],
+        "Button4",
+        lazy.layout.up(),
+        start=lazy.layout.previous(),
+    ),
+    Drag(
+        [mod],
+        "Button5",
+        lazy.layout.down(),
+        start=lazy.layout.next(),
+    ),
 ]
 
 
-mouse.extend(
-    [
-        Drag([mod], "Button4", lazy.layout.up(), start=lazy.layout.previous()),
-        Drag([mod], "Button5", lazy.layout.down(), start=lazy.layout.next()),
-    ]
-)
-
-
 groups = [
+    Group("1", label="󰣇"),
     Group(
-        name="1",
-        label="󰣇",
-        # matches=[],
-    ),
-    Group(
-        name="2",
+        "2",
         label="",
         matches=[
             Match(wm_class="alacritty"),
@@ -109,7 +94,7 @@ groups = [
         ],
     ),
     Group(
-        name="3",
+        "3",
         label="󰈹",
         matches=[
             Match(wm_class="firefox"),
@@ -118,7 +103,7 @@ groups = [
         ],
     ),
     Group(
-        name="4",
+        "4",
         label="󰊠",
         matches=[
             Match(wm_class="VirtualBox Manager"),
@@ -126,25 +111,25 @@ groups = [
         ],
     ),
     Group(
-        name="5",
+        "5",
         label="󰇮",
         matches=[
             Match(wm_class="Mail"),
         ],
     ),
     Group(
-        name="6",
+        "6",
         label="󰉌",
         matches=[
             Match(wm_class="libreoffice"),
             Match(wm_class="libreoffice-writer"),
-            Match(wm_class="calibre-gui"),
             Match(wm_class="calibre"),
+            Match(wm_class="calibre-gui"),
             Match(wm_class="org.pwmt.zathura"),
         ],
     ),
     Group(
-        name="7",
+        "7",
         label="󰠹",
         matches=[
             Match(wm_class="stremio"),
@@ -152,7 +137,7 @@ groups = [
         ],
     ),
     Group(
-        name="8",
+        "8",
         label="󰒃",
         matches=[
             Match(wm_class="bitwarden"),
@@ -162,43 +147,48 @@ groups = [
         ],
     ),
     Group(
-        name="9",
+        "9",
         label="󰌳",
         matches=[
             Match(wm_class="cider"),
+            Match(wm_class="easyeffects"),
             Match(wm_class="galaxybudsclient"),
             Match(wm_class="spotify"),
-            Match(wm_class="easyeffects"),
             Match(wm_class="strawberry"),
         ],
     ),
 ]
 
-for i in groups:
+
+for group in groups:
     keys.extend(
         [
-            Key(
-                [mod],
-                i.name,
-                lazy.group[i.name].toscreen(),
-            ),
+            Key([mod], group.name, lazy.group[group.name].toscreen()),
             Key(
                 [mod, "shift"],
-                i.name,
-                lazy.window.togroup(i.name, switch_group=True),
+                group.name,
+                lazy.window.togroup(group.name, switch_group=True),
             ),
+            Key([mod, "control"], group.name, lazy.window.togroup(group.name)),
         ]
     )
+
 
 groups.append(
     ScratchPad(
         "scratchpad",
         [
             DropDown(
-                "kitty", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9
+                "arandr", "arandr", width=0.4, height=0.4, x=0.3, y=0.1, opacity=0.9
             ),
             DropDown(
-                "arandr", "arandr", width=0.4, height=0.4, x=0.3, y=0.1, opacity=0.9
+                "helvum", "helvum", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9
+            ),
+            DropDown(
+                "iwgtk", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
+            ),
+            DropDown(
+                "kitty", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9
             ),
             DropDown(
                 "localsend",
@@ -210,13 +200,7 @@ groups.append(
                 opacity=0.9,
             ),
             DropDown(
-                "obsidian",
-                "obsidian",
-                width=0.8,
-                height=0.8,
-                x=0.1,
-                y=0.1,
-                opacity=1,
+                "obsidian", "obsidian", width=0.8, height=0.8, x=0.1, y=0.1, opacity=1
             ),
             DropDown(
                 "octopi",
@@ -228,22 +212,7 @@ groups.append(
                 opacity=1,
             ),
             DropDown(
-                "spotify",
-                "spotify",
-                width=0.8,
-                height=0.8,
-                x=0.1,
-                y=0.1,
-                opacity=1,
-            ),
-            DropDown(
-                "helvum",
-                "helvum",
-                width=0.8,
-                height=0.8,
-                x=0.1,
-                y=0.1,
-                opacity=0.9,
+                "spotify", "spotify", width=0.8, height=0.8, x=0.1, y=0.1, opacity=1
             ),
             DropDown(
                 "thunar", "thunar", width=0.6, height=0.6, x=0.2, y=0.1, opacity=0.9
@@ -254,15 +223,17 @@ groups.append(
 
 
 scratches = {
-    "kitty": "x",
     "arandr": "a",
+    "helvum": "h",
+    "iwgtk": "i",
+    "kitty": "x",
     "localsend": "l",
     "obsidian": "n",
     "octopi": "o",
     "spotify": "m",
-    "helvum": "h",
     "thunar": "t",
 }
+
 
 for name, key in scratches.items():
     keys.append(
