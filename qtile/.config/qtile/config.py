@@ -14,8 +14,6 @@ widget_defaults = dict(
 ldecor = {
     "margin": 8,
     "border_width": 0,
-    # "border_focus": rangi[2],
-    # "border_normal": rangi[0],
 }
 
 layouts = [
@@ -25,27 +23,21 @@ layouts = [
     layout.Max(**ldecor),
 ]
 
-lucid = "#00000000"
-
+uwazi = "#00000000"
+wallpaper_path = "/mnt/sda2/Library/UnixImgs/arc.jpg"
 screens = [
     Screen(
-        wallpaper="/mnt/sda2/Library/UnixImgs/arc.jpg",
+        wallpaper=wallpaper_path,
         wallpaper_mode="stretch",
-        top=bar.Bar(main(), 28, background=lucid, margin=[0, 8, 0, 8]),
+        top=bar.Bar(main(), 28, background=uwazi, margin=[0, 8, 0, 8]),
     ),
     Screen(
-        wallpaper="/mnt/sda2/Library/UnixImgs/arc.jpg",
+        wallpaper=wallpaper_path,
         wallpaper_mode="stretch",
-        top=bar.Bar(misc(), 28, background=lucid, margin=[0, 8, 0, 8]),
+        top=bar.Bar(misc(), 28, background=uwazi, margin=[0, 8, 0, 8]),
     ),
 ]
 
-dgroups_key_binder = None
-dgroups_app_rules = []  # type: list
-follow_mouse_focus = True
-bring_front_click = False
-floats_kept_above = True
-cursor_warp = False
 floating_layout = layout.Floating(
     border_width=0,
     float_rules=[
@@ -60,28 +52,30 @@ floating_layout = layout.Floating(
         Match(wm_class="blueman-manager"),
         Match(wm_class="localsend"),
         Match(wm_class="firetools"),
-        # Match(wm_class="gufw.py"),
-        # Match(wm_class="wihotspot"),
-        Match(wm_class="nm-connection-editor"),
+        Match(wm_class="iwgtk"),
     ],
 )
 
+dgroups_key_binder = None
+dgroups_app_rules = []
+follow_mouse_focus = True
+bring_front_click = False
+floats_kept_above = True
+cursor_warp = True
 
 auto_fullscreen = True
 focus_on_window_activation = "smart"
 reconfigure_screens = True
 auto_minimize = True
-# wl_input_rules = None
-# wl_xcursor_theme = None
-# wl_xcursor_size = 24
+
+wmname = "qtile"
 
 
 @hook.subscribe.startup_once
 def autostart():
-    autostartScript = os.path.expanduser("/home/m/.config/qtile/scripts/autostart.sh")
-    monitorScript = os.path.expanduser("/home/m/.config/qtile/scripts/monitors.sh")
-    subprocess.run([autostartScript])
-    subprocess.run([monitorScript])
-
-
-wmname = "qtile"
+    home = os.path.expanduser("~/.config/qtile/scripts")
+    scripts = ["autostart.sh", "monitors.sh"]
+    for script in scripts:
+        script_path = os.path.join(home, script)
+        if os.path.exists(script_path):
+            subprocess.run([script_path], check=False)
