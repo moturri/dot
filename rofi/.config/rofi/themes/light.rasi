@@ -1,13 +1,13 @@
 
 * {
-    bg0:    #FFFFFF;   /* Background - pure white */
-    bg1:    #F2F2F2;   /* Light background */
-    bg2:    #E0E0E0;   /* Soft muted background */
-    bg3:    #F9F9F9;   /* Highlight background */
-    fg0:    #1A1A1A;   /* Main text - very dark */
-    fg1:    #000000;   /* Pure black text */
-    fg2:    #5A5A5A;   /* Muted gray text */
-    fg3:    #A0A0A0;   /* Light muted text */
+    bg0:    #FFFFFF;
+    bg1:    #F2F2F2;
+    bg2:    #E0E0E0;
+    bg3:    #F9F9F9;
+    fg0:    #1A1A1A;
+    fg1:    #000000;
+    fg2:    #5A5A5A;
+    fg3:    #A0A0A0;
 }
 
 * {
