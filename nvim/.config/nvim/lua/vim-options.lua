@@ -2,66 +2,63 @@ local opt = vim.opt
 
 -- General settings
 vim.g.have_nerd_font = true
+vim.scriptencoding = "utf-8" -- Use UTF-8 encoding
 vim.o.background = "dark"
-vim.g.mapleader = " " -- Leader key setup
+vim.g.mapleader = " "        -- Leader key
 opt.termguicolors = true
-opt.encoding = "UTF-8"
-opt.mouse = "a" -- Enable mouse support
+opt.mouse = "a"              -- Enable mouse support
 opt.timeoutlen = 500
-opt.scrolloff = 20 -- Keep 10 lines visible above/below cursor
-opt.list = true -- Show invisible characters like spaces and tabs
-opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" } -- Customize invisible characters
-opt.showmode = false -- Hide mode in command line (we use lualine for this)
-opt.signcolumn = "yes" -- Always show the sign column
+opt.scrolloff = 20           -- Keep lines above/below cursor
+opt.list = true              -- Show invisible characters
+opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+opt.showmode = false         -- Hide -- INSERT -- etc. (handled by lualine)
+opt.signcolumn = "yes"
 
--- Indentation settings
-opt.tabstop = 2 -- Set tab stop to 2 spaces
-opt.softtabstop = 2 -- How many spaces to treat as a tab
-opt.shiftwidth = 2 -- Indentation width (used for >> and << operations)
-opt.expandtab = true -- Use spaces instead of tabs
-opt.smartindent = true -- Enable smart indentation
-opt.autoindent = true -- Enable automatic indentation
+-- Indentation
+opt.tabstop = 2
+opt.softtabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.smartindent = true
+opt.autoindent = true
 
--- Speed up scrolling
--- opt.ttyfast = true
+-- Folding (Treesitter-aware)
+opt.foldmethod = "expr"
+opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+opt.foldenable = true
+opt.foldlevelstart = 99
+opt.foldcolumn = "1"
 
--- Folding settings
-vim.o.foldmethod = "expr" -- Use expression for folding
-vim.o.foldexpr = "nvim_treesitter#foldexpr()" -- Use Treesitter for fold expression
-vim.o.foldlevelstart = 99 -- Start with all folds open
-vim.o.foldenable = true -- Enable folding by default
-vim.o.foldcolumn = "1" -- Show fold column
+-- Search
+opt.hlsearch = true
+opt.incsearch = true
+opt.ignorecase = true
+opt.smartcase = true
+opt.inccommand = "split"
 
--- Search settings
-opt.hlsearch = true -- Highlight search matches
-opt.incsearch = true -- Incremental search
-opt.ignorecase = true -- Ignore case for search
-opt.smartcase = true -- Override ignorecase if search has uppercase
-opt.inccommand = "split" -- Show search results live in a split
+-- Display
+opt.number = true
+opt.relativenumber = true
+opt.colorcolumn = "100"
+opt.cmdheight = 2
+opt.showtabline = 2
+opt.undofile = true
 
--- Display settings
-opt.number = true -- Show line numbers
-opt.relativenumber = true -- Show relative line numbers
-opt.colorcolumn = "100" -- Highlight column 100 for wide code
-opt.cmdheight = 2 -- Increase command line height for clarity
-opt.showtabline = 2 -- Always show tabline
-opt.undofile = true -- Enable persistent undo
+-- Window/Buffer
+opt.splitright = true
+opt.splitbelow = true
+opt.selection = "exclusive"
+opt.modifiable = true
 
--- Window and buffer settings
-opt.splitright = true -- Open new vertical splits to the right
-opt.splitbelow = true -- Open new horizontal splits below
-opt.selection = "exclusive" -- Exclusive selection behavior
-opt.modifiable = true -- Allow modification of buffer content
-
--- Key mappings (shortcuts for common actions)
+-- Key mappings
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlighting" })
 
--- Remember folds (preserve fold state between sessions)
+-- Restore folds and view state per buffer
 vim.cmd([[
   augroup remember_folds
     autocmd!
-    autocmd BufWinLeave *.* mkview
-    autocmd BufWinEnter *.* silent! loadview
+    autocmd BufWinLeave * if &buftype == '' | mkview | endif
+    autocmd BufWinEnter * if &buftype == '' | silent! loadview | endif
   augroup END
 ]])
