@@ -2,10 +2,8 @@
 
 query=$(rofi -dmenu -i -p "󰇥 ")
 
-[ -z "$query" ] && exit
+[ -z "$query" ] && exit 0
 
 encoded_query=$(printf '%s\n' "$query" | jq -sRr @uri)
 
-engine="https://duckduckgo.com/?q="
-
-xdg-open "${engine}${encoded_query}" >/dev/null 2>&1 &
+xdg-open "https://duckduckgo.com/?q=${encoded_query}" >/dev/null 2>&1 &
