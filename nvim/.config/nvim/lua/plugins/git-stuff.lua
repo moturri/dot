@@ -1,6 +1,7 @@
 return {
   {
     "tpope/vim-fugitive", -- Git commands in Vim
+    version = "*",
   },
   {
     "lewis6991/gitsigns.nvim", -- Git signs in the gutter
@@ -8,12 +9,17 @@ return {
     config = function()
       require("gitsigns").setup({
         signs = {
-          add = { text = " " }, -- nf-fa-plus
-          change = { text = " " }, -- nf-oct-diff
-          delete = { text = " " }, -- nf-oct-diff_removed
+          add = { text = " " },
+          change = { text = " " },
+          delete = { text = " " },
           topdelete = { text = " " },
-          changedelete = { text = "󰐕 " }, -- nf-md-git_compare
-          untracked = { text = " " }, -- nf-oct-file_added
+          changedelete = { text = "󰐕 " },
+          untracked = { text = " " },
+          renamed = { text = "󰁕 " },
+          ignored = { text = " " },
+          unstaged = { text = "󰄱 " },
+          staged = { text = " " },
+          conflict = { text = " " },
         },
         preview_config = {
           border = "rounded",
