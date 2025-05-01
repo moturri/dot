@@ -2,16 +2,16 @@ local opt = vim.opt
 
 -- General settings
 vim.g.have_nerd_font = true
-vim.scriptencoding = "utf-8" -- Use UTF-8 encoding
+vim.scriptencoding = "utf-8"
 vim.o.background = "dark"
-vim.g.mapleader = " "        -- Leader key
+vim.g.mapleader = " "
 opt.termguicolors = true
-opt.mouse = "a"              -- Enable mouse support
+opt.mouse = "a"
 opt.timeoutlen = 500
-opt.scrolloff = 20           -- Keep lines above/below cursor
-opt.list = true              -- Show invisible characters
+opt.scrolloff = 20
+opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
-opt.showmode = false         -- Hide -- INSERT -- etc. (handled by lualine)
+opt.showmode = false
 opt.signcolumn = "yes"
 
 -- Indentation
@@ -53,12 +53,3 @@ opt.modifiable = true
 -- Key mappings
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlighting" })
-
--- Restore folds and view state per buffer
-vim.cmd([[
-  augroup remember_folds
-    autocmd!
-    autocmd BufWinLeave * if &buftype == '' | mkview | endif
-    autocmd BufWinEnter * if &buftype == '' | silent! loadview | endif
-  augroup END
-]])
