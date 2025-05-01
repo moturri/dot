@@ -1,66 +1,77 @@
-from functions import batt, bright, mic, vol
+from functions import (
+    batt,
+    bright,
+    mic,
+    mic_down,
+    mic_mute,
+    mic_up,
+    vol,
+    volume_down,
+    volume_mute,
+    volume_up,
+)
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
-
 
 rangi = ["#000000", "#FFFFFF"]
 wdecor = {
     "background": rangi[0],
     "foreground": rangi[1],
     "decorations": [
-        RectDecoration(use_widget_background=True, radius=12, filled=True, group=True),
+        RectDecoration(use_widget_background=True, radius=12, filled=True, clip=True),
     ],
     "padding": 6,
 }
 
 
-common_widgets = [
+zangu = [
     widget.Clock(format="%e %b   %H:%M ", **wdecor),
     widget.Spacer(length=10),
     widget.GenPollText(
         update_interval=0.2,
         func=vol,
         mouse_callbacks={
-            "Button4": lazy.spawn("amixer set Master 5%+"),
-            "Button5": lazy.spawn("amixer set Master 5%-"),
-            "Button2": lazy.spawn("amixer set Master toggle"),
+            "Button2": lazy.function(volume_mute)(),
+            "Button4": lazy.function(volume_up)(),
+            "Button5": lazy.function(volume_down)(),
         },
         **wdecor,
     ),
+    widget.Spacer(length=10),
     widget.GenPollText(
         update_interval=0.2,
         func=mic,
         mouse_callbacks={
-            "Button4": lazy.spawn("amixer set Capture 5%+"),
-            "Button5": lazy.spawn("amixer set Capture 5%-"),
-            "Button2": lazy.spawn("amixer set Capture toggle"),
+            "Button2": lazy.function(mic_mute)(),
+            "Button4": lazy.function(mic_up)(),
+            "Button5": lazy.function(mic_down)(),
         },
         **wdecor,
     ),
     widget.Spacer(),
+    widget.Mpris2(
+        name="mpris",
+        format=" 󰝚 ",
+        no_metadata_text=" 󰝛 ",
+        paused_text=" 󰝛 ",
+        popup_hide_timeout=8,
+        width=60,
+        popup_controls=True,
+        mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
+        **wdecor,
+    ),
+    widget.Spacer(length=5),
 ]
 
 
 def main():
-    return common_widgets + [
+    return zangu + [
         widget.GroupBox(
             hide_unused=True,
             highlight_method="text",
             fontsize=18,
             disable_drag=True,
-            **wdecor,
-        ),
-        widget.Spacer(length=10),
-        widget.Mpris2(
-            name="mpris",
-            format=" 󰝚 ",
-            no_metadata_text=" 󰝛 ",
-            paused_text=" 󰝛 ",
-            popup_hide_timeout=8,
-            width=60,
-            popup_controls=True,
-            mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
             **wdecor,
         ),
         widget.TaskList(
@@ -87,24 +98,12 @@ def main():
 
 
 def misc():
-    return common_widgets + [
+    return zangu + [
         widget.GroupBox(
             hide_unused=True,
             highlight_method="text",
             fontsize=18,
             disable_drag=True,
-            **wdecor,
-        ),
-        widget.Spacer(length=10),
-        widget.Mpris2(
-            name="mpris",
-            format=" 󰝚 ",
-            no_metadata_text=" 󰝛 ",
-            paused_text=" 󰝛 ",
-            popup_hide_timeout=8,
-            width=60,
-            popup_controls=True,
-            mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
             **wdecor,
         ),
         widget.TaskList(
