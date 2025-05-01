@@ -1,106 +1,111 @@
 return {
-	-- UI Select extension
-	{
-		"nvim-telescope/telescope-ui-select.nvim",
-	},
+  {
+    "nvim-telescope/telescope-ui-select.nvim",
+    version = "*",
+  },
+  {
+    "nvim-telescope/telescope.nvim",
+    version = "*",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = function()
+      local telescope = require("telescope")
+      local actions = require("telescope.actions")
+      local themes = require("telescope.themes")
 
-	-- Main Telescope plugin
-	{
-		"nvim-telescope/telescope.nvim",
-		version = "*",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		opts = function()
-			local actions = require("telescope.actions")
-			local themes = require("telescope.themes")
+      telescope.setup({
+        defaults = {
+          prompt_prefix = "󰱼 ",
+          selection_caret = "➜ ",
+          entry_prefix = "  ",
+          initial_mode = "insert",
+          sorting_strategy = "ascending",
+          layout_strategy = "horizontal",
+          layout_config = {
+            horizontal = {
+              prompt_position = "top",
+              width = 0.8,
+              height = 0.8,
+              preview_width = 0.5,
+            },
+          },
+          path_display = { "truncate" },
+          file_ignore_patterns = {
+            "node_modules",
+            ".git/",
+            ".cache",
+          },
+          mappings = {
+            i = {
+              ["<C-n>"] = actions.move_selection_next,
+              ["<C-p>"] = actions.move_selection_previous,
+              ["<C-c>"] = actions.close,
+              ["<C-u>"] = actions.preview_scrolling_up,
+              ["<C-d>"] = actions.preview_scrolling_down,
+              ["<C-q>"] = actions.send_to_qflist,
+            },
+            n = {
+              ["<C-c>"] = actions.close,
+              ["<C-j>"] = actions.move_selection_next,
+              ["<C-k>"] = actions.move_selection_previous,
+            },
+          },
+        },
+        pickers = {
+          find_files = {
+            theme = "dropdown",
+            previewer = false,
+            hidden = true,
+          },
+          buffers = {
+            theme = "dropdown",
+            previewer = false,
+            sort_lastused = true,
+          },
+          help_tags = {
+            theme = "dropdown",
+          },
+          oldfiles = {
+            theme = "dropdown",
+            previewer = false,
+          },
+        },
+        extensions = {
+          ["ui-select"] = {
+            themes.get_dropdown(),
+          },
+        },
+      })
 
-			return {
-				defaults = {
-					prompt_prefix = "󰱼 ",
-					selection_caret = "➜ ",
-					entry_prefix = "  ",
-					initial_mode = "insert",
-					sorting_strategy = "ascending",
-					layout_strategy = "flex",
-					layout_config = {
-						horizontal = { prompt_position = "top" },
-						vertical = { prompt_position = "top" },
-						flex = { flip_columns = 150 },
-					},
-					mappings = {
-						i = {
-							["<C-n>"] = actions.move_selection_next,
-							["<C-p>"] = actions.move_selection_previous,
-							["<C-c>"] = actions.close,
-							["<C-u>"] = actions.preview_scrolling_up,
-							["<C-d>"] = actions.preview_scrolling_down,
-						},
-						n = {
-							["<C-c>"] = actions.close,
-							["<C-j>"] = actions.move_selection_next,
-							["<C-k>"] = actions.move_selection_previous,
-						},
-					},
-				},
-				extensions = {
-					["ui-select"] = themes.get_dropdown({}),
-				},
-			}
-		end,
-		config = function(_, opts)
-			local telescope = require("telescope")
-			telescope.setup(opts)
-			telescope.load_extension("ui-select")
-		end,
-		keys = {
-			{
-				"<leader>ff",
-				function()
-					require("telescope.builtin").find_files()
-				end,
-				desc = "Find Files",
-			},
-			{
-				"<leader>fh",
-				function()
-					require("telescope.builtin").help_tags()
-				end,
-				desc = "Help Tags",
-			},
-			{
-				"<leader>fc",
-				function()
-					require("telescope.builtin").commands()
-				end,
-				desc = "Commands",
-			},
-			{
-				"<leader>fm",
-				function()
-					require("telescope.builtin").man_pages()
-				end,
-				desc = "Man Pages",
-			},
-			{
-				"<leader>fr",
-				function()
-					require("telescope.builtin").registers()
-				end,
-				desc = "Registers",
-			},
-			{
-				"<leader>fs",
-				function()
-					require("telescope.builtin").search_history()
-				end,
-				desc = "Search History",
-			},
-			{
-				"<leader>f/",
-				function()
-					require("telescope.builtin").current_buffer_fuzzy_find()
-				end,
-				desc = "Fuzzy Find in Current Buffer",
-			},
-		},
-	},
+      telescope.load_extension("ui-select")
+
+      -- Keymaps
+      local builtin = require("telescope.builtin")
+
+      -- Core file navigation
+      vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find Files" })
+      vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live Grep" })
+      vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Buffers" })
+      vim.keymap.set("n", "<leader>fl", builtin.oldfiles, { desc = "Recent Files" })
+      vim.keymap.set("n", "<leader>f/", builtin.current_buffer_fuzzy_find, { desc = "Search in Current Buffer" })
+
+      -- Reference & documentation
+      vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help Tags" })
+      vim.keymap.set("n", "<leader>fm", builtin.man_pages, { desc = "Man Pages" })
+      vim.keymap.set("n", "<leader>fc", builtin.commands, { desc = "Commands" })
+
+      -- Vim resources
+      vim.keymap.set("n", "<leader>fr", builtin.registers, { desc = "Registers" })
+      vim.keymap.set("n", "<leader>fw", builtin.search_history, { desc = "Search History" })
+
+      -- Git integration
+      vim.keymap.set("n", "<leader>gb", builtin.git_branches, { desc = "Git Branches" })
+      vim.keymap.set("n", "<leader>gc", builtin.git_commits, { desc = "Git Commits" })
+
+      -- Development tools
+      vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "Diagnostics" })
+    end,
+  },
 }
