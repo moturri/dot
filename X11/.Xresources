@@ -2,16 +2,16 @@
 XTerm*faceName: JetBrainsMonoNL Nerd Font
 XTerm*faceSize: 12
 XTerm*faceAntialias: true
-XTerm*faceBold: JetBrainsMonoNL Nerd Font
+XTerm*faceBold: JetBrainsMonoNL Nerd Font:bold
 
 ! Enable True Color (24-bit color support)
 XTerm*termName: xterm-256color
 XTerm*allowColorOps: true
 XTerm*dynamicColors: true
 
-! Colorscheme (Dracula-inspired)
-XTerm*foreground: white
-! XTerm*background: rgba:0000/0000/0000/dddd   ! Transparency with picom
+! Colorscheme (OLED-optimized Dracula)
+XTerm*foreground: #f8f8f2
+XTerm*background: #000000
 XTerm*color0:  #000000
 XTerm*color1:  #ff5555
 XTerm*color2:  #50fa7b
@@ -19,41 +19,72 @@ XTerm*color3:  #f1fa8c
 XTerm*color4:  #bd93f9
 XTerm*color5:  #ff79c6
 XTerm*color6:  #8be9fd
-XTerm*color7:  #d0d0d0
-XTerm*color8:  #6272a4
-XTerm*color9:  #ff5555
-XTerm*color10: #50fa7b
-XTerm*color11: #f1fa8c
-XTerm*color12: #bd93f9
-XTerm*color13: #ff79c6
-XTerm*color14: #8be9fd
+XTerm*color7:  #bfbfbf
+XTerm*color8:  #4d4d4d
+XTerm*color9:  #ff6e67
+XTerm*color10: #5af78e
+XTerm*color11: #f4f99d
+XTerm*color12: #caa9fa
+XTerm*color13: #ff92d0
+XTerm*color14: #9aedfe
 XTerm*color15: #ffffff
 
 ! Cursor customization
 XTerm*cursorBlink: true
-XTerm*cursorColor: #ffcc00
+XTerm*cursorColor: #ff79c6
 XTerm*cursorShape: block
 XTerm*pointerColor: #f8f8f2
-XTerm*cursorUnderline: true
+XTerm*cursorUnderline: false
 
 ! Scrollback buffer
-XTerm*saveLines: 5000
+XTerm*saveLines: 10000
 XTerm*scrollBar: true
 XTerm*rightScrollBar: true
 XTerm*scrollTtyOutput: false
-XTerm*scrollTtyKey: true
+XTerm*scrollKey: true
+XTerm*multiScroll: true
 
 ! Performance improvements
 XTerm*fastScroll: true
 XTerm*jumpScroll: true
+XTerm*multiClickTime: 250
 
 ! Input behavior
 XTerm*boldMode: true
 XTerm*utf8: 2
 XTerm*allowBoldFonts: true 
 XTerm*metaSendsEscape: true
+XTerm*modifyCursorKeys: 2
 XTerm*disallowedWindowOps: 20,21,SetXprop
 XTerm*loginShell: true
+XTerm*eightBitInput: false
+XTerm*backarrowKey: false
+
+! Copy/Paste improvements
+XTerm*selectToClipboard: true
+XTerm*trimSelection: true
+XTerm*highlightSelection: true
+
+! Bell behavior
+XTerm*visualBell: true
+XTerm*bellIsUrgent: true
 
 ! Remove window border
-! XTerm*borderWidth: 0
+XTerm*borderWidth: 0
+XTerm*internalBorder: 8
+
+! Set window title features
+XTerm*title: XTerm
+XTerm*iconName: terminal
+XTerm*allowTitleOps: true
+XTerm*allowWindowOps: true
+
+! Key bindings for convenience
+XTerm*translations: #override \
+    Shift Ctrl <Key>C: copy-selection(CLIPBOARD) \n\
+    Shift Ctrl <Key>V: insert-selection(CLIPBOARD) \n\
+    Shift Ctrl <Key>plus: larger-vt-font() \n\
+    Shift Ctrl <Key>minus: smaller-vt-font() \n\
+    Shift Ctrl <Key>0: set-vt-font(d) \n\
+    Alt <Key>1: set-terminal-attributes() \n\
+    Shift Ctrl <Key>N: spawn-new-terminal()
