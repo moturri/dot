@@ -29,7 +29,7 @@ zangu = [
     widget.Clock(format="%e %b   %H:%M ", **wdecor),
     widget.Spacer(length=10),
     widget.GenPollText(
-        update_interval=0.2,
+        update_interval=0.1,
         func=vol,
         mouse_callbacks={
             "Button2": lazy.function(volume_mute)(),
@@ -40,7 +40,7 @@ zangu = [
     ),
     widget.Spacer(length=10),
     widget.GenPollText(
-        update_interval=0.2,
+        update_interval=0.1,
         func=mic,
         mouse_callbacks={
             "Button2": lazy.function(mic_mute)(),
@@ -70,6 +70,7 @@ def main():
         widget.GroupBox(
             hide_unused=True,
             highlight_method="text",
+            urgent_alert_method="text",
             fontsize=18,
             disable_drag=True,
             **wdecor,
@@ -102,6 +103,7 @@ def misc():
         widget.GroupBox(
             hide_unused=True,
             highlight_method="text",
+            urgent_alert_method="text",
             fontsize=18,
             disable_drag=True,
             **wdecor,

@@ -166,7 +166,7 @@ def volume_up(qtile):
     volume, _ = get_audio_info(source=False)
 
     if volume < 100:
-        increment = min(5, 100 - volume)  # Don't exceed 100
+        increment = min(5, 100 - volume)
         if (
             run_command(
                 ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"+{increment}%"]
@@ -193,7 +193,7 @@ def mic_up(qtile):
     volume, _ = get_audio_info(source=True)
 
     if volume < 100:
-        increment = min(5, 100 - volume)  # Don't exceed 100
+        increment = min(5, 100 - volume)
         if (
             run_command(
                 ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"+{increment}%"]
