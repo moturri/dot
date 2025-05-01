@@ -1,7 +1,5 @@
 #!/bin/bash
 
-xset b off
-
 primaryMonitor="eDP1"
 secondMonitor="DP1"
 
