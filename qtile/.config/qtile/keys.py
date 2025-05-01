@@ -1,3 +1,4 @@
+from functions import mic_mute, volume_down, volume_mute, volume_up
 from libqtile.config import Click, Drag, DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
@@ -41,10 +42,10 @@ keys = [
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 5")),
     Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 5")),
-    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer set Master 5%-")),
-    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer set Master 5%+")),
-    Key([], "XF86AudioMicMute", lazy.spawn("amixer set Capture toggle")),
-    Key([], "XF86AudioMute", lazy.spawn("amixer set Master toggle")),
+    Key([], "XF86AudioLowerVolume", lazy.function(volume_down)),
+    Key([], "XF86AudioRaiseVolume", lazy.function(volume_up)),
+    Key([], "XF86AudioMicMute", lazy.function(mic_mute)),
+    Key([], "XF86AudioMute", lazy.function(volume_mute)),
     Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
 ]
 
@@ -202,18 +203,6 @@ groups.append(
                 "obsidian", "obsidian", width=0.8, height=0.8, x=0.1, y=0.1, opacity=1
             ),
             DropDown(
-                "octopi",
-                "/usr/bin/octopi",
-                width=0.8,
-                height=0.8,
-                x=0.1,
-                y=0.1,
-                opacity=1,
-            ),
-            DropDown(
-                "spotify", "spotify", width=0.8, height=0.8, x=0.1, y=0.1, opacity=1
-            ),
-            DropDown(
                 "thunar", "thunar", width=0.6, height=0.6, x=0.2, y=0.1, opacity=0.9
             ),
         ],
@@ -227,9 +216,7 @@ scratches = {
     "iwgtk": "i",
     "kitty": "x",
     "localsend": "l",
-    "obsidian": "n",
-    "octopi": "o",
-    "spotify": "m",
+    "obsidian": "o",
     "thunar": "t",
 }
 
