@@ -1,78 +1,104 @@
 return {
-	{
-		"nvim-treesitter/nvim-treesitter",
-		build = ":TSUpdate", -- Automatically update parsers
-		version = "*",
-		config = function()
-			require("nvim-treesitter.configs").setup({
-				-- Ensure installed parsers (you can specify specific parsers or "all")
-				ensure_installed = { "python", "lua", "javascript", "bash" }, -- Automatically install all available parsers
-				sync_install = false, -- Do not install parsers synchronously
-				auto_install = true, -- Automatically install missing parsers
-				ignore_install = {}, -- Ignore specific parsers (if needed)
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    version = "*",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+      version = "*",
+      "windwp/nvim-ts-autotag",
+      version = "*",
+      "JoosepAlviste/nvim-ts-context-commentstring",
+      version = "*",
+    },
+    config = function()
+      -- Correct setup call
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = {
+          "bash",
+          "css",
+          "html",
+          "javascript",
+          "json",
+          "lua",
+          "markdown",
+          "python",
+          "typescript",
+          "yaml",
+        },
+        sync_install = false,
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
+        indent = { enable = true },
+        incremental_selection = {
+          enable = true,
+          keymaps = {
+            init_selection = "<C-space>",
+            node_incremental = "<C-space>",
+            scope_incremental = "<C-s>",
+            node_decremental = "<C-backspace>",
+          },
+        },
+        autotag = { enable = true },
+        textobjects = {
+          select = {
+            enable = true,
+            lookahead = true,
+            keymaps = {
+              ["af"] = "@function.outer",
+              ["if"] = "@function.inner",
+              ["ac"] = "@class.outer",
+              ["ic"] = "@class.inner",
+              ["aa"] = "@parameter.outer",
+              ["ia"] = "@parameter.inner",
+              ["ai"] = "@conditional.outer",
+              ["ii"] = "@conditional.inner",
+              ["al"] = "@loop.outer",
+              ["il"] = "@loop.inner",
+              ["ab"] = "@block.outer",
+              ["ib"] = "@block.inner",
+              ["as"] = "@statement.outer",
+            },
+          },
+          move = {
+            enable = true,
+            set_jumps = true,
+            goto_next_start = {
+              ["]f"] = "@function.outer",
+              ["]c"] = "@class.outer",
+              ["]a"] = "@parameter.outer",
+              ["]i"] = "@conditional.outer",
+              ["]l"] = "@loop.outer",
+              ["]b"] = "@block.outer",
+              ["]s"] = "@statement.outer",
+            },
+            goto_previous_start = {
+              ["[f"] = "@function.outer",
+              ["[c"] = "@class.outer",
+              ["[a"] = "@parameter.outer",
+              ["[i"] = "@conditional.outer",
+              ["[l"] = "@loop.outer",
+              ["[b"] = "@block.outer",
+              ["[s"] = "@statement.outer",
+            },
+          },
+          swap = {
+            enable = true,
+            swap_next = {
+              ["<leader>sn"] = "@parameter.inner",
+            },
+            swap_previous = {
+              ["<leader>sp"] = "@parameter.inner",
+            },
+          },
+        },
+      })
 
-				highlight = {
-					enable = true, -- Enable syntax highlighting
-					additional_vim_regex_highlighting = false, -- Disable Vim's regex-based highlighting
-				},
-
-				indent = {
-					enable = true, -- Enable indentation based on treesitter
-				},
-
-				incremental_selection = {
-					enable = true, -- Enable incremental selection
-					keymaps = {
-						init_selection = "<C-space>", -- Initial selection keybinding
-						node_incremental = "<C-space>", -- Incremental node selection
-						scope_incremental = "<C-s>", -- Incremental scope selection
-						node_decremental = "<C-backspace>", -- Decremental node selection
-					},
-				},
-
-				autotag = {
-					enable = true, -- Enable auto-closing tags (useful for HTML/XML)
-				},
-
-				textobjects = {
-					select = {
-						enable = true, -- Enable textobject selection
-						lookahead = true, -- Enable lookahead for better textobject detection
-						keymaps = {
-							["af"] = "@function.outer", -- Select outer function
-							["if"] = "@function.inner", -- Select inner function
-							["ac"] = "@class.outer", -- Select outer class
-							["ic"] = "@class.inner", -- Select inner class
-						},
-					},
-					move = {
-						enable = true, -- Enable textobject movement
-						set_jumps = true, -- Enable jump commands for movement
-						keymaps = {
-							["[f"] = { query = "@function.outer", desc = "Previous function" },
-							["]f"] = { query = "@function.outer", desc = "Next function" },
-							["[c"] = { query = "@class.outer", desc = "Previous class" },
-							["]c"] = { query = "@class.outer", desc = "Next class" },
-						},
-					},
-				},
-
-				context_commentstring = {
-					enable = true, -- Enable automatic comment string adjustments
-					enable_autocmd = false, -- Disable autocommand for commentstring (optional, can be left as is)
-				},
-
-				-- Disable unused modules for performance optimization
-				modules = {
-					textsubjects = { enable = false }, -- Disable textsubjects if not needed
-					rainbow = { enable = false }, -- Disable rainbow parentheses if not needed
-				},
-
-				fold = {
-					enable = true, -- Enable code folding based on treesitter
-					custom_fold = "nvim_treesitter#foldexpr()", -- Custom fold expression
-				},
-			})
-		end,
-	},
+      -- Proper context-commentstring setup
+      vim.g.skip_ts_context_commentstring_module = true
+      require("ts_context_commentstring").setup({})
+    end,
+  },
 }
