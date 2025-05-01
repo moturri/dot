@@ -2,7 +2,7 @@ import os
 import subprocess
 
 from bars import main, misc
-from keys import *
+from keys import groups, keys, mouse
 from libqtile import bar, hook, layout
 from libqtile.config import Match, Screen
 
@@ -15,7 +15,6 @@ ldecor = {
     "margin": 8,
     "border_width": 0,
 }
-
 layouts = [
     layout.MonadTall(**ldecor),
     layout.MonadWide(**ldecor),
@@ -59,7 +58,7 @@ floating_layout = layout.Floating(
 dgroups_key_binder = None
 dgroups_app_rules = []
 follow_mouse_focus = True
-bring_front_click = False
+bring_front_click = "floating_only"
 floats_kept_above = True
 cursor_warp = True
 
@@ -68,7 +67,7 @@ focus_on_window_activation = "smart"
 reconfigure_screens = True
 auto_minimize = True
 
-wmname = "qtile"
+wmname = "LG3D"
 
 
 @hook.subscribe.startup_once
