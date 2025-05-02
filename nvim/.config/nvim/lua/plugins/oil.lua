@@ -6,7 +6,6 @@ return {
 			local oil = require("oil")
 
 			oil.setup({
-				-- Optional configuration settings
 				columns = {
 					"icon",
 					"size",
