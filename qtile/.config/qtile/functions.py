@@ -1,35 +1,54 @@
 import psutil
 import subprocess
 import time
+import re
 from collections import namedtuple
+from typing import Optional, Tuple, List, Callable
 
 # Define the named tuple for audio info
 AudioInfo = namedtuple("AudioInfo", ["volume", "muted"])
 
-# Polling control flag
-polling_active = False
+
+# Define a class to handle polling state
+class PollingManager:
+    def __init__(self):
+        self.active = False
+
+    def start(self):
+        self.active = True
+
+    def stop(self):
+        self.active = False
 
 
-def run_command(cmd, timeout=0.5):
-    """Runs a shell command and returns the output as a string."""
+polling = PollingManager()
+
+
+def run_command(cmd: List[str], timeout: float = 1.0) -> Optional[str]:
+    """
+    Runs a shell command and returns the output as a string.
+    """
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, check=True, timeout=timeout
         )
         return result.stdout.strip()
-    except (subprocess.SubprocessError, ValueError, FileNotFoundError):
+    except subprocess.SubprocessError as e:
+        print(f"Command failed: {' '.join(cmd)}, Error: {e}")
         return None
 
 
-def cached_getter(timeout=0.5):
-    """Caching decorator to avoid repeated polling within a short time window."""
+def cached_getter(timeout: float = 0.5):
+    """
+    Caching decorator to avoid repeated polling within a short time window.
+    """
 
-    def decorator(func):
+    def decorator(func: Callable):
         cache = {"value": None, "last_check": 0}
 
         def wrapper(*args, **kwargs):
             current_time = time.time()
-            if current_time - cache["last_check"] < timeout and not polling_active:
+            if current_time - cache["last_check"] < timeout and not polling.active:
                 return cache["value"]
 
             result = func(*args, **kwargs)
@@ -44,56 +63,55 @@ def cached_getter(timeout=0.5):
 
 
 def start_polling():
-    global polling_active
-    polling_active = True
+    polling.start()
 
 
 def stop_polling():
-    global polling_active
-    polling_active = False
+    polling.stop()
 
 
-def get_audio_info():
-    """Fetches both volume and mute status for Master (volume) and Capture (mic) using amixer."""
-
-    # Run amixer commands separately for Master (volume) and Capture (mic)
+def get_audio_info() -> Tuple[AudioInfo, AudioInfo]:
+    """
+    Fetches both volume and mute status for Master (volume) and Capture (mic).
+    """
     master_cmd = ["amixer", "get", "Master"]
     capture_cmd = ["amixer", "get", "Capture"]
 
     master_output = run_command(master_cmd)
     capture_output = run_command(capture_cmd)
 
-    if not master_output or not capture_output:
-        return AudioInfo(volume=0, muted=True), AudioInfo(volume=0, muted=True)
+    default_info = AudioInfo(volume=0, muted=True)
 
-    # Parse both outputs
-    volume_info = parse_amixer_section(master_output)
-    mic_info = parse_amixer_section(capture_output)
+    volume_info = parse_amixer_section(master_output) if master_output else default_info
+    mic_info = parse_amixer_section(capture_output) if capture_output else default_info
 
     return volume_info, mic_info
 
 
-def parse_amixer_section(section):
-    """Helper function to parse a single amixer section (either Master or Capture)."""
+def parse_amixer_section(section: str) -> AudioInfo:
+    """
+    Helper function to parse a single amixer section.
+    """
     volume = 0
     muted = True
 
-    for line in section.splitlines():
-        if "%" in line:
-            try:
-                # Extract volume and muted status from the line
-                vol_str = next(seg for seg in line.split() if "%" in seg)
-                volume = int(vol_str.strip("[]%"))
-                muted = "[off]" in line
-                break  # No need to process further lines
-            except Exception:
-                continue
+    volume_match = re.search(r"(\d+)%", section)
+    mute_match = re.search(r"\[(on|off)\]", section)
+
+    if volume_match:
+        volume = int(volume_match.group(1))
+
+    if mute_match:
+        muted = mute_match.group(1) == "off"
 
     return AudioInfo(volume=volume, muted=muted)
 
 
 @cached_getter()
-def vol():
+def vol() -> str:
+    """
+    Get formatted volume indicator string with icon and color.
+    """
     volume_info, _ = get_audio_info()
     THRESHOLDS = [
         (80, "󰕾 ", "salmon"),
@@ -103,18 +121,19 @@ def vol():
         (0, "󰕿 ", "palegreen"),
     ]
 
-    # Handle muted state
     if volume_info.muted or volume_info.volume == 0:
         return f'<span foreground="dimgrey">󰝟  {volume_info.volume}%</span>'
 
-    # Apply thresholds for volume color coding
     for threshold, icon, color in THRESHOLDS:
         if volume_info.volume >= threshold:
             return f'<span foreground="{color}">{icon} {volume_info.volume}%</span>'
 
 
 @cached_getter()
-def mic():
+def mic() -> str:
+    """
+    Get formatted microphone indicator string.
+    """
     _, mic_info = get_audio_info()
     THRESHOLDS = [
         (80, " ", "salmon"),
@@ -124,11 +143,9 @@ def mic():
         (0, " ", "palegreen"),
     ]
 
-    # Handle muted state
     if mic_info.muted or mic_info.volume == 0:
         return f'<span foreground="dimgrey">   {mic_info.volume}%</span>'
 
-    # Apply thresholds for mic volume color coding
     for threshold, icon, color in THRESHOLDS:
         if mic_info.volume >= threshold:
             return f'<span foreground="{color}">{icon} {mic_info.volume}%</span>'
@@ -165,7 +182,10 @@ def mic_mute(qtile):
 
 
 @cached_getter()
-def bright():
+def bright() -> str:
+    """
+    Get formatted brightness indicator string.
+    """
     THRESHOLDS = [
         (80, "󰃠  ", "gold"),
         (60, "󰃝  ", "darkorange"),
@@ -183,22 +203,24 @@ def bright():
         for threshold, icon, color in THRESHOLDS:
             if percent >= threshold:
                 return f'<span foreground="{color}">{icon} {percent}%</span>'
-    except ValueError:
-        pass
+    except (ValueError, TypeError):
+        return '<span foreground="grey">󰳲 Error</span>'
 
     return '<span foreground="grey">󰳲 N/A</span>'
 
 
 @cached_getter()
-def batt():
+def batt() -> str:
+    """
+    Get formatted battery indicator string with icon and color.
+    """
     try:
         battery = psutil.sensors_battery()
         if battery is None:
-            raise RuntimeError("No battery is detected")
+            return '<span foreground="grey">󰈸 No Battery</span>'
 
         capacity = int(battery.percent)
         charging = battery.power_plugged
-
         if capacity >= 80:
             icon, color = "  ", "lime"
         elif capacity >= 60:
