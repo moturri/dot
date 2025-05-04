@@ -31,6 +31,16 @@ keys = [
     ),
     Key([mod], "F1", lazy.spawn("/home/m/.config/rofi/scripts/rofi-power.sh")),
     Key([mod], "F12", lazy.spawn("/home/m/.config/rofi/scripts/rofi-keys.sh")),
+    Key(
+        [mod, "shift"],
+        "a",
+        lazy.spawn("/home/m/.config/rofi/scripts/rofi-display.sh"),
+    ),
+    Key(
+        [mod, "shift"],
+        "g",
+        lazy.spawn("/home/m/.config/rofi/scripts/rofi-gtk.sh"),
+    ),
     Key([mod], "Tab", lazy.next_layout()),
     Key([mod], "w", lazy.window.kill()),
     Key([mod], "F11", lazy.window.toggle_fullscreen()),
@@ -40,6 +50,7 @@ keys = [
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
+    Key([mod], "Print", lazy.spawn("flameshot gui")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 5")),
     Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 5")),
     Key([], "XF86AudioLowerVolume", lazy.function(volume_down)),
@@ -126,6 +137,7 @@ groups = [
             Match(wm_class="calibre"),
             Match(wm_class="calibre-gui"),
             Match(wm_class="org.pwmt.zathura"),
+            Match(wm_class="Zathura"),
         ],
     ),
     Group(
@@ -179,16 +191,34 @@ groups.append(
         "scratchpad",
         [
             DropDown(
-                "arandr", "arandr", width=0.4, height=0.4, x=0.3, y=0.1, opacity=0.9
+                "arandr",
+                "arandr",
+                width=0.4,
+                height=0.4,
+                x=0.3,
+                y=0.1,
+                opacity=0.9,
             ),
             DropDown(
-                "helvum", "helvum", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9
+                "helvum",
+                "helvum",
+                width=0.8,
+                height=0.8,
+                x=0.1,
+                y=0.1,
+                opacity=0.9,
             ),
             DropDown(
                 "iwgtk", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
             ),
             DropDown(
-                "kitty", "kitty", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9
+                "kitty",
+                "kitty",
+                width=0.8,
+                height=0.8,
+                x=0.1,
+                y=0.1,
+                opacity=0.9,
             ),
             DropDown(
                 "localsend",
@@ -203,7 +233,13 @@ groups.append(
                 "obsidian", "obsidian", width=0.8, height=0.8, x=0.1, y=0.1, opacity=1
             ),
             DropDown(
-                "thunar", "thunar", width=0.6, height=0.6, x=0.2, y=0.1, opacity=0.9
+                "thunar",
+                "thunar",
+                width=0.7,
+                height=0.7,
+                x=0.15,
+                y=0.1,
+                opacity=0.9,
             ),
         ],
     )
