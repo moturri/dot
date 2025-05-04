@@ -141,15 +141,18 @@ def mic_mute(qtile=None):
 
 # --- Brightness Display ---
 def bright() -> str:
-    if CACHE["brightness"]:
-        return CACHE["brightness"]  # Use cached value if unchanged
-
+    # Fetch brightness using 'brillo -G' each time to ensure it is updated
     output = run_command(["brillo", "-G"])
-    if not output:
-        return '<span foreground="grey">󰳲 N/A</span>'
+
+    if output is None:
+        result = '<span foreground="grey">󰳲 N/A</span>'
+        return result
 
     try:
+        # Parse the brightness percentage from the command output
         percent = int(float(output.strip()))
+
+        # Define brightness levels and associated icons
         THRESHOLDS = [
             (80, "󰃠  ", "gold"),
             (60, "󰃝  ", "darkorange"),
@@ -157,33 +160,36 @@ def bright() -> str:
             (20, "󰃞  ", "pink"),
             (0, "󰃜 ", "dimgrey"),
         ]
+
+        # Check the brightness level and return the appropriate icon and color
         for threshold, icon, color in THRESHOLDS:
             if percent >= threshold:
                 result = f'<span foreground="{color}">{icon} {percent}%</span>'
-                CACHE["brightness"] = result  # Cache the brightness result
                 return result
+
     except (ValueError, TypeError) as e:
         logging.warning(f"Brightness parsing error: {e}")
-        return '<span foreground="grey">󰳲 Error</span>'
+        result = '<span foreground="grey">󰳲 Error</span>'
+        return result
 
-    return '<span foreground="grey">󰳲 N/A</span>'
+    # Default fallback if parsing fails
+    result = '<span foreground="grey">󰳲 N/A</span>'
+    return result
 
 
 # --- Battery Display ---
 def batt() -> str:
-    if CACHE["battery"]:
-        return CACHE["battery"]  # Use cached value if unchanged
-
     try:
+        # Fetch battery status
         battery = psutil.sensors_battery()
         if battery is None:
-            result = '<span foreground="grey">󰈸 No Battery</span>'
-            CACHE["battery"] = result  # Cache the result
-            return result
+            return '<span foreground="grey">󰈸 No Battery</span>'
 
+        # Get battery percentage and charging status
         capacity = int(battery.percent)
         charging = battery.power_plugged
 
+        # Define battery icon and colors based on capacity
         if capacity >= 80:
             icon, color = "  ", "lime"
         elif capacity >= 60:
@@ -195,13 +201,13 @@ def batt() -> str:
         else:
             icon, color = "  ", "red"
 
+        # If charging, display a different icon
         if charging:
             icon = f" {icon}"
             color = "aqua"
 
-        result = f'<span foreground="{color}">{icon} {capacity}%</span>'
-        CACHE["battery"] = result  # Cache the result
-        return result
+        # Return the formatted result
+        return f'<span foreground="{color}">{icon} {capacity}%</span>'
 
     except Exception as e:
         logging.warning(f"Battery reading error: {e}")
