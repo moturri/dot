@@ -1,10 +1,17 @@
-import re
+import psutil
 import subprocess
 import time
-from pathlib import Path
+from collections import namedtuple
+
+# Define the named tuple for audio info
+AudioInfo = namedtuple("AudioInfo", ["volume", "muted"])
+
+# Polling control flag
+polling_active = False
 
 
 def run_command(cmd, timeout=0.5):
+    """Runs a shell command and returns the output as a string."""
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, check=True, timeout=timeout
@@ -14,31 +21,157 @@ def run_command(cmd, timeout=0.5):
         return None
 
 
-def cached_getter(func, timeout=0.2):
-    def wrapper(*args, **kwargs):
-        current_time = time.time()
-        if current_time - wrapper.cache["last_check"] < timeout:
-            return wrapper.cache["value"]
+def cached_getter(timeout=0.5):
+    """Caching decorator to avoid repeated polling within a short time window."""
 
-        result = func(*args, **kwargs)
-        wrapper.cache["value"] = result
-        wrapper.cache["last_check"] = current_time
-        return result
+    def decorator(func):
+        cache = {"value": None, "last_check": 0}
 
-    wrapper.cache = {"value": None, "last_check": 0}
-    wrapper.func = func
+        def wrapper(*args, **kwargs):
+            current_time = time.time()
+            if current_time - cache["last_check"] < timeout and not polling_active:
+                return cache["value"]
 
-    return wrapper
+            result = func(*args, **kwargs)
+            cache["value"] = result
+            cache["last_check"] = current_time
+            return result
+
+        wrapper.cache = cache
+        return wrapper
+
+    return decorator
 
 
-@cached_getter
-def bright(timeout=0.2):
+def start_polling():
+    global polling_active
+    polling_active = True
+
+
+def stop_polling():
+    global polling_active
+    polling_active = False
+
+
+def get_audio_info():
+    """Fetches both volume and mute status for Master (volume) and Capture (mic) using amixer."""
+
+    # Run amixer commands separately for Master (volume) and Capture (mic)
+    master_cmd = ["amixer", "get", "Master"]
+    capture_cmd = ["amixer", "get", "Capture"]
+
+    master_output = run_command(master_cmd)
+    capture_output = run_command(capture_cmd)
+
+    if not master_output or not capture_output:
+        return AudioInfo(volume=0, muted=True), AudioInfo(volume=0, muted=True)
+
+    # Parse both outputs
+    volume_info = parse_amixer_section(master_output)
+    mic_info = parse_amixer_section(capture_output)
+
+    return volume_info, mic_info
+
+
+def parse_amixer_section(section):
+    """Helper function to parse a single amixer section (either Master or Capture)."""
+    volume = 0
+    muted = True
+
+    for line in section.splitlines():
+        if "%" in line:
+            try:
+                # Extract volume and muted status from the line
+                vol_str = next(seg for seg in line.split() if "%" in seg)
+                volume = int(vol_str.strip("[]%"))
+                muted = "[off]" in line
+                break  # No need to process further lines
+            except Exception:
+                continue
+
+    return AudioInfo(volume=volume, muted=muted)
+
+
+@cached_getter()
+def vol():
+    volume_info, _ = get_audio_info()
+    THRESHOLDS = [
+        (80, "󰕾 ", "salmon"),
+        (60, "󰕾 ", "tan"),
+        (40, "󰕾 ", "violet"),
+        (20, "󰖀 ", "springgreen"),
+        (0, "󰕿 ", "palegreen"),
+    ]
+
+    # Handle muted state
+    if volume_info.muted or volume_info.volume == 0:
+        return f'<span foreground="dimgrey">󰝟  {volume_info.volume}%</span>'
+
+    # Apply thresholds for volume color coding
+    for threshold, icon, color in THRESHOLDS:
+        if volume_info.volume >= threshold:
+            return f'<span foreground="{color}">{icon} {volume_info.volume}%</span>'
+
+
+@cached_getter()
+def mic():
+    _, mic_info = get_audio_info()
+    THRESHOLDS = [
+        (80, " ", "salmon"),
+        (60, " ", "tan"),
+        (40, " ", "violet"),
+        (20, " ", "springgreen"),
+        (0, " ", "palegreen"),
+    ]
+
+    # Handle muted state
+    if mic_info.muted or mic_info.volume == 0:
+        return f'<span foreground="dimgrey">   {mic_info.volume}%</span>'
+
+    # Apply thresholds for mic volume color coding
+    for threshold, icon, color in THRESHOLDS:
+        if mic_info.volume >= threshold:
+            return f'<span foreground="{color}">{icon} {mic_info.volume}%</span>'
+
+
+def volume_up(qtile):
+    run_command(["amixer", "set", "Master", "5%+"])
+    vol.cache["last_check"] = 0
+
+
+def volume_down(qtile):
+    run_command(["amixer", "set", "Master", "5%-"])
+    vol.cache["last_check"] = 0
+
+
+def volume_mute(qtile):
+    run_command(["amixer", "set", "Master", "toggle"])
+    vol.cache["last_check"] = 0
+
+
+def mic_up(qtile):
+    run_command(["amixer", "set", "Capture", "5%+"])
+    mic.cache["last_check"] = 0
+
+
+def mic_down(qtile):
+    run_command(["amixer", "set", "Capture", "5%-"])
+    mic.cache["last_check"] = 0
+
+
+def mic_mute(qtile):
+    run_command(["amixer", "set", "Capture", "toggle"])
+    mic.cache["last_check"] = 0
+
+
+@cached_getter()
+def bright():
     THRESHOLDS = [
         (80, "󰃠  ", "gold"),
         (60, "󰃝  ", "darkorange"),
         (40, "󰃟  ", "orchid"),
         (20, "󰃞  ", "pink"),
-        (0, "󰃜  ", "dimgrey"),
+        (0, "󰃜 ", "dimgrey"),
     ]
 
     output = run_command(["brillo", "-G"])
@@ -46,8 +179,7 @@ def bright(timeout=0.2):
         return '<span foreground="grey">󰳲 N/A</span>'
 
     try:
-        percent = int(float(output))
-
+        percent = int(float(output.strip()))
         for threshold, icon, color in THRESHOLDS:
             if percent >= threshold:
                 return f'<span foreground="{color}">{icon} {percent}%</span>'
@@ -57,28 +189,28 @@ def bright(timeout=0.2):
     return '<span foreground="grey">󰳲 N/A</span>'
 
 
+@cached_getter()
 def batt():
     try:
-        base = Path("/sys/class/power_supply/")
-        battery = next((b for b in base.glob("BAT*") if b.is_dir()), None)
-        if not battery:
-            raise FileNotFoundError("Battery directory not found")
+        battery = psutil.sensors_battery()
+        if battery is None:
+            raise RuntimeError("No battery is detected")
 
-        capacity = int((battery / "capacity").read_text().strip())
-        status = (battery / "status").read_text().strip()
+        capacity = int(battery.percent)
+        charging = battery.power_plugged
 
-        if capacity > 80:
+        if capacity >= 80:
             icon, color = "  ", "lime"
-        elif capacity > 60:
+        elif capacity >= 60:
             icon, color = "  ", "palegreen"
-        elif capacity > 40:
+        elif capacity >= 40:
             icon, color = "  ", "orange"
-        elif capacity > 20:
+        elif capacity >= 20:
             icon, color = "  ", "coral"
         else:
             icon, color = "  ", "red"
 
-        if status.lower() == "charging":
+        if charging:
             icon = f" {icon}"
             color = "aqua"
 
@@ -86,131 +218,3 @@ def batt():
 
     except Exception:
         return '<span foreground="grey">󰈸 --%</span>'
-
-
-def get_audio_info(source=False):
-    device_type = "source" if source else "sink"
-    default_device = f"@DEFAULT_{device_type.upper()}@"
-
-    volume_output = run_command(["pactl", f"get-{device_type}-volume", default_device])
-    mute_output = run_command(["pactl", f"get-{device_type}-mute", default_device])
-
-    if volume_output and mute_output:
-        volume_match = re.search(r"Volume:.*?(\d+)%", volume_output)
-        if volume_match:
-            volume = int(volume_match.group(1))
-            is_muted = "yes" in mute_output
-            return volume, is_muted
-
-    control = "Capture" if source else "Master"
-    output = run_command(["amixer", "get", control])
-
-    if output:
-        matches = re.findall(r"\[(\d+)%\] \[(on|off)\]", output)
-        if matches:
-            volume_str, state = matches[-1]
-            return int(volume_str), state == "off"
-
-    return 0, True  # Default to 0 volume and muted
-
-
-@cached_getter
-def vol(timeout=0.1):
-    THRESHOLDS = [
-        (80, "󰕾 ", "tomato"),
-        (60, "󰕾 ", "tan"),
-        (40, "󰕾 ", "orchid"),
-        (20, "󰖀 ", "dodgerblue"),
-        (0, "󰕿 ", "dimgrey"),
-    ]
-    MUTED_ICON = "󰝟 "
-    MUTED_COLOR = "dimgrey"
-
-    volume, is_muted = get_audio_info(source=False)
-
-    if is_muted or volume == 0:
-        icon, color = MUTED_ICON, MUTED_COLOR
-    else:
-        for threshold, icon, color in THRESHOLDS:
-            if volume > threshold:
-                break
-
-    return f'<span foreground="{color}">{icon} {volume}%</span>'
-
-
-@cached_getter
-def mic(timeout=0.1):
-    THRESHOLDS = [
-        (80, " ", "tomato"),
-        (60, " ", "tan"),
-        (40, " ", "orchid"),
-        (20, " ", "dodgerblue"),
-        (0, "  ", "dimgrey"),
-    ]
-    MUTED_ICON = "  "
-    MUTED_COLOR = "dimgrey"
-
-    volume, is_muted = get_audio_info(source=True)
-
-    if is_muted or volume == 0:
-        icon, color = MUTED_ICON, MUTED_COLOR
-    else:
-        for threshold, icon, color in THRESHOLDS:
-            if volume > threshold:
-                break
-
-    return f'<span foreground="{color}">{icon} {volume}%</span>'
-
-
-def volume_up(qtile):
-    volume, _ = get_audio_info(source=False)
-
-    if volume < 100:
-        increment = min(5, 100 - volume)
-        if (
-            run_command(
-                ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"+{increment}%"]
-            )
-            is None
-        ):
-            run_command(["amixer", "set", "Master", f"{increment}%+"])
-    vol.cache["last_check"] = 0
-
-
-def volume_down(qtile):
-    if run_command(["pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%"]) is None:
-        run_command(["amixer", "set", "Master", "5%-"])
-    vol.cache["last_check"] = 0
-
-
-def volume_mute(qtile):
-    if run_command(["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]) is None:
-        run_command(["amixer", "set", "Master", "toggle"])
-    vol.cache["last_check"] = 0
-
-
-def mic_up(qtile):
-    volume, _ = get_audio_info(source=True)
-
-    if volume < 100:
-        increment = min(5, 100 - volume)
-        if (
-            run_command(
-                ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"+{increment}%"]
-            )
-            is None
-        ):
-            run_command(["amixer", "set", "Capture", f"{increment}%+"])
-    mic.cache["last_check"] = 0
-
-
-def mic_down(qtile):
-    if run_command(["pactl", "set-source-volume", "@DEFAULT_SOURCE@", "-5%"]) is None:
-        run_command(["amixer", "set", "Capture", "5%-"])
-    mic.cache["last_check"] = 0
-
-
-def mic_mute(qtile):
-    if run_command(["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "toggle"]) is None:
-        run_command(["amixer", "set", "Capture", "toggle"])
-    mic.cache["last_check"] = 0
