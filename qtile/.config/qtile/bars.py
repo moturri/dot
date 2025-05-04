@@ -20,22 +20,13 @@ wdecor = {
     "background": rangi[0],
     "foreground": rangi[1],
     "decorations": [
-        RectDecoration(use_widget_background=True, radius=12, filled=True, clip=True),
+        RectDecoration(use_widget_background=True, radius=12, filled=True, group=True),
     ],
     "padding": 6,
 }
 
 
-def parse_wname(text):
-    words = text.split()
-    if len(words) > 4:
-        shortened = " ".join(words[:4]) + "..."
-    else:
-        shortened = " ".join(words)
-    return shortened
-
-
-zangu = [
+yao = [
     widget.Clock(
         format="   %e %b    %H:%M  ",
         **wdecor,
@@ -51,7 +42,6 @@ zangu = [
         },
         **wdecor,
     ),
-    widget.Spacer(length=10),
     widget.GenPollText(
         update_interval=0.2,
         func=mic,
@@ -62,7 +52,11 @@ zangu = [
         },
         **wdecor,
     ),
-    widget.Spacer(),
+    widget.Spacer(length=10),
+]
+
+
+ming = [
     widget.Mpris2(
         name="mpris",
         format=" 󰝚 ",
@@ -75,17 +69,13 @@ zangu = [
         **wdecor,
     ),
     widget.Spacer(length=5),
-]
-
-
-moto = [
     widget.GenPollText(func=batt, update_interval=2, **wdecor),
 ]
 
 
 def main():
     return (
-        zangu
+        yao
         + [
             widget.GroupBox(
                 hide_unused=True,
@@ -98,7 +88,7 @@ def main():
             widget.TaskList(
                 icon_size=24,
                 # parse_text=lambda _: "",
-                parse_text=parse_wname,
+                max_title_width=200,
                 highlight_method="text",
                 urgent_alert_method="text",
                 txt_floating="󱂬 ",
@@ -117,13 +107,13 @@ def main():
             widget.Systray(padding=10),
             widget.Spacer(length=10),
         ]
-        + moto
+        + ming
     )
 
 
 def misc():
     return (
-        zangu
+        yao
         + [
             widget.GroupBox(
                 hide_unused=True,
@@ -136,7 +126,7 @@ def misc():
             widget.TaskList(
                 icon_size=24,
                 # parse_text=lambda _: "",
-                parse_text=parse_wname,
+                max_title_width=200,
                 highlight_method="text",
                 urgent_alert_method="text",
                 txt_floating="󱂬 ",
@@ -144,5 +134,5 @@ def misc():
                 txt_minimized="󰖰 ",
             ),
         ]
-        + moto
+        + ming
     )
