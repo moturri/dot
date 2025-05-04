@@ -1,118 +1,68 @@
 import psutil
 import subprocess
-import time
+import logging
 import re
 from collections import namedtuple
-from typing import Optional, Tuple, List, Callable
+from typing import Optional, Tuple, List
 
-# Define the named tuple for audio info
+# Setup logging
+logging.basicConfig(level=logging.WARNING)
+
+# Named tuple for audio info
 AudioInfo = namedtuple("AudioInfo", ["volume", "muted"])
 
-
-# Define a class to handle polling state
-class PollingManager:
-    def __init__(self):
-        self.active = False
-
-    def start(self):
-        self.active = True
-
-    def stop(self):
-        self.active = False
+# Cache stores for volume, mic, etc.
+CACHE = {"volume": None, "mic": None, "brightness": None, "battery": None}
 
 
-polling = PollingManager()
-
-
+# Command execution helper function
 def run_command(cmd: List[str], timeout: float = 1.0) -> Optional[str]:
-    """
-    Runs a shell command and returns the output as a string.
-    """
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, check=True, timeout=timeout
         )
         return result.stdout.strip()
     except subprocess.SubprocessError as e:
-        print(f"Command failed: {' '.join(cmd)}, Error: {e}")
+        logging.warning(f"Command failed: {' '.join(cmd)} | {e}")
         return None
 
 
-def cached_getter(timeout: float = 0.5):
-    """
-    Caching decorator to avoid repeated polling within a short time window.
-    """
+# Audio info parsing
+def parse_amixer_output(output: str) -> AudioInfo:
+    volume_match = re.search(r"\[([0-9]+)%\]", output)
+    mute_match = re.search(r"\[(on|off)\]", output)
 
-    def decorator(func: Callable):
-        cache = {"value": None, "last_check": 0}
-
-        def wrapper(*args, **kwargs):
-            current_time = time.time()
-            if current_time - cache["last_check"] < timeout and not polling.active:
-                return cache["value"]
-
-            result = func(*args, **kwargs)
-            cache["value"] = result
-            cache["last_check"] = current_time
-            return result
-
-        wrapper.cache = cache
-        return wrapper
-
-    return decorator
-
-
-def start_polling():
-    polling.start()
-
-
-def stop_polling():
-    polling.stop()
-
-
-def get_audio_info() -> Tuple[AudioInfo, AudioInfo]:
-    """
-    Fetches both volume and mute status for Master (volume) and Capture (mic).
-    """
-    master_cmd = ["amixer", "get", "Master"]
-    capture_cmd = ["amixer", "get", "Capture"]
-
-    master_output = run_command(master_cmd)
-    capture_output = run_command(capture_cmd)
-
-    default_info = AudioInfo(volume=0, muted=True)
-
-    volume_info = parse_amixer_section(master_output) if master_output else default_info
-    mic_info = parse_amixer_section(capture_output) if capture_output else default_info
-
-    return volume_info, mic_info
-
-
-def parse_amixer_section(section: str) -> AudioInfo:
-    """
-    Helper function to parse a single amixer section.
-    """
-    volume = 0
-    muted = True
-
-    volume_match = re.search(r"(\d+)%", section)
-    mute_match = re.search(r"\[(on|off)\]", section)
-
-    if volume_match:
-        volume = int(volume_match.group(1))
-
-    if mute_match:
-        muted = mute_match.group(1) == "off"
+    volume = int(volume_match.group(1)) if volume_match else 0
+    muted = mute_match.group(1) == "off" if mute_match else True
 
     return AudioInfo(volume=volume, muted=muted)
 
 
-@cached_getter()
+# Fetch audio info (volume and mic state)
+def get_audio_info() -> Tuple[AudioInfo, AudioInfo]:
+    master_output = run_command(["amixer", "get", "Master"])
+    capture_output = run_command(["amixer", "get", "Capture"])
+
+    default_info = AudioInfo(volume=0, muted=True)
+
+    volume_info = parse_amixer_output(master_output) if master_output else default_info
+    mic_info = parse_amixer_output(capture_output) if capture_output else default_info
+
+    return volume_info, mic_info
+
+
+# --- Volume Display ---
 def vol() -> str:
-    """
-    Get formatted volume indicator string with icon and color.
-    """
-    volume_info, _ = get_audio_info()
+    # Use cached value if unchanged
+    if CACHE["volume"]:
+        volume_info = CACHE["volume"]
+    else:
+        volume_info, _ = get_audio_info()
+        CACHE["volume"] = volume_info  # Update cache with latest value
+
+    if volume_info.muted or volume_info.volume == 0:
+        return f'<span foreground="dimgrey">󰝟  {volume_info.volume}%</span>'
+
     THRESHOLDS = [
         (80, "󰕾 ", "salmon"),
         (60, "󰕾 ", "tan"),
@@ -121,20 +71,23 @@ def vol() -> str:
         (0, "󰕿 ", "palegreen"),
     ]
 
-    if volume_info.muted or volume_info.volume == 0:
-        return f'<span foreground="dimgrey">󰝟  {volume_info.volume}%</span>'
-
     for threshold, icon, color in THRESHOLDS:
         if volume_info.volume >= threshold:
             return f'<span foreground="{color}">{icon} {volume_info.volume}%</span>'
 
 
-@cached_getter()
+# --- Microphone Display ---
 def mic() -> str:
-    """
-    Get formatted microphone indicator string.
-    """
-    _, mic_info = get_audio_info()
+    # Use cached value if unchanged
+    if CACHE["mic"]:
+        _, mic_info = CACHE["mic"]
+    else:
+        _, mic_info = get_audio_info()
+        CACHE["mic"] = (_, mic_info)  # Update cache with latest value
+
+    if mic_info.muted or mic_info.volume == 0:
+        return f'<span foreground="dimgrey">   {mic_info.volume}%</span>'
+
     THRESHOLDS = [
         (80, " ", "salmon"),
         (60, " ", "tan"),
@@ -143,56 +96,53 @@ def mic() -> str:
         (0, " ", "palegreen"),
     ]
 
-    if mic_info.muted or mic_info.volume == 0:
-        return f'<span foreground="dimgrey">   {mic_info.volume}%</span>'
-
     for threshold, icon, color in THRESHOLDS:
         if mic_info.volume >= threshold:
             return f'<span foreground="{color}">{icon} {mic_info.volume}%</span>'
 
 
-def volume_up(qtile):
+# --- Volume Controls ---
+def volume_up(qtile=None):
     run_command(["amixer", "set", "Master", "5%+"])
-    vol.cache["last_check"] = 0
+    # Reset cache to ensure next fetch pulls fresh data
+    CACHE["volume"] = None
 
 
-def volume_down(qtile):
+def volume_down(qtile=None):
     run_command(["amixer", "set", "Master", "5%-"])
-    vol.cache["last_check"] = 0
+    # Reset cache to ensure next fetch pulls fresh data
+    CACHE["volume"] = None
 
 
-def volume_mute(qtile):
+def volume_mute(qtile=None):
     run_command(["amixer", "set", "Master", "toggle"])
-    vol.cache["last_check"] = 0
+    # Reset cache to ensure next fetch pulls fresh data
+    CACHE["volume"] = None
 
 
-def mic_up(qtile):
+# --- Microphone Controls ---
+def mic_up(qtile=None):
     run_command(["amixer", "set", "Capture", "5%+"])
-    mic.cache["last_check"] = 0
+    # Reset cache to ensure next fetch pulls fresh data
+    CACHE["mic"] = None
 
 
-def mic_down(qtile):
+def mic_down(qtile=None):
     run_command(["amixer", "set", "Capture", "5%-"])
-    mic.cache["last_check"] = 0
+    # Reset cache to ensure next fetch pulls fresh data
+    CACHE["mic"] = None
 
 
-def mic_mute(qtile):
+def mic_mute(qtile=None):
     run_command(["amixer", "set", "Capture", "toggle"])
-    mic.cache["last_check"] = 0
+    # Reset cache to ensure next fetch pulls fresh data
+    CACHE["mic"] = None
 
 
-@cached_getter()
+# --- Brightness Display ---
 def bright() -> str:
-    """
-    Get formatted brightness indicator string.
-    """
-    THRESHOLDS = [
-        (80, "󰃠  ", "gold"),
-        (60, "󰃝  ", "darkorange"),
-        (40, "󰃟  ", "orchid"),
-        (20, "󰃞  ", "pink"),
-        (0, "󰃜 ", "dimgrey"),
-    ]
+    if CACHE["brightness"]:
+        return CACHE["brightness"]  # Use cached value if unchanged
 
     output = run_command(["brillo", "-G"])
     if not output:
@@ -200,27 +150,40 @@ def bright() -> str:
 
     try:
         percent = int(float(output.strip()))
+        THRESHOLDS = [
+            (80, "󰃠  ", "gold"),
+            (60, "󰃝  ", "darkorange"),
+            (40, "󰃟  ", "orchid"),
+            (20, "󰃞  ", "pink"),
+            (0, "󰃜 ", "dimgrey"),
+        ]
         for threshold, icon, color in THRESHOLDS:
             if percent >= threshold:
-                return f'<span foreground="{color}">{icon} {percent}%</span>'
-    except (ValueError, TypeError):
+                result = f'<span foreground="{color}">{icon} {percent}%</span>'
+                CACHE["brightness"] = result  # Cache the brightness result
+                return result
+    except (ValueError, TypeError) as e:
+        logging.warning(f"Brightness parsing error: {e}")
         return '<span foreground="grey">󰳲 Error</span>'
 
     return '<span foreground="grey">󰳲 N/A</span>'
 
 
-@cached_getter()
+# --- Battery Display ---
 def batt() -> str:
-    """
-    Get formatted battery indicator string with icon and color.
-    """
+    if CACHE["battery"]:
+        return CACHE["battery"]  # Use cached value if unchanged
+
     try:
         battery = psutil.sensors_battery()
         if battery is None:
-            return '<span foreground="grey">󰈸 No Battery</span>'
+            result = '<span foreground="grey">󰈸 No Battery</span>'
+            CACHE["battery"] = result  # Cache the result
+            return result
 
         capacity = int(battery.percent)
         charging = battery.power_plugged
+
         if capacity >= 80:
             icon, color = "  ", "lime"
         elif capacity >= 60:
@@ -236,7 +199,10 @@ def batt() -> str:
             icon = f" {icon}"
             color = "aqua"
 
-        return f'<span foreground="{color}">{icon} {capacity}%</span>'
+        result = f'<span foreground="{color}">{icon} {capacity}%</span>'
+        CACHE["battery"] = result  # Cache the result
+        return result
 
-    except Exception:
+    except Exception as e:
+        logging.warning(f"Battery reading error: {e}")
         return '<span foreground="grey">󰈸 --%</span>'
