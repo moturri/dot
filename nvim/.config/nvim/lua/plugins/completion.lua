@@ -1,43 +1,37 @@
 return {
-	-- Mason: LSP/DAP/linter installer
 	{
 		"williamboman/mason.nvim",
+		version = "*",
 		lazy = false,
 		config = function()
 			require("mason").setup()
-
-			-- Optional: fidget for LSP status notifications
-			local fidget_ok, fidget = pcall(require, "fidget")
-			if fidget_ok then
-				fidget.setup({})
-			end
 		end,
 	},
 
-	-- Mason bridge to lspconfig
 	{
 		"williamboman/mason-lspconfig.nvim",
+		version = "*",
 		lazy = false,
 		opts = {
 			automatic_installation = true,
 		},
 	},
 
-	-- LSP config
 	{
 		"neovim/nvim-lspconfig",
+		version = "*",
 		lazy = false,
 		config = function()
 			local lspconfig = require("lspconfig")
 			local mason_lspconfig = require("mason-lspconfig")
 
-			-- Capabilities (with fallback)
+			-- Capabilities
 			local has_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
 			local capabilities = has_cmp and cmp_nvim_lsp.default_capabilities()
 				or vim.lsp.protocol.make_client_capabilities()
 
 			-- LSP on_attach
-			local function on_attach(client, bufnr)
+			local function on_attach(_, bufnr)
 				local keymap = vim.keymap.set
 				local opts = { noremap = true, silent = true, buffer = bufnr }
 
@@ -49,15 +43,8 @@ return {
 				keymap("n", "<leader>f", function()
 					vim.lsp.buf.format({ async = true })
 				end, opts)
-
-				-- Optional: Attach navic
-				local navic_ok, navic = pcall(require, "nvim-navic")
-				if navic_ok and client.server_capabilities.documentSymbolProvider then
-					navic.attach(client, bufnr)
-				end
 			end
 
-			-- Modern diagnostics config (no deprecated sign_define)
 			vim.diagnostic.config({
 				virtual_text = true,
 				signs = {
@@ -78,7 +65,6 @@ return {
 				capabilities = capabilities,
 			}
 
-			-- Setup all LSPs via mason
 			mason_lspconfig.setup_handlers({
 				function(server_name)
 					lspconfig[server_name].setup(default_config)
@@ -87,23 +73,21 @@ return {
 		end,
 	},
 
-	-- Completion engine
 	{
 		"hrsh7th/nvim-cmp",
 		version = "*",
 		dependencies = {
 			"hrsh7th/cmp-nvim-lsp",
-			version = "*",
 			"L3MON4D3/LuaSnip",
-			version = "*",
 			"saadparwaiz1/cmp_luasnip",
-			version = "*",
 			"rafamadriz/friendly-snippets",
 			version = "*",
 		},
 		config = function()
 			local cmp = require("cmp")
 			local luasnip = require("luasnip")
+
+			require("luasnip.loaders.from_vscode").lazy_load()
 
 			cmp.setup({
 				snippet = {
@@ -131,26 +115,12 @@ return {
 		end,
 	},
 
-	-- LuaSnip setup with safe loader
 	{
 		"L3MON4D3/LuaSnip",
-		version = "*",
 		dependencies = {
 			"saadparwaiz1/cmp_luasnip",
 			"rafamadriz/friendly-snippets",
 		},
-		config = function()
-			local loader = require("luasnip.loaders.from_vscode")
-			if loader.lazy_load then
-				loader.lazy_load()
-			elseif loader.load then
-				loader.load()
-			end
-		end,
-	},
-
-	-- CMP source for LSP
-	{
-		"hrsh7th/cmp-nvim-lsp",
+		config = function() end,
 	},
 }

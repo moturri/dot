@@ -1,6 +1,6 @@
 return {
-	"vinnymeller/swagger-preview.nvim",
-	build = "npm install -g swagger-ui-watcher",
-	version = "*",
-	config = true,
+  "vinnymeller/swagger-preview.nvim",
+  version = "*",
+  build = "npm install -g swagger-ui-watcher",
+  config = true,
 }

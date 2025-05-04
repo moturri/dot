@@ -1,10 +1,10 @@
 return {
   {
-    "tpope/vim-fugitive", -- Git commands in Vim
+    "tpope/vim-fugitive",
     version = "*",
   },
   {
-    "lewis6991/gitsigns.nvim", -- Git signs in the gutter
+    "lewis6991/gitsigns.nvim",
     version = "*",
     config = function()
       require("gitsigns").setup({

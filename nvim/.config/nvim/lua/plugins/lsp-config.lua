@@ -10,6 +10,9 @@ return {
       local fidget_ok, fidget = pcall(require, "fidget")
       if fidget_ok then
         fidget.setup({})
+      else
+        -- Optionally log a message if fidget is not found
+        vim.api.nvim_echo({ { "Fidget plugin not found, skipping configuration.", "WarningMsg" } }, true, {})
       end
     end,
   },
@@ -38,8 +41,8 @@ return {
 
       -- Keybindings + navic attach
       local function on_attach(client, bufnr)
-        local keymap = vim.keymap.set
         local opts = { noremap = true, silent = true, buffer = bufnr }
+        local keymap = vim.keymap.set
 
         keymap("n", "K", vim.lsp.buf.hover, opts)
         keymap("n", "<leader>gd", vim.lsp.buf.definition, opts)

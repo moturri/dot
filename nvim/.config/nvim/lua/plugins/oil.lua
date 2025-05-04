@@ -21,7 +21,6 @@ return {
 				},
 			})
 
-			-- Key mapping to toggle the file explorer
 			vim.keymap.set("n", "-", oil.toggle_float, { desc = "Toggle Oil file explorer" })
 		end,
 	},

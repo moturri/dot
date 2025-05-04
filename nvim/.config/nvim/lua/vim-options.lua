@@ -26,7 +26,7 @@ opt.autoindent = true
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldenable = true
-opt.foldlevelstart = 99
+opt.foldlevelstart = 4
 opt.foldcolumn = "1"
 
 -- Search
