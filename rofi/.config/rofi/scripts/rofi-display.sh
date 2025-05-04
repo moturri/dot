@@ -1,11 +1,11 @@
 #!/bin/bash
 
-EXTERNAL_DISPLAY="DP1"
+EXTERNAL_DISPLAY="DP-1"
 
 connect_display() {
 	local position=$1
 
-	xrandr --output "$EXTERNAL_DISPLAY" --auto "--${position}-of" "eDP1"
+	xrandr --output "$EXTERNAL_DISPLAY" --auto "--${position}-of" "eDP-1"
 
 	notify-send "Display" "Monitor connected $position of laptop" -t 6000
 }

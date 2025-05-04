@@ -1,7 +1,7 @@
 #!/bin/bash
 
-primaryMonitor="eDP1"
-secondMonitor="DP1"
+primaryMonitor="eDP-1"
+secondMonitor="DP-1"
 
 if xrandr | grep -q "${secondMonitor} connected"; then
 	xrandr --output "${secondMonitor}" --mode "1680x1050" --left-of "${primaryMonitor}"
