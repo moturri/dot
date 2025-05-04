@@ -18,9 +18,10 @@ cat <<EOF | rofi -dmenu -i -p "󰌌 "
    + Enter : Terminal
    + r : Rofi (Applications)
    + z : Rofi (Windows)
-   + t : Web Search
-   + v : Clipboard Manager
-   + F1 : Power Menu
+   + t : Rofi (Web Search)
+   + v : Rofi (Clipboard Manager)
+   + Shift + a : Rofi (Display)
+   + Shift + g : Rofi (Gtk Theme)
    + Ctrl + x : Terminal (Kitty)
    + Ctrl + a : Arandr
    + Ctrl + l : LocalSend
@@ -28,12 +29,14 @@ cat <<EOF | rofi -dmenu -i -p "󰌌 "
    + Ctrl + h : Helvum
    + Ctrl + t : Thunar
    + Ctrl + i : iwgtk
+   + Print : Screenshot (Flameshot)
    + Tab : Next Layout
    + w : Close Window
-   + F11 : Toggle Fullscreen
+   + F1 : Power Menu
+   + F2 : Lock Screen
    + F4 : Toggle Floating
+   + F7 : Mpris Popup
+   + F11 : Toggle Fullscreen
    + Ctrl + r : Reload Qtile
    + Ctrl + q : Shutdown Qtile
-   + F2 : Lock Screen
-   + F7 : Mpris Popup
 EOF
