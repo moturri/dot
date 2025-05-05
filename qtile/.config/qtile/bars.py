@@ -32,6 +32,22 @@ yao = [
         **wdecor,
     ),
     widget.Spacer(length=10),
+]
+
+
+ming = [
+    widget.Mpris2(
+        name="mpris",
+        format=" 󰝚 ",
+        no_metadata_text=" 󰝛 ",
+        paused_text=" 󰝛 ",
+        popup_hide_timeout=8,
+        width=60,
+        popup_controls=True,
+        mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
+        **wdecor,
+    ),
+    widget.Spacer(length=5),
     widget.GenPollText(
         update_interval=0.2,
         func=vol,
@@ -53,22 +69,6 @@ yao = [
         **wdecor,
     ),
     widget.Spacer(length=10),
-]
-
-
-ming = [
-    widget.Mpris2(
-        name="mpris",
-        format=" 󰝚 ",
-        no_metadata_text=" 󰝛 ",
-        paused_text=" 󰝛 ",
-        popup_hide_timeout=8,
-        width=60,
-        popup_controls=True,
-        mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
-        **wdecor,
-    ),
-    widget.Spacer(length=5),
     widget.GenPollText(func=batt, update_interval=2, **wdecor),
 ]
 
