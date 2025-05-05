@@ -120,3 +120,27 @@ def batt():
         return f'<span foreground="{color}">{icon}   {capacity:>3}%</span>'
     except Exception:
         return '<span foreground="grey">󰈸  --%</span>'
+
+
+def vol_up():
+    run_command(["amixer", "-q", "sset", "Master", "5%+"])
+
+
+def vol_down():
+    run_command(["amixer", "-q", "sset", "Master", "5%-"])
+
+
+def vol_mute():
+    run_command(["amixer", "-q", "sset", "Master", "toggle"])
+
+
+def mic_up():
+    run_command(["amixer", "-q", "sset", "Capture", "5%+"])
+
+
+def mic_down():
+    run_command(["amixer", "-q", "sset", "Capture", "5%-"])
+
+
+def mic_mute():
+    run_command(["amixer", "-q", "sset", "Capture", "toggle"])
