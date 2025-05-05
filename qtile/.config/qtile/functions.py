@@ -1,183 +1,188 @@
 import subprocess
-import re
 import time
+import functools
 from pathlib import Path
 
 
-# ------------ Minimal subprocess wrapper ------------
-def run_command(cmd, timeout=0.2):
+def run(cmd, timeout=0.2):
     try:
-        result = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=timeout, check=False
-        )
-        return result.stdout
-    except Exception:
+        return subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout
+        ).stdout.strip()
+    except subprocess.SubprocessError:
         return ""
 
 
-# ------------ Cache Config ------------
-CACHE_DURATION = 1.0  # seconds
-LONG_CACHE_DURATION = 10  # for battery
+def cached(seconds):
+    def wrap(fn):
+        cache = {"val": "", "ts": 0}
 
-_last_vol = {"value": "", "timestamp": 0}
-_last_mic = {"value": "", "timestamp": 0}
-_last_bright = {"value": "", "timestamp": 0}
-_last_batt = {"value": "", "timestamp": 0}
+        @functools.wraps(fn)
+        def inner(force=False):
+            now = time.time()
+            if not force and now - cache["ts"] < seconds:
+                return cache["val"]
+            out = fn()
+            if out:
+                cache["val"], cache["ts"] = out, now
+            return out
 
+        return inner
 
-def vol(force=False):
-    now = time.time()
-    if not force and now - _last_vol["timestamp"] < CACHE_DURATION:
-        return _last_vol["value"]
-
-    out = run_command(["amixer", "sget", "Master"])
-
-    vol_match = re.search(r"\[([0-9]+)%\]", out)
-    mute_match = re.search(r"\[(on|off)\]", out)
-
-    volume = int(vol_match.group(1)) if vol_match else 0
-    muted = mute_match.group(1) == "off" if mute_match else True
-
-    if muted:
-        icon, color = "󰖁", "dimgrey"
-    elif volume >= 70:
-        icon, color = "󰕾", "salmon"
-    elif volume >= 40:
-        icon, color = "󰖀", "violet"
-    elif volume > 0:
-        icon, color = "󰕿", "springgreen"
-    else:
-        icon, color = "󰕿", "palegreen"
-
-    result = f'<span foreground="{color}">{icon} {volume:>3}%</span>'
-    _last_vol.update(value=result, timestamp=now)
-    return result
+    return wrap
 
 
-def mic(force=False):
-    now = time.time()
-    if not force and now - _last_mic["timestamp"] < CACHE_DURATION:
-        return _last_mic["value"]
+def fmt(icon, val, color):
+    return f'<span foreground="{color}">{icon} {val:>3}%</span>'
 
-    out = run_command(["amixer", "sget", "Capture"])
 
-    vol_match = re.search(r"\[([0-9]+)%\]", out)
-    mute_match = re.search(r"\[(on|off)\]", out)
+@cached(1)
+def vol():
+    out = run(["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"])
+    if "Volume:" not in out:
+        return fmt("󰖁", 0, "dimgrey")
+    try:
+        v = int(float(out.split("Volume:")[1].split()[0]) * 100)
+    except (ValueError, IndexError):
+        return fmt("󰖁", 0, "dimgrey")
+    if "[MUTED]" in out:
+        return fmt("󰖁", v, "dimgrey")
+    return fmt(
+        "󰕾" if v >= 70 else "󰖀" if v >= 40 else "󰕿",
+        v,
+        "salmon"
+        if v >= 70
+        else "violet"
+        if v >= 40
+        else "springgreen"
+        if v > 0
+        else "palegreen",
+    )
 
-    volume = int(vol_match.group(1)) if vol_match else 0
-    muted = mute_match.group(1) == "off" if mute_match else True
 
+def vol_up(qtile=None):
+    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SINK@", "0.05+"])
+    vol(force=True)
+
+
+def vol_down(qtile=None):
+    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SINK@", "0.05-"])
+    vol(force=True)
+
+
+def vol_mute(qtile=None):
+    run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"])
+    vol(force=True)
+
+
+@cached(1)
+def mic():
+    out = run(["wpctl", "get-volume", "@DEFAULT_AUDIO_SOURCE@"])
+    if "Volume:" not in out:
+        return fmt("󰍭", 0, "dimgrey")
+    try:
+        v = int(float(out.split("Volume:")[1].split()[0]) * 100)
+    except (ValueError, IndexError):
+        return fmt("󰍭", 0, "dimgrey")
+    muted = "[MUTED]" in out
     icon = "󰍭" if muted else "󰍬"
     color = (
         "dimgrey"
         if muted
         else "salmon"
-        if volume >= 70
+        if v >= 70
         else "violet"
-        if volume >= 40
+        if v >= 40
         else "springgreen"
-        if volume > 0
+        if v > 0
         else "palegreen"
     )
-
-    result = f'<span foreground="{color}">{icon} {volume:>3}%</span>'
-    _last_mic.update(value=result, timestamp=now)
-    return result
-
-
-def bright(force=False):
-    now = time.time()
-    if not force and now - _last_bright["timestamp"] < CACHE_DURATION:
-        return _last_bright["value"]
-
-    out = run_command(["brillo", "-G"])
-
-    try:
-        percent = int(float(out.strip()))
-
-        if percent >= 80:
-            icon, color = "󰃠", "gold"
-        elif percent >= 60:
-            icon, color = "󰃝", "darkorange"
-        elif percent >= 40:
-            icon, color = "󰃟", "orchid"
-        elif percent >= 20:
-            icon, color = "󰃞", "pink"
-        else:
-            icon, color = "󰃜", "dimgrey"
-
-        result = f'<span foreground="{color}">{icon}  {percent:>3}%</span>'
-    except Exception:
-        result = '<span foreground="grey">󰳲  --%</span>'
-
-    _last_bright.update(value=result, timestamp=now)
-    return result
-
-
-BAT_PATH = Path("/sys/class/power_supply/BAT0")
-AC_PATH = Path("/sys/class/power_supply/AC/online")
-
-
-def batt(force=False):
-    now = time.time()
-    if not force and now - _last_batt["timestamp"] < LONG_CACHE_DURATION:
-        return _last_batt["value"]
-
-    if not BAT_PATH.exists():
-        return '<span foreground="grey">󰈸  --%</span>'
-
-    try:
-        capacity = int((BAT_PATH / "capacity").read_text().strip())
-        charging = AC_PATH.exists() and AC_PATH.read_text().strip() == "1"
-
-        if capacity >= 80:
-            icon, color = "", "lime"
-        elif capacity >= 60:
-            icon, color = "", "palegreen"
-        elif capacity >= 40:
-            icon, color = "", "orange"
-        elif capacity >= 20:
-            icon, color = "", "coral"
-        else:
-            icon, color = "", "red"
-
-        if charging:
-            icon = f" {icon}"
-            color = "aqua"
-
-        result = f'<span foreground="{color}">{icon}  {capacity:>3}%</span>'
-    except Exception:
-        result = '<span foreground="grey">󰈸  --%</span>'
-
-    _last_batt.update(value=result, timestamp=now)
-    return result
-
-
-def vol_up(qtile=None):
-    run_command(["amixer", "-q", "set", "Master", "5%+"])
-    vol(force=True)
-
-
-def vol_down(qtile=None):
-    run_command(["amixer", "-q", "set", "Master", "5%-"])
-    vol(force=True)
-
-
-def vol_mute(qtile=None):
-    run_command(["amixer", "-q", "set", "Master", "toggle"])
-    vol(force=True)
+    return fmt(icon, v, color)
 
 
 def mic_up(qtile=None):
-    run_command(["amixer", "-q", "set", "Capture", "5%+"])
+    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SOURCE@", "0.05+"])
     mic(force=True)
 
 
 def mic_down(qtile=None):
-    run_command(["amixer", "-q", "set", "Capture", "5%-"])
+    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SOURCE@", "0.05-"])
     mic(force=True)
 
 
 def mic_mute(qtile=None):
-    run_command(["amixer", "-q", "set", "Capture", "toggle"])
+    run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"])
     mic(force=True)
+
+
+@cached(0.3)
+def bright():
+    try:
+        v = int(float(run(["brillo", "-G"])))
+    except (ValueError, TypeError):
+        return '<span foreground="grey">󰳲  --%</span>'
+    return fmt(
+        "󰃠 "
+        if v >= 80
+        else "󰃝 "
+        if v >= 60
+        else "󰃟 "
+        if v >= 40
+        else "󰃞 "
+        if v >= 20
+        else "󰃜",
+        v,
+        "gold"
+        if v >= 80
+        else "darkorange"
+        if v >= 60
+        else "orchid"
+        if v >= 40
+        else "pink"
+        if v >= 20
+        else "dimgrey",
+    )
+
+
+def is_charging():
+    for ac in Path("/sys/class/power_supply").glob("AC*"):
+        try:
+            if ac.joinpath("online").read_text().strip() == "1":
+                return True
+        except (OSError, FileNotFoundError):
+            continue
+    return False
+
+
+@cached(3)
+def batt():
+    try:
+        v = int(Path("/sys/class/power_supply/BAT0/capacity").read_text())
+    except (OSError, ValueError):
+        return '<span foreground="grey">󰈸  --%</span>'
+    chg = is_charging()
+    icon = (
+        " "
+        if v >= 80
+        else " "
+        if v >= 60
+        else " " 
+        if v >= 40
+        else " "
+        if v >= 20
+        else " "
+    )
+    color = (
+        "aqua"
+        if chg
+        else "lime"
+        if v >= 80
+        else "palegreen"
+        if v >= 60
+        else "orange"
+        if v >= 40
+        else "coral"
+        if v >= 20
+        else "red"
+    )
+    return fmt(f" {icon}" if chg else icon, v, color)
