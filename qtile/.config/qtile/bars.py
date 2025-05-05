@@ -6,9 +6,9 @@ from functions import (
     mic_mute,
     mic_up,
     vol,
-    volume_down,
-    volume_mute,
-    volume_up,
+    vol_down,
+    vol_mute,
+    vol_up,
 )
 from libqtile.lazy import lazy
 from qtile_extras import widget
@@ -36,9 +36,9 @@ yao = [
         update_interval=0.1,
         func=vol,
         mouse_callbacks={
-            "Button2": lazy.function(volume_mute),
-            "Button4": lazy.function(volume_up),
-            "Button5": lazy.function(volume_down),
+            "Button2": lazy.function(vol_mute),
+            "Button4": lazy.function(vol_up),
+            "Button5": lazy.function(vol_down),
         },
         **wdecor,
     ),

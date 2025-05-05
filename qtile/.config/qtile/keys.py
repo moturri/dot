@@ -1,4 +1,4 @@
-from functions import mic_mute, volume_down, volume_mute, volume_up
+from functions import mic_mute, vol_down, vol_mute, vol_up
 from libqtile.config import Click, Drag, DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
@@ -53,10 +53,10 @@ keys = [
     Key([mod], "Print", lazy.spawn("flameshot gui")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 5")),
     Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 5")),
-    Key([], "XF86AudioLowerVolume", lazy.function(volume_down)),
-    Key([], "XF86AudioRaiseVolume", lazy.function(volume_up)),
+    Key([], "XF86AudioLowerVolume", lazy.function(vol_down)),
+    Key([], "XF86AudioRaiseVolume", lazy.function(vol_up)),
     Key([], "XF86AudioMicMute", lazy.function(mic_mute)),
-    Key([], "XF86AudioMute", lazy.function(volume_mute)),
+    Key([], "XF86AudioMute", lazy.function(vol_mute)),
     Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
 ]
 
