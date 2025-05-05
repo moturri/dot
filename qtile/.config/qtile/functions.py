@@ -2,19 +2,11 @@ import subprocess
 import re
 from pathlib import Path
 
-VOL_PATTERN = re.compile(r"\[([0-9]+)%\]")
-MUTE_PATTERN = re.compile(r"\[(on|off)\]")
-
 
 def run_command(cmd, timeout=0.2):
     try:
         result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            text=True,
-            timeout=timeout,
-            check=False,
+            cmd, capture_output=True, text=True, timeout=timeout, check=False
         )
         return result.stdout
     except Exception:
@@ -22,9 +14,11 @@ def run_command(cmd, timeout=0.2):
 
 
 def vol():
-    out = run_command(["amixer", "-M", "get", "Master"])
-    vol_match = VOL_PATTERN.search(out)
-    mute_match = MUTE_PATTERN.search(out)
+    out = run_command(["amixer", "sget", "Master"])
+
+    vol_match = re.search(r"\[([0-9]+)%\]", out)
+    mute_match = re.search(r"\[(on|off)\]", out)
+
     volume = int(vol_match.group(1)) if vol_match else 0
     muted = mute_match.group(1) == "off" if mute_match else True
 
@@ -43,32 +37,36 @@ def vol():
 
 
 def mic():
-    out = run_command(["amixer", "-M", "get", "Capture"])
+    out = run_command(["amixer", "sget", "Capture"])
 
-    vol_match = VOL_PATTERN.search(out)
-    mute_match = MUTE_PATTERN.search(out)
+    vol_match = re.search(r"\[([0-9]+)%\]", out)
+    mute_match = re.search(r"\[(on|off)\]", out)
+
     volume = int(vol_match.group(1)) if vol_match else 0
     muted = mute_match.group(1) == "off" if mute_match else True
 
     icon = "󰍭" if muted else "󰍬"
-    if muted:
-        color = "dimgrey"
-    elif volume >= 70:
-        color = "salmon"
-    elif volume >= 40:
-        color = "violet"
-    elif volume > 0:
-        color = "springgreen"
-    else:
-        color = "palegreen"
+    color = (
+        "dimgrey"
+        if muted
+        else "salmon"
+        if volume >= 70
+        else "violet"
+        if volume >= 40
+        else "springgreen"
+        if volume > 0
+        else "palegreen"
+    )
 
     return f'<span foreground="{color}">{icon} {volume:>3}%</span>'
 
 
 def bright():
     out = run_command(["brillo", "-G"])
+
     try:
         percent = int(float(out.strip()))
+
         if percent >= 80:
             icon, color = "󰃠", "gold"
         elif percent >= 60:
@@ -79,6 +77,7 @@ def bright():
             icon, color = "󰃞", "pink"
         else:
             icon, color = "󰃜", "dimgrey"
+
         return f'<span foreground="{color}">{icon}  {percent:>3}%</span>'
     except Exception:
         return '<span foreground="grey">󰳲  --%</span>'
@@ -91,16 +90,14 @@ def batt():
 
         if not bat_path.exists():
             return '<span foreground="grey">󰈸  --%</span>'
-        try:
-            with open(bat_path / "capacity", "r") as f:
-                capacity = int(f.read().strip())
 
-            charging = False
-            if (ac_path / "online").exists():
-                with open(ac_path / "online", "r") as f:
-                    charging = f.read().strip() == "1"
-        except (IOError, ValueError):
-            return '<span foreground="grey">󰈸  --%</span>'
+        with open(bat_path / "capacity", "r") as f:
+            capacity = int(f.read().strip())
+
+        charging = False
+        if (ac_path / "online").exists():
+            with open(ac_path / "online", "r") as f:
+                charging = f.read().strip() == "1"
 
         if capacity >= 80:
             icon, color = "", "lime"
@@ -122,25 +119,25 @@ def batt():
         return '<span foreground="grey">󰈸  --%</span>'
 
 
-def vol_up():
-    run_command(["amixer", "-q", "sset", "Master", "5%+"])
+def vol_up(qtile=None):
+    run_command(["amixer", "-q", "set", "Master", "5%+"])
 
 
-def vol_down():
-    run_command(["amixer", "-q", "sset", "Master", "5%-"])
+def vol_down(qtile=None):
+    run_command(["amixer", "-q", "set", "Master", "5%-"])
 
 
-def vol_mute():
-    run_command(["amixer", "-q", "sset", "Master", "toggle"])
+def vol_mute(qtile=None):
+    run_command(["amixer", "-q", "set", "Master", "toggle"])
 
 
-def mic_up():
-    run_command(["amixer", "-q", "sset", "Capture", "5%+"])
+def mic_up(qtile=None):
+    run_command(["amixer", "-q", "set", "Capture", "5%+"])
 
 
-def mic_down():
-    run_command(["amixer", "-q", "sset", "Capture", "5%-"])
+def mic_down(qtile=None):
+    run_command(["amixer", "-q", "set", "Capture", "5%-"])
 
 
-def mic_mute():
-    run_command(["amixer", "-q", "sset", "Capture", "toggle"])
+def mic_mute(qtile=None):
+    run_command(["amixer", "-q", "set", "Capture", "toggle"])
