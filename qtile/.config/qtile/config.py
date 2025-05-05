@@ -23,7 +23,7 @@ layouts = [
 ]
 
 uwazi = "#00000000"
-wallpaper_path = "/mnt/sda2/Library/UnixImgs/arc.jpg"
+wallpaper_path = "/home/m/Pictures/wallpapers/arc.jpg"
 screens = [
     Screen(
         wallpaper=wallpaper_path,
