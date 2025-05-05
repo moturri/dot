@@ -33,7 +33,7 @@ yao = [
     ),
     widget.Spacer(length=10),
     widget.GenPollText(
-        update_interval=0.1,
+        update_interval=0.2,
         func=vol,
         mouse_callbacks={
             "Button2": lazy.function(vol_mute),
@@ -43,7 +43,7 @@ yao = [
         **wdecor,
     ),
     widget.GenPollText(
-        update_interval=0.1,
+        update_interval=0.2,
         func=mic,
         mouse_callbacks={
             "Button2": lazy.function(mic_mute),
@@ -97,7 +97,7 @@ def main():
             ),
             widget.GenPollText(
                 func=bright,
-                update_interval=0.1,
+                update_interval=0.2,
                 mouse_callbacks={
                     "Button4": lazy.spawn("brillo -A 5"),
                     "Button5": lazy.spawn("brillo -U 5"),
