@@ -4,7 +4,7 @@ from pathlib import Path
 from alsaaudio import Mixer
 import subprocess
 
-_FMT = '<span foreground="{}">{} {:>3}%</span>'
+_FMT = '<span foreground="{}">{}  {:>3}%</span>'
 
 _BAT_CAPACITY_PATH = Path("/sys/class/power_supply/BAT0/capacity")
 _AC_ONLINE_PATHS = tuple(
@@ -15,11 +15,11 @@ _BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/brightness")
 _MAX_BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/max_brightness")
 
 _BATTERY_STATES = (
-    (80, "  ", ("lime", "aqua")),
-    (60, "  ", ("palegreen", "aqua")),
-    (40, "  ", ("orange", "aqua")),
-    (20, "  ", ("coral", "aqua")),
-    (0, "  ", ("red", "aqua")),
+    (80, "", ("lime", "aqua")),
+    (60, "", ("palegreen", "aqua")),
+    (40, "", ("orange", "aqua")),
+    (20, "", ("coral", "aqua")),
+    (0, "", ("red", "aqua")),
 )
 
 
@@ -146,13 +146,13 @@ def bright():
         return '<span foreground="grey">󰳲  --%</span>'
 
     if v >= 80:
-        return fmt("󰃠 ", v, "gold")
+        return fmt("󰃠", v, "gold")
     elif v >= 60:
-        return fmt("󰃝 ", v, "darkorange")
+        return fmt("󰃝", v, "darkorange")
     elif v >= 40:
-        return fmt("󰃟 ", v, "orchid")
+        return fmt("󰃟", v, "orchid")
     elif v >= 20:
-        return fmt("󰃞 ", v, "pink")
+        return fmt("󰃞", v, "pink")
     else:
         return fmt("󰃜", v, "dimgrey")
 
