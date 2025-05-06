@@ -29,11 +29,6 @@ wdecor = {
 }
 
 
-def show_calendar():
-    calendar_cmd = "kitty --class floating_calendar -e calcurse"
-    subprocess.Popen(calendar_cmd, shell=True)
-
-
 def show_dunst_history():
     subprocess.Popen(["dunstctl", "history-pop"])
 
@@ -41,7 +36,6 @@ def show_dunst_history():
 yao = [
     widget.Clock(
         format="   %e %b    %H:%M  ",
-        mouse_callbacks={"Button2": lazy.function(lambda qtile: show_calendar())},
         **wdecor,
     ),
     widget.Spacer(length=10),
@@ -51,20 +45,21 @@ yao = [
 ming = [
     widget.Mpris2(
         name="mpris",
-        format=" 󰝚 ",
-        no_metadata_text=" 󰝛 ",
-        paused_text=" 󰝛 ",
+        format=" 󰝚",
+        no_metadata_text=" 󰝛",
+        paused_text=" 󰝛",
         popup_hide_timeout=8,
         width=60,
         popup_controls=True,
         mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
+        **wdecor,
     ),
-    widget.Spacer(length=5),
     widget.TextBox(
         text=" 󰂚 ",
         mouse_callbacks={"Button2": lazy.function(lambda qtile: show_dunst_history())},
         **wdecor,
     ),
+    widget.Spacer(length=10),
     widget.GenPollText(
         update_interval=0.2,
         func=vol,
@@ -85,6 +80,7 @@ ming = [
         },
         **wdecor,
     ),
+    widget.Spacer(length=10),
     widget.GenPollText(func=batt, update_interval=2, **wdecor),
 ]
 
@@ -99,8 +95,6 @@ def main():
                 urgent_alert_method="text",
                 fontsize=18,
                 disable_drag=True,
-                active=rangi[1],
-                inactive=rangi[1],
                 this_current_screen_border=accent_color,
                 urgent_border=alert_color,
                 **wdecor,
@@ -114,8 +108,6 @@ def main():
                 txt_maximized="󰏋 ",
                 txt_minimized="󰖰 ",
                 border=accent_color,
-                unfocused_border=rangi[0],
-                foreground=rangi[1],
                 urgent_border=alert_color,
                 margin=3,
                 padding=5,
@@ -147,8 +139,6 @@ def misc():
                 urgent_alert_method="text",
                 fontsize=18,
                 disable_drag=True,
-                active=rangi[1],
-                inactive=rangi[1],
                 this_current_screen_border=accent_color,
                 urgent_border=alert_color,
                 **wdecor,
@@ -162,8 +152,6 @@ def misc():
                 txt_maximized="󰏋 ",
                 txt_minimized="󰖰 ",
                 border=accent_color,
-                unfocused_border=rangi[0],
-                foreground=rangi[1],
                 urgent_border=alert_color,
                 margin=3,
                 padding=5,
