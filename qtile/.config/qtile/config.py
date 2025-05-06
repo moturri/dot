@@ -23,17 +23,17 @@ layouts = [
 ]
 
 uwazi = "#00000000"
-wallpaper_path = "/home/m/Pictures/wallpapers/arc.jpg"
+wallpaper_path = "/home/m/.config/qtile/wallpaper/arc.jpg"
 screens = [
     Screen(
         wallpaper=wallpaper_path,
         wallpaper_mode="stretch",
-        top=bar.Bar(main(), 28, background=uwazi, margin=[0, 8, 0, 8]),
+        top=bar.Bar(main(), 28, background=uwazi, margin=[4, 8, 0, 8]),
     ),
     Screen(
         wallpaper=wallpaper_path,
         wallpaper_mode="stretch",
-        top=bar.Bar(misc(), 28, background=uwazi, margin=[0, 8, 0, 8]),
+        top=bar.Bar(misc(), 28, background=uwazi, margin=[4, 8, 0, 8]),
     ),
 ]
 
