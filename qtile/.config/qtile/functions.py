@@ -1,14 +1,19 @@
-import subprocess
 import time
 import functools
 from pathlib import Path
+from alsaaudio import Mixer
+import subprocess
 
-# Pre-computed constants
 _FMT = '<span foreground="{}">{} {:>3}%</span>'
+
 _BAT_CAPACITY_PATH = Path("/sys/class/power_supply/BAT0/capacity")
 _AC_ONLINE_PATHS = tuple(
     p / "online" for p in Path("/sys/class/power_supply").glob("AC*")
 )
+
+_BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/brightness")
+_MAX_BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/max_brightness")
+
 _BATTERY_STATES = (
     (80, " ", ("lime", "aqua")),
     (60, " ", ("palegreen", "aqua")),
@@ -18,27 +23,9 @@ _BATTERY_STATES = (
 )
 
 
-def run(cmd, timeout=0.15):
-    """Run a command with minimal overhead"""
-    try:
-        return subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            bufsize=-1,
-            shell=False,
-            check=False,
-        ).stdout.strip()
-    except subprocess.TimeoutExpired:
-        return ""
-
-
 def cached(seconds):
-    """Cache decorator with zero-allocation design"""
-
     def wrap(fn):
-        cache = ["", 0.0]  # [value, timestamp]
+        cache = ["", 0.0]
 
         @functools.wraps(fn)
         def inner(force=False):
@@ -56,28 +43,22 @@ def cached(seconds):
 
 
 def fmt(icon, val, color):
-    """Format output string with minimal allocations"""
     return _FMT.format(color, icon, val)
 
 
-# Audio sink (output) management
+# ----------------------
+# Volume (Output)
+# ----------------------
+
+
 @cached(1)
 def vol():
-    """Get volume status with lazy parsing"""
-    out = run(["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"])
-    if "Volume:" not in out:
-        return fmt("󰖁", 0, "dimgrey")
-
-    parts = out.split("Volume:")
-    if len(parts) < 2:
-        return fmt("󰖁", 0, "dimgrey")
-
     try:
-        v = int(float(parts[1].split()[0]) * 100)
-    except (ValueError, IndexError):
+        mixer = Mixer("Master")
+        v = mixer.getvolume()[0]
+        muted = mixer.getmute()[0] == 1
+    except Exception:
         return fmt("󰖁", 0, "dimgrey")
-
-    muted = "[MUTED]" in out
 
     if muted:
         return fmt("󰖁", v, "dimgrey")
@@ -92,76 +73,93 @@ def vol():
 
 
 def vol_up(qtile=None):
-    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SINK@", "0.05+"])
+    mixer = Mixer("Master")
+    v = mixer.getvolume()[0]
+    mixer.setvolume(min(100, v + 5))
     vol(force=True)
 
 
 def vol_down(qtile=None):
-    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SINK@", "0.05-"])
+    mixer = Mixer("Master")
+    v = mixer.getvolume()[0]
+    mixer.setvolume(max(0, v - 5))
     vol(force=True)
 
 
 def vol_mute(qtile=None):
-    run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"])
+    mixer = Mixer("Master")
+    mixer.setmute(1 if mixer.getmute()[0] == 0 else 0)
     vol(force=True)
 
 
-# Audio source (microphone) management
+# ----------------------
+# Microphone (Input) - Using subprocess
+# ----------------------
+
+
 @cached(1)
 def mic():
-    """Get microphone status with lazy parsing"""
-    out = run(["wpctl", "get-volume", "@DEFAULT_AUDIO_SOURCE@"])
-    if "Volume:" not in out:
-        return fmt("󰍭", 0, "dimgrey")
-
-    parts = out.split("Volume:")
-    if len(parts) < 2:
-        return fmt("󰍭", 0, "dimgrey")
-
     try:
-        v = int(float(parts[1].split()[0]) * 100)
-    except (ValueError, IndexError):
-        return fmt("󰍭", 0, "dimgrey")
+        # Get the current microphone volume and mute status using amixer
+        output = subprocess.check_output("amixer get Capture", shell=True).decode()
+        volume = int(output.split("[")[1].split("%")[0].strip())
+        muted = "off" in output
+    except Exception:
+        return fmt(
+            "󰍭", 0, "dimgrey"
+        )  # If there's an error, return muted icon and grey color
 
-    muted = "[MUTED]" in out
     icon = "󰍭" if muted else "󰍬"
-
     if muted:
         color = "dimgrey"
-    elif v >= 70:
+    elif volume >= 70:
         color = "salmon"
-    elif v >= 40:
+    elif volume >= 40:
         color = "violet"
-    elif v > 0:
+    elif volume > 0:
         color = "springgreen"
     else:
         color = "palegreen"
 
-    return fmt(icon, v, color)
+    return fmt(icon, volume, color)
 
 
 def mic_up(qtile=None):
-    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SOURCE@", "0.05+"])
+    try:
+        subprocess.run("amixer set Capture 5%+", shell=True)
+    except Exception:
+        pass
     mic(force=True)
 
 
 def mic_down(qtile=None):
-    run(["wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SOURCE@", "0.05-"])
+    try:
+        subprocess.run("amixer set Capture 5%-", shell=True)
+    except Exception:
+        pass
     mic(force=True)
 
 
 def mic_mute(qtile=None):
-    run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"])
+    try:
+        subprocess.run("amixer set Capture toggle", shell=True)
+    except Exception:
+        pass
     mic(force=True)
 
 
-# Brightness management
+# ----------------------
+# Brightness (sysfs)
+# ----------------------
+
+
 @cached(0.3)
 def bright():
-    """Get brightness with minimal processing"""
     try:
-        v = int(float(run(["brillo", "-G"])))
-    except (ValueError, TypeError):
+        current = int(_BRIGHTNESS_PATH.read_text())
+        maximum = int(_MAX_BRIGHTNESS_PATH.read_text())
+        v = int((current / maximum) * 100)
+    except Exception:
         return '<span foreground="grey">󰳲  --%</span>'
 
     if v >= 80:
@@ -176,8 +174,12 @@ def bright():
         return fmt("󰃜", v, "dimgrey")
 
 
+# ----------------------
+# Battery
+# ----------------------
+
+
 def is_charging():
-    """Check charging status with minimal file operations"""
     for ac_path in _AC_ONLINE_PATHS:
         try:
             if ac_path.exists() and ac_path.read_text().strip() == "1":
@@ -187,9 +189,8 @@ def is_charging():
     return False
 
 
-@cached(3)
+@cached(10)
 def batt():
-    """Get battery status with minimal file operations"""
     try:
         if not _BAT_CAPACITY_PATH.exists():
             return '<span foreground="grey">  --%</span>'
@@ -198,11 +199,10 @@ def batt():
         return '<span foreground="grey">  --%</span>'
 
     chg = is_charging()
-
     for threshold, icon, (normal_color, charging_color) in _BATTERY_STATES:
         if v >= threshold:
             color = charging_color if chg else normal_color
-            final_icon = "" + icon if chg else icon  # Add lightning icon if charging
+            final_icon = " " + icon if chg else icon
             return fmt(final_icon, v, color)
 
-    return fmt("" if chg else " ", v, "aqua" if chg else "red")
+    return fmt(" " if chg else " ", v, "aqua" if chg else "red")
