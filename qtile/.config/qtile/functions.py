@@ -15,11 +15,11 @@ _BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/brightness")
 _MAX_BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/max_brightness")
 
 _BATTERY_STATES = (
-    (80, " ", ("lime", "aqua")),
-    (60, " ", ("palegreen", "aqua")),
-    (40, " ", ("orange", "aqua")),
-    (20, " ", ("coral", "aqua")),
-    (0, " ", ("red", "aqua")),
+    (80, "  ", ("lime", "aqua")),
+    (60, "  ", ("palegreen", "aqua")),
+    (40, "  ", ("orange", "aqua")),
+    (20, "  ", ("coral", "aqua")),
+    (0, "  ", ("red", "aqua")),
 )
 
 
@@ -46,11 +46,6 @@ def fmt(icon, val, color):
     return _FMT.format(color, icon, val)
 
 
-# ----------------------
-# Volume (Output)
-# ----------------------
-
-
 @cached(1)
 def vol():
     try:
@@ -61,7 +56,7 @@ def vol():
         return fmt("󰖁", 0, "dimgrey")
 
     if muted:
-        return fmt("󰖁", v, "dimgrey")
+        return fmt("󰝟", v, "dimgrey")
     elif v >= 70:
         return fmt("󰕾", v, "salmon")
     elif v >= 40:
@@ -92,11 +87,6 @@ def vol_mute(qtile=None):
     vol(force=True)
 
 
-# ----------------------
-# Microphone (Input) - Using subprocess
-# ----------------------
-
-
 @cached(1)
 def mic():
     try:
@@ -105,9 +95,7 @@ def mic():
         volume = int(output.split("[")[1].split("%")[0].strip())
         muted = "off" in output
     except Exception:
-        return fmt(
-            "󰍭", 0, "dimgrey"
-        )  # If there's an error, return muted icon and grey color
+        return fmt("󰍭", 0, "dimgrey")
 
     icon = "󰍭" if muted else "󰍬"
     if muted:
@@ -148,11 +136,6 @@ def mic_mute(qtile=None):
     mic(force=True)
 
 
-# ----------------------
-# Brightness (sysfs)
-# ----------------------
-
-
 @cached(0.3)
 def bright():
     try:
@@ -172,11 +155,6 @@ def bright():
         return fmt("󰃞 ", v, "pink")
     else:
         return fmt("󰃜", v, "dimgrey")
-
-
-# ----------------------
-# Battery
-# ----------------------
 
 
 def is_charging():
