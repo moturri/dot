@@ -71,3 +71,15 @@ background = "#000000"
 foreground = "#ff5555"
 timeout = 30
 default_icon = dialog-warning
+
+[rule-spotify]
+    appname = "Spotify"
+    history_ignore = yes
+
+[rule-strawberry]
+    appname = "Strawberry"
+    history_ignore = yes
+
+[rule-cider]
+    appname = "Cider"
+    history_ignore = yes

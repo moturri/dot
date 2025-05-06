@@ -200,11 +200,20 @@ groups.append(
                 opacity=0.9,
             ),
             DropDown(
+                "calcurse",
+                "kitty -e calcurse",
+                width=0.7,
+                height=0.7,
+                x=0.15,
+                y=0.1,
+                opacity=0.9,
+            ),
+            DropDown(
                 "helvum",
                 "helvum",
-                width=0.8,
-                height=0.8,
-                x=0.1,
+                width=0.7,
+                height=0.0,
+                x=0.15,
                 y=0.1,
                 opacity=0.9,
             ),
@@ -248,6 +257,7 @@ groups.append(
 
 scratches = {
     "arandr": "a",
+    "calcurse": "c",
     "helvum": "h",
     "iwgtk": "i",
     "kitty": "x",
