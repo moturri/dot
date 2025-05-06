@@ -206,7 +206,7 @@ groups.append(
                 height=0.7,
                 x=0.15,
                 y=0.1,
-                opacity=0.9,
+                opacity=1,
             ),
             DropDown(
                 "helvum",
@@ -227,7 +227,7 @@ groups.append(
                 height=0.8,
                 x=0.1,
                 y=0.1,
-                opacity=0.9,
+                opacity=1,
             ),
             DropDown(
                 "localsend",
