@@ -6,13 +6,10 @@ return {
     config = function()
       require("mason").setup()
 
-      -- Optional: fidget for LSP status notifications
+      -- Ensure fidget is installed properly
       local fidget_ok, fidget = pcall(require, "fidget")
       if fidget_ok then
         fidget.setup({})
-      else
-        -- Optionally log a message if fidget is not found
-        vim.api.nvim_echo({ { "Fidget plugin not found, skipping configuration.", "WarningMsg" } }, true, {})
       end
     end,
   },
@@ -82,13 +79,12 @@ return {
         capabilities = capabilities,
       }
 
-      -- Setup handlers for all LSPs via mason-lspconfig
-      mason_lspconfig.setup_handlers({
-        function(server_name)
-          -- Extend with per-server config later if needed
-          lspconfig[server_name].setup(default_config)
-        end,
-      })
+      -- Setup LSP servers individually via mason-lspconfig
+      local servers = mason_lspconfig.get_installed_servers()
+      for _, server_name in ipairs(servers) do
+        lspconfig[server_name].setup(default_config)
+      end
     end,
   },
 }
+
