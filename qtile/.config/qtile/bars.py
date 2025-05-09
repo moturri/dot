@@ -1,3 +1,5 @@
+import subprocess
+
 from functions import (
     batt,
     bright,
@@ -13,7 +15,6 @@ from functions import (
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
-import subprocess
 
 rangi = ["#000000", "#FFFFFF"]
 accent_color = "#6f3aea"
@@ -33,6 +34,10 @@ def show_dunst_history():
     subprocess.Popen(["dunstctl", "history-pop"])
 
 
+def clear_dunst_history():
+    subprocess.Popen(["dunstctl", "history-clear"])
+
+
 yao = [
     widget.Clock(
         format="   %e %b    %H:%M  ",
@@ -50,13 +55,15 @@ ming = [
         paused_text=" 󰝛",
         popup_hide_timeout=8,
         width=60,
-        popup_controls=True,
         mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
         **wdecor,
     ),
     widget.TextBox(
         text=" 󰂚 ",
-        mouse_callbacks={"Button2": lazy.function(lambda qtile: show_dunst_history())},
+        mouse_callbacks={
+            "Button3": lazy.function(lambda qtile: show_dunst_history()),
+            "Button2": lazy.function(lambda qtile: clear_dunst_history()),
+        },
         **wdecor,
     ),
     widget.Spacer(length=10),
@@ -111,7 +118,6 @@ def main():
                 urgent_border=alert_color,
                 margin=3,
                 padding=5,
-                rounded=True,
             ),
             widget.GenPollText(
                 func=bright,
@@ -155,7 +161,6 @@ def misc():
                 urgent_border=alert_color,
                 margin=3,
                 padding=5,
-                rounded=True,
             ),
         ]
         + ming
