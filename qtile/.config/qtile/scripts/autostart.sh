@@ -2,6 +2,6 @@
 
 picom &
 greenclip daemon &
-/usr/lib/xfce-polkit/xfce-polkit &
+/usr/bin/lxqt-policykit-agent &
 dunst &
 # firewall-applet &
