@@ -1,8 +1,9 @@
-import time
 import functools
-from pathlib import Path
-from alsaaudio import Mixer
 import subprocess
+import time
+from pathlib import Path
+
+from alsaaudio import Mixer
 
 _FMT = '<span foreground="{}">{}  {:>3}%</span>'
 
@@ -60,7 +61,7 @@ def vol():
     elif v >= 70:
         return fmt("󰕾", v, "salmon")
     elif v >= 40:
-        return fmt("󰖀", v, "violet")
+        return fmt("󰖀", v, "orchid")
     elif v > 0:
         return fmt("󰕿", v, "springgreen")
     else:
@@ -150,9 +151,9 @@ def bright():
     elif v >= 60:
         return fmt("󰃝", v, "darkorange")
     elif v >= 40:
-        return fmt("󰃟", v, "orchid")
+        return fmt("󰃟", v, "darkorchid")
     elif v >= 20:
-        return fmt("󰃞", v, "pink")
+        return fmt("󰃞", v, "lightgreen")
     else:
         return fmt("󰃜", v, "dimgrey")
 

@@ -156,6 +156,7 @@ groups = [
             Match(wm_class="firewall-config"),
             Match(wm_class="gnome-disks"),
             Match(wm_class="timeshift-gtk"),
+            Match(wm_class="KeePassXC"),
         ],
     ),
     Group(
@@ -190,15 +191,15 @@ groups.append(
     ScratchPad(
         "scratchpad",
         [
-            DropDown(
-                "arandr",
-                "arandr",
-                width=0.4,
-                height=0.4,
-                x=0.3,
-                y=0.1,
-                opacity=0.9,
-            ),
+            # DropDown(
+            #     "arandr",
+            #     "arandr",
+            #     width=0.4,
+            #     height=0.4,
+            #     x=0.3,
+            #     y=0.1,
+            #     opacity=0.9,
+            # ),
             DropDown(
                 "calcurse",
                 "kitty -e calcurse",
@@ -212,7 +213,7 @@ groups.append(
                 "helvum",
                 "helvum",
                 width=0.7,
-                height=0.0,
+                height=0.7,
                 x=0.15,
                 y=0.1,
                 opacity=0.9,
@@ -232,9 +233,9 @@ groups.append(
             DropDown(
                 "localsend",
                 "localsend",
-                width=0.6,
-                height=0.6,
-                x=0.2,
+                width=0.5,
+                height=0.5,
+                x=0.25,
                 y=0.1,
                 opacity=0.9,
             ),
@@ -242,13 +243,22 @@ groups.append(
                 "obsidian", "obsidian", width=0.8, height=0.8, x=0.1, y=0.1, opacity=1
             ),
             DropDown(
-                "thunar",
-                "thunar",
+                "pavucontrol-qt",
+                "pavucontrol-qt",
+                width=0.5,
+                height=0.5,
+                x=0.25,
+                y=0.1,
+                opacity=1,
+            ),
+            DropDown(
+                "pcmanfm-qt",
+                "pcmanfm-qt",
                 width=0.7,
                 height=0.7,
                 x=0.15,
                 y=0.1,
-                opacity=0.9,
+                opacity=1,
             ),
         ],
     )
@@ -256,14 +266,15 @@ groups.append(
 
 
 scratches = {
-    "arandr": "a",
+    # "arandr": "a",
     "calcurse": "c",
     "helvum": "h",
     "iwgtk": "i",
     "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
-    "thunar": "t",
+    "pavucontrol-qt": "v",
+    "pcmanfm-qt": "p",
 }
 
 
