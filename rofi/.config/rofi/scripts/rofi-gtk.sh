@@ -3,6 +3,7 @@
 export DISPLAY=:0
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 
+declare -a THEMES
 THEMES=(FlatDark FlatLight)
 
 SELECTED=$(printf "%s\n" "${THEMES[@]}" | rofi -dmenu -p "Select GTK Theme")
