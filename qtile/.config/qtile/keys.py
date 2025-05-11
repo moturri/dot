@@ -36,11 +36,6 @@ keys = [
         "a",
         lazy.spawn("/home/m/.config/rofi/scripts/rofi-display.sh"),
     ),
-    Key(
-        [mod, "shift"],
-        "g",
-        lazy.spawn("/home/m/.config/rofi/scripts/rofi-gtk.sh"),
-    ),
     Key([mod], "Tab", lazy.next_layout()),
     Key([mod], "w", lazy.window.kill()),
     Key([mod], "F11", lazy.window.toggle_fullscreen()),
@@ -50,9 +45,9 @@ keys = [
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
-    Key([mod], "Print", lazy.spawn("flameshot gui")),
-    Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 5")),
-    Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 5")),
+    Key([mod], "Print", lazy.spawn("screengrab")),
+    Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 2")),
+    Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 2")),
     Key([], "XF86AudioLowerVolume", lazy.function(vol_down)),
     Key([], "XF86AudioRaiseVolume", lazy.function(vol_up)),
     Key([], "XF86AudioMicMute", lazy.function(mic_mute)),
@@ -95,7 +90,14 @@ mouse = [
 
 
 groups = [
-    Group("1", label="󰣇"),
+    Group(
+        "1",
+        label="󰣇",
+        matches=[
+            Match(wm_class="stacer"),
+            Match(wm_class="pcmanfm-qt"),
+        ],
+    ),
     Group(
         "2",
         label="",
@@ -132,12 +134,11 @@ groups = [
         "6",
         label="󰉌",
         matches=[
-            Match(wm_class="libreoffice"),
-            Match(wm_class="libreoffice-writer"),
+            Match(wm_class="soffice.bin"),
             Match(wm_class="calibre"),
             Match(wm_class="calibre-gui"),
             Match(wm_class="org.pwmt.zathura"),
-            Match(wm_class="Zathura"),
+            Match(wm_class="obsidian"),
         ],
     ),
     Group(
@@ -157,6 +158,7 @@ groups = [
             Match(wm_class="gnome-disks"),
             Match(wm_class="timeshift-gtk"),
             Match(wm_class="KeePassXC"),
+            Match(wm_class="GParted"),
         ],
     ),
     Group(
@@ -191,15 +193,6 @@ groups.append(
     ScratchPad(
         "scratchpad",
         [
-            # DropDown(
-            #     "arandr",
-            #     "arandr",
-            #     width=0.4,
-            #     height=0.4,
-            #     x=0.3,
-            #     y=0.1,
-            #     opacity=0.9,
-            # ),
             DropDown(
                 "calcurse",
                 "kitty -e calcurse",
@@ -210,16 +203,7 @@ groups.append(
                 opacity=1,
             ),
             DropDown(
-                "helvum",
-                "helvum",
-                width=0.7,
-                height=0.7,
-                x=0.15,
-                y=0.1,
-                opacity=0.9,
-            ),
-            DropDown(
-                "iwgtk", "iwgtk", width=0.4, height=0.5, x=0.3, y=0.1, opacity=0.9
+                "iwgtk", "iwgtk", width=0.2, height=0.6, x=0.4, y=0.1, opacity=0.9
             ),
             DropDown(
                 "kitty",
@@ -251,30 +235,18 @@ groups.append(
                 y=0.1,
                 opacity=1,
             ),
-            DropDown(
-                "pcmanfm-qt",
-                "pcmanfm-qt",
-                width=0.7,
-                height=0.7,
-                x=0.15,
-                y=0.1,
-                opacity=1,
-            ),
         ],
     )
 )
 
 
 scratches = {
-    # "arandr": "a",
     "calcurse": "c",
-    "helvum": "h",
     "iwgtk": "i",
     "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
     "pavucontrol-qt": "v",
-    "pcmanfm-qt": "p",
 }
 
 
