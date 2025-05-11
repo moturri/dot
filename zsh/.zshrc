@@ -132,9 +132,9 @@ unset key
 # }}} End configuration added by Zim install
 
 
-export TERMINAL=kitty
-export EDITOR=nvim
-export VISUAL=nvim
+# export TERMINAL=kitty
+# export EDITOR=nvim
+# export VISUAL=nvim
 
 
 alias ls="eza --icons=always"
