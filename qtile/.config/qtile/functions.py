@@ -1,9 +1,8 @@
 import functools
 import subprocess
 import time
+import re
 from pathlib import Path
-
-from alsaaudio import Mixer
 
 _FMT = '<span foreground="{}">{}  {:>3}%</span>'
 
@@ -47,54 +46,299 @@ def fmt(icon, val, color):
     return _FMT.format(color, icon, val)
 
 
+# ------------------------ VOLUME ------------------------
+
+# ----------------------- amixer -------------------------
+# def get_current_volume():
+#     try:
+#         output = subprocess.check_output("amixer get Master", shell=True).decode()
+#         match = re.search(r"\[(\d+)%\]", output)
+#         return int(match.group(1)) if match else 0
+#     except Exception:
+#         return 0
+#
+#
+# @cached(1)
+# def vol():
+#     try:
+#         output = subprocess.check_output("amixer get Master", shell=True).decode()
+#         volume_match = re.search(r"\[(\d+)%\]", output)
+#         mute_match = re.search(r"\[(on|off)\]", output)
+#         volume = int(volume_match.group(1)) if volume_match else 0
+#         muted = mute_match and mute_match.group(1) == "off"
+#     except Exception:
+#         return fmt("󰖁", 0, "dimgrey")
+#
+#     if muted:
+#         return fmt("󰝟", volume, "dimgrey")
+#     elif volume >= 70:
+#         return fmt("󰕾", volume, "salmon")
+#     elif volume >= 40:
+#         return fmt("󰖀", volume, "orchid")
+#     elif volume > 0:
+#         return fmt("󰕿", volume, "springgreen")
+#     else:
+#         return fmt("󰕿", volume, "palegreen")
+#
+#
+# def vol_up(qtile=None):
+#     subprocess.run("amixer set Master 2%+", shell=True)
+#     vol(force=True)
+#
+#
+# def vol_down(qtile=None):
+#     subprocess.run("amixer set Master 2%-", shell=True)
+#     vol(force=True)
+#
+#
+# def vol_mute(qtile=None):
+#     subprocess.run("amixer set Master toggle", shell=True)
+#     vol(force=True)
+
+
+# --------------------------- pactl ------------------------------------
+# def get_current_volume():
+#     try:
+#         output = subprocess.check_output("pactl get-sink-volume @DEFAULT_SINK@", shell=True).decode()
+#         match = re.search(r'(\d+)%', output)
+#         return int(match.group(1)) if match else 0
+#     except Exception:
+#         return 0
+#
+#
+# @cached(1)
+# def vol():
+#     try:
+#         output = subprocess.check_output("pactl get-sink-volume @DEFAULT_SINK@", shell=True).decode()
+#         mute_status = subprocess.check_output("pactl get-sink-mute @DEFAULT_SINK@", shell=True).decode()
+#         match = re.search(r'(\d+)%', output)
+#         volume = int(match.group(1)) if match else 0
+#         muted = "yes" in mute_status.lower()
+#     except Exception:
+#         return fmt("󰖁", 0, "dimgrey")
+#
+#     if muted:
+#         return fmt("󰝟", volume, "dimgrey")
+#     elif volume >= 70:
+#         return fmt("󰕾", volume, "salmon")
+#     elif volume >= 40:
+#         return fmt("󰖀", volume, "orchid")
+#     elif volume > 0:
+#         return fmt("󰕿", volume, "springgreen")
+#     else:
+#         return fmt("󰕿", volume, "palegreen")
+#
+#
+# def vol_up(qtile=None):
+#     current = get_current_volume()
+#     if current < 100:
+#         increment = min(2, 100 - current)
+#         subprocess.run(f"pactl set-sink-volume @DEFAULT_SINK@ +{increment}%", shell=True)
+#     vol(force=True)
+#
+#
+# def vol_down(qtile=None):
+#     subprocess.run("pactl set-sink-volume @DEFAULT_SINK@ -2%", shell=True)
+#     vol(force=True)
+#
+#
+# def vol_mute(qtile=None):
+#     subprocess.run("pactl set-sink-mute @DEFAULT_SINK@ toggle", shell=True)
+#     vol(force=True)
+
+
+# ------------------------ wpctl ------------------------------
+
+
+def get_current_volume():
+    try:
+        output = subprocess.check_output(
+            "pactl get-sink-volume @DEFAULT_SINK@", shell=True
+        ).decode()
+        match = re.search(r"(\d+)%", output)
+        return int(match.group(1)) if match else 0
+    except Exception:
+        return 0
+
+
 @cached(1)
 def vol():
     try:
-        mixer = Mixer("Master")
-        v = mixer.getvolume()[0]
-        muted = mixer.getmute()[0] == 1
+        output = subprocess.check_output(
+            "pactl get-sink-volume @DEFAULT_SINK@", shell=True
+        ).decode()
+        mute_status = subprocess.check_output(
+            "pactl get-sink-mute @DEFAULT_SINK@", shell=True
+        ).decode()
+        match = re.search(r"(\d+)%", output)
+        volume = int(match.group(1)) if match else 0
+        muted = "yes" in mute_status.lower()
     except Exception:
         return fmt("󰖁", 0, "dimgrey")
 
     if muted:
-        return fmt("󰝟", v, "dimgrey")
-    elif v >= 70:
-        return fmt("󰕾", v, "salmon")
-    elif v >= 40:
-        return fmt("󰖀", v, "orchid")
-    elif v > 0:
-        return fmt("󰕿", v, "springgreen")
+        return fmt("󰝟", volume, "dimgrey")
+    elif volume >= 70:
+        return fmt("󰕾", volume, "salmon")
+    elif volume >= 40:
+        return fmt("󰖀", volume, "orchid")
+    elif volume > 0:
+        return fmt("󰕿", volume, "springgreen")
     else:
-        return fmt("󰕿", v, "palegreen")
+        return fmt("󰕿", volume, "palegreen")
 
 
 def vol_up(qtile=None):
-    mixer = Mixer("Master")
-    v = mixer.getvolume()[0]
-    mixer.setvolume(min(100, v + 5))
+    current = get_current_volume()
+    if current < 100:
+        increment = min(2, 100 - current)
+        subprocess.run(
+            f"pactl set-sink-volume @DEFAULT_SINK@ +{increment}%", shell=True
+        )
     vol(force=True)
 
 
 def vol_down(qtile=None):
-    mixer = Mixer("Master")
-    v = mixer.getvolume()[0]
-    mixer.setvolume(max(0, v - 5))
+    subprocess.run("pactl set-sink-volume @DEFAULT_SINK@ -2%", shell=True)
     vol(force=True)
 
 
 def vol_mute(qtile=None):
-    mixer = Mixer("Master")
-    mixer.setmute(1 if mixer.getmute()[0] == 0 else 0)
+    subprocess.run("pactl set-sink-mute @DEFAULT_SINK@ toggle", shell=True)
     vol(force=True)
+
+
+# ------------------------ MICROPHONE ------------------------
+
+# ------------------------ amixer ----------------------------
+# def get_current_mic_volume():
+#     try:
+#         output = subprocess.check_output("amixer get Capture", shell=True).decode()
+#         match = re.search(r"\[(\d+)%\]", output)
+#         return int(match.group(1)) if match else 0
+#     except Exception:
+#         return 0
+#
+#
+# @cached(1)
+# def mic():
+#     try:
+#         output = subprocess.check_output("amixer get Capture", shell=True).decode()
+#         volume_match = re.search(r"\[(\d+)%\]", output)
+#         mute_match = re.search(r"\[(on|off)\]", output)
+#         volume = int(volume_match.group(1)) if volume_match else 0
+#         muted = mute_match and mute_match.group(1) == "off"
+#     except Exception:
+#         return fmt("󰍭", 0, "dimgrey")
+#
+#     icon = "󰍭" if muted else "󰍬"
+#     if muted:
+#         color = "dimgrey"
+#     elif volume >= 70:
+#         color = "salmon"
+#     elif volume >= 40:
+#         color = "violet"
+#     elif volume > 0:
+#         color = "springgreen"
+#     else:
+#         color = "palegreen"
+#
+#     return fmt(icon, volume, color)
+#
+#
+# def mic_up(qtile=None):
+#     subprocess.run("amixer set Capture 2%+", shell=True)
+#     mic(force=True)
+#
+#
+# def mic_down(qtile=None):
+#     subprocess.run("amixer set Capture 2%-", shell=True)
+#     mic(force=True)
+#
+#
+# def mic_mute(qtile=None):
+#     subprocess.run("amixer set Capture toggle", shell=True)
+#     mic(force=True)
+
+# ------------------------- pactl ------------------------------
+# def get_current_mic_volume():
+#     try:
+#         output = subprocess.check_output("pactl get-source-volume @DEFAULT_SOURCE@", shell=True).decode()
+#         match = re.search(r'(\d+)%', output)
+#         return int(match.group(1)) if match else 0
+#     except Exception:
+#         return 0
+#
+#
+# @cached(1)
+# def mic():
+#     try:
+#         output = subprocess.check_output("pactl get-source-volume @DEFAULT_SOURCE@", shell=True).decode()
+#         mute_status = subprocess.check_output("pactl get-source-mute @DEFAULT_SOURCE@", shell=True).decode()
+#         match = re.search(r'(\d+)%', output)
+#         volume = int(match.group(1)) if match else 0
+#         muted = "yes" in mute_status.lower()
+#     except Exception:
+#         return fmt("󰍭", 0, "dimgrey")
+#
+#     icon = "󰍭" if muted else "󰍬"
+#     if muted:
+#         color = "dimgrey"
+#     elif volume >= 70:
+#         color = "salmon"
+#     elif volume >= 40:
+#         color = "violet"
+#     elif volume > 0:
+#         color = "springgreen"
+#     else:
+#         color = "palegreen"
+#
+#     return fmt(icon, volume, color)
+#
+#
+# def mic_up(qtile=None):
+#     current = get_current_mic_volume()
+#     if current < 100:
+#         increment = min(2, 100 - current)
+#         subprocess.run(f"pactl set-source-volume @DEFAULT_SOURCE@ +{increment}%", shell=True)
+#     mic(force=True)
+#
+#
+# def mic_down(qtile=None):
+#     subprocess.run("pactl set-source-volume @DEFAULT_SOURCE@ -2%", shell=True)
+#     mic(force=True)
+#
+#
+# def mic_mute(qtile=None):
+#     subprocess.run("pactl set-source-mute @DEFAULT_SOURCE@ toggle", shell=True)
+#     mic(force=True)
+
+# ------------------------ wpctl -----------------------------
+
+
+def get_current_mic_volume():
+    try:
+        output = subprocess.check_output(
+            "pactl get-source-volume @DEFAULT_SOURCE@", shell=True
+        ).decode()
+        match = re.search(r"(\d+)%", output)
+        return int(match.group(1)) if match else 0
+    except Exception:
+        return 0
 
 
 @cached(1)
 def mic():
     try:
-        # Get the current microphone volume and mute status using amixer
-        output = subprocess.check_output("amixer get Capture", shell=True).decode()
-        volume = int(output.split("[")[1].split("%")[0].strip())
-        muted = "off" in output
+        output = subprocess.check_output(
+            "pactl get-source-volume @DEFAULT_SOURCE@", shell=True
+        ).decode()
+        mute_status = subprocess.check_output(
+            "pactl get-source-mute @DEFAULT_SOURCE@", shell=True
+        ).decode()
+        match = re.search(r"(\d+)%", output)
+        volume = int(match.group(1)) if match else 0
+        muted = "yes" in mute_status.lower()
     except Exception:
         return fmt("󰍭", 0, "dimgrey")
 
@@ -114,27 +358,26 @@ def mic():
 
 
 def mic_up(qtile=None):
-    try:
-        subprocess.run("amixer set Capture 5%+", shell=True)
-    except Exception:
-        pass
+    current = get_current_mic_volume()
+    if current < 100:
+        increment = min(2, 100 - current)
+        subprocess.run(
+            f"pactl set-source-volume @DEFAULT_SOURCE@ +{increment}%", shell=True
+        )
     mic(force=True)
 
 
 def mic_down(qtile=None):
-    try:
-        subprocess.run("amixer set Capture 5%-", shell=True)
-    except Exception:
-        pass
+    subprocess.run("pactl set-source-volume @DEFAULT_SOURCE@ -2%", shell=True)
     mic(force=True)
 
 
 def mic_mute(qtile=None):
-    try:
-        subprocess.run("amixer set Capture toggle", shell=True)
-    except Exception:
-        pass
+    subprocess.run("pactl set-source-mute @DEFAULT_SOURCE@ toggle", shell=True)
     mic(force=True)
+
+
+# ------------------------ BRIGHTNESS ------------------------
 
 
 @cached(0.3)
@@ -156,6 +399,9 @@ def bright():
         return fmt("󰃞", v, "lightgreen")
     else:
         return fmt("󰃜", v, "dimgrey")
+
+
+# ------------------------ BATTERY ------------------------
 
 
 def is_charging():
