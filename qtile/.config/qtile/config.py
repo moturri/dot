@@ -47,7 +47,6 @@ floating_layout = layout.Floating(
         Match(wm_class="ssh-askpass"),
         Match(title="branchdialog"),
         Match(title="pinentry"),
-        # Match(wm_class="arandr"),
         Match(wm_class="blueman-manager"),
         Match(wm_class="localsend"),
         Match(wm_class="firetools"),

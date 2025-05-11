@@ -123,8 +123,8 @@ def main():
                 func=bright,
                 update_interval=0.2,
                 mouse_callbacks={
-                    "Button4": lazy.spawn("brillo -A 5"),
-                    "Button5": lazy.spawn("brillo -U 5"),
+                    "Button4": lazy.spawn("brillo -A 2"),
+                    "Button5": lazy.spawn("brillo -U 2"),
                 },
                 **wdecor,
             ),
