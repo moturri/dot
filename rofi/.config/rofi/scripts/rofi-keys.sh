@@ -29,7 +29,7 @@ cat <<EOF | rofi -dmenu -i -p "󰌌 "
    + Ctrl + h : Helvum
    + Ctrl + t : Thunar
    + Ctrl + i : iwgtk
-   + Print : Screenshot (Flameshot)
+   + Print : Screenshot (screengrab)
    + Tab : Next Layout
    + w : Close Window
    + F1 : Power Menu

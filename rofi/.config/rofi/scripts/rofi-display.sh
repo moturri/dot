@@ -16,7 +16,7 @@ disconnect_display() {
 }
 
 refresh_qtile() {
-	sleep 0.5
+	sleep 0.3
 	qtile cmd-obj -o cmd -f restart
 }
 
