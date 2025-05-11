@@ -1,4 +1,5 @@
-from functions import mic_mute, vol_down, vol_mute, vol_up
+from mic import mic_mute 
+from volume import vol_down, vol_mute, vol_up
 from libqtile.config import Click, Drag, DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 

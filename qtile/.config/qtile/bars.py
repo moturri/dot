@@ -1,17 +1,9 @@
 import subprocess
 
-from functions import (
-    batt,
-    bright,
-    mic,
-    mic_down,
-    mic_mute,
-    mic_up,
-    vol,
-    vol_down,
-    vol_mute,
-    vol_up,
-)
+from functions import batt, bright
+from mic import mic, mic_down, mic_mute, mic_up
+from volume import vol, vol_down, vol_mute, vol_up
+
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
