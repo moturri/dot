@@ -8,26 +8,36 @@ _AC_ONLINE_PATHS = tuple(
     p / "online" for p in Path("/sys/class/power_supply").glob("AC*")
 )
 
+_BRIGHTNESS_ICONS = [
+    (80, "󰃠", "gold"),
+    (60, "󰃝", "darkorange"),
+    (40, "󰃟", "darkorchid"),
+    (20, "󰃞", "lightgreen"),
+    (0, "󰃜", "dimgrey"),
+]
 
-@cached(0.3)
+_BATTERY_STATES = [
+    (80, "", ("lime", "aqua")),
+    (60, "", ("palegreen", "aqua")),
+    (40, "", ("orange", "aqua")),
+    (20, "", ("coral", "aqua")),
+    (0, "", ("red", "aqua")),
+]
+
+
+@cached(0.5)
 def bright():
     try:
         current = int(_BRIGHTNESS_PATH.read_text())
         maximum = int(_MAX_BRIGHTNESS_PATH.read_text())
         v = int((current / maximum) * 100)
-    except Exception:
+    except (FileNotFoundError, ValueError, OSError):
         return '<span foreground="grey">󰳲  --%</span>'
 
-    if v >= 80:
-        return fmt("󰃠", v, "gold")
-    elif v >= 60:
-        return fmt("󰃝", v, "darkorange")
-    elif v >= 40:
-        return fmt("󰃟", v, "darkorchid")
-    elif v >= 20:
-        return fmt("󰃞", v, "lightgreen")
-    else:
-        return fmt("󰃜", v, "dimgrey")
+    for level, icon, color in _BRIGHTNESS_ICONS:
+        if v >= level:
+            return fmt(icon, v, color)
+    return fmt("󰳲", v, "grey")
 
 
 def is_charging():
@@ -40,15 +50,6 @@ def is_charging():
     return False
 
 
-_BATTERY_STATES = (
-    (80, "", ("lime", "aqua")),
-    (60, "", ("palegreen", "aqua")),
-    (40, "", ("orange", "aqua")),
-    (20, "", ("coral", "aqua")),
-    (0, "", ("red", "aqua")),
-)
-
-
 @cached(10)
 def batt():
     try:
@@ -59,11 +60,11 @@ def batt():
         return '<span foreground="grey">  --%</span>'
 
     chg = is_charging()
+
     for level, icon, (dis_col, chg_col) in _BATTERY_STATES:
         if v >= level:
             color = chg_col if chg else dis_col
-            final_icon = (
-                " " + icon if chg else icon
-            )  # ⚡ add lightning icon if charging
+            final_icon = " " + icon if chg else icon
             return fmt(final_icon, v, color)
 
+    return fmt("", v, "red")

@@ -14,7 +14,7 @@ def get_current_volume():
         return 0
 
 
-@cached(1)
+@cached(10)
 def vol():
     try:
         output = subprocess.check_output(
@@ -59,51 +59,3 @@ def vol_down(qtile=None):
 def vol_mute(qtile=None):
     subprocess.run("pactl set-sink-mute @DEFAULT_SINK@ toggle", shell=True)
     vol(force=True)
-
-
-# ----------------------- amixer vol -------------------------
-# def get_current_volume():
-#     try:
-#         output = subprocess.check_output("amixer get Master", shell=True).decode()
-#         match = re.search(r"\[(\d+)%\]", output)
-#         return int(match.group(1)) if match else 0
-#     except Exception:
-#         return 0
-#
-#
-# @cached(1)
-# def vol():
-#     try:
-#         output = subprocess.check_output("amixer get Master", shell=True).decode()
-#         volume_match = re.search(r"\[(\d+)%\]", output)
-#         mute_match = re.search(r"\[(on|off)\]", output)
-#         volume = int(volume_match.group(1)) if volume_match else 0
-#         muted = mute_match and mute_match.group(1) == "off"
-#     except Exception:
-#         return fmt("󰖁", 0, "dimgrey")
-#
-#     if muted:
-#         return fmt("󰝟", volume, "dimgrey")
-#     elif volume >= 70:
-#         return fmt("󰕾", volume, "salmon")
-#     elif volume >= 40:
-#         return fmt("󰖀", volume, "orchid")
-#     elif volume > 0:
-#         return fmt("󰕿", volume, "springgreen")
-#     else:
-#         return fmt("󰕿", volume, "palegreen")
-#
-#
-# def vol_up(qtile=None):
-#     subprocess.run("amixer set Master 2%+", shell=True)
-#     vol(force=True)
-#
-#
-# def vol_down(qtile=None):
-#     subprocess.run("amixer set Master 2%-", shell=True)
-#     vol(force=True)
-#
-#
-# def vol_mute(qtile=None):
-#     subprocess.run("amixer set Master toggle", shell=True)
-#     vol(force=True)
