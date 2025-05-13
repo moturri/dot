@@ -7,7 +7,10 @@ return {
     "lewis6991/gitsigns.nvim",
     version = "*",
     config = function()
-      require("gitsigns").setup({
+      local gitsigns = require("gitsigns")
+
+      -- Default configuration for GitSigns
+      gitsigns.setup({
         signs = {
           add = { text = " " },
           change = { text = " " },
@@ -22,7 +25,7 @@ return {
           conflict = { text = " " },
         },
         preview_config = {
-          border = "rounded",
+          border = "rounded", -- Preview border style
         },
         current_line_blame = false,
         current_line_blame_opts = {
@@ -31,15 +34,17 @@ return {
           delay = 500,
         },
         on_attach = function(bufnr)
+          -- Local alias to `gitsigns`
           local gs = package.loaded.gitsigns
 
-          local function map(mode, l, r, opts)
+          -- Helper function to map keys with buffer-specific options
+          local function map(mode, lhs, rhs, opts)
             opts = opts or {}
             opts.buffer = bufnr
-            vim.keymap.set(mode, l, r, opts)
+            vim.keymap.set(mode, lhs, rhs, opts)
           end
 
-          -- Navigation
+          -- Key mappings for navigation and actions
           map("n", "]c", function()
             if vim.wo.diff then
               return "]c"
@@ -60,7 +65,7 @@ return {
             return "<Ignore>"
           end, { expr = true })
 
-          -- Actions
+          -- Git action mappings
           map("n", "<leader>gp", gs.preview_hunk)
           map("n", "<leader>gt", gs.toggle_current_line_blame)
           map("n", "<leader>ga", gs.stage_hunk)

@@ -1,12 +1,11 @@
 return {
   {
     "nvim-lualine/lualine.nvim",
-    version = "*",
-    lazy = false,
+    lazy = true,
+    event = "BufRead",                -- Lazy load on BufRead
     dependencies = {
-      "kyazdani42/nvim-web-devicons",
+      "kyazdani42/nvim-web-devicons", -- No version needed
       "j-hui/fidget.nvim",
-      version = "*",
     },
     config = function()
       require("lualine").setup({
@@ -20,13 +19,11 @@ return {
             winbar = {},
           },
           always_divide_middle = true,
-          globalstatus = true,
+          globalstatus = true, -- Ensure theme supports this
         },
 
         sections = {
-          lualine_a = {
-            { "mode", icon = "" },
-          },
+          lualine_a = { { "mode", icon = "" } },
           lualine_b = {
             { "branch", icon = "" },
             {
@@ -87,10 +84,7 @@ return {
               cond = function()
                 return vim.fn.executable("node") == 1
                     and vim.tbl_contains({
-                      "javascript",
-                      "typescript",
-                      "javascriptreact",
-                      "typescriptreact",
+                      "javascript", "typescript", "javascriptreact", "typescriptreact",
                     }, vim.bo.filetype)
               end,
             },

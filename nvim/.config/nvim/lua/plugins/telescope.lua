@@ -14,7 +14,9 @@ return {
       local telescope = require("telescope")
       local actions = require("telescope.actions")
       local themes = require("telescope.themes")
+      local builtin = require("telescope.builtin")
 
+      -- Setup Telescope
       telescope.setup({
         defaults = {
           prompt_prefix = "󰡦 ",
@@ -32,11 +34,7 @@ return {
             },
           },
           path_display = { "truncate" },
-          file_ignore_patterns = {
-            "node_modules",
-            ".git/",
-            ".cache",
-          },
+          file_ignore_patterns = { "node_modules", ".git/", ".cache" },
           mappings = {
             i = {
               ["<C-n>"] = actions.move_selection_next,
@@ -64,9 +62,7 @@ return {
             previewer = false,
             sort_lastused = true,
           },
-          help_tags = {
-            theme = "dropdown",
-          },
+          help_tags = { theme = "dropdown" },
           oldfiles = {
             theme = "dropdown",
             previewer = false,
@@ -83,21 +79,18 @@ return {
         },
       })
 
+      -- Load UI-Select extension
       telescope.load_extension("ui-select")
 
-      -- Keymaps
-      local builtin = require("telescope.builtin")
-
-      -- Core file navigation
+      -- Keymaps for Telescope pickers
       vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find Files" })
-      vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live Grep" })
+      -- vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live Grep" })
       vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Buffers" })
       vim.keymap.set("n", "<leader>fl", builtin.oldfiles, { desc = "Recent Files" })
       vim.keymap.set("n", "<leader>f/", builtin.current_buffer_fuzzy_find, { desc = "Search in Current Buffer" })
 
       -- Reference & documentation
       vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help Tags" })
-      -- vim.keymap.set("n", "<leader>fm", builtin.man_pages, { desc = "Man Pages" })
       vim.keymap.set("n", "<leader>fc", builtin.commands, { desc = "Commands" })
 
       -- Vim resources

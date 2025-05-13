@@ -1,18 +1,27 @@
 local opt = vim.opt
 
+-- Leader key
+vim.g.mapleader = " "
+
 -- General settings
 vim.g.have_nerd_font = true
 vim.scriptencoding = "utf-8"
-vim.o.background = "dark"
-vim.g.mapleader = " "
+opt.background = "dark"
 opt.termguicolors = true
 opt.mouse = "a"
 opt.timeoutlen = 500
 opt.scrolloff = 20
-opt.list = true
-opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 opt.showmode = false
-opt.signcolumn = "yes"
+opt.signcolumn = "yes:1"
+opt.clipboard = "unnamedplus"
+opt.cursorline = true
+opt.updatetime = 250
+
+-- Persistent undo
+opt.undofile = true
+local undodir = vim.fn.stdpath("cache") .. "/undo"
+opt.undodir = undodir
+vim.fn.mkdir(undodir, "p")
 
 -- Indentation
 opt.tabstop = 2
@@ -22,11 +31,12 @@ opt.expandtab = true
 opt.smartindent = true
 opt.autoindent = true
 
--- Folding (Treesitter-aware)
+-- Folding
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldenable = true
 opt.foldlevelstart = 4
+opt.foldlevel = 99
 opt.foldcolumn = "1"
 
 -- Search
@@ -42,7 +52,16 @@ opt.relativenumber = true
 opt.colorcolumn = "100"
 opt.cmdheight = 2
 opt.showtabline = 2
-opt.undofile = true
+opt.showmatch = true
+opt.list = true
+opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+
+-- Completion
+opt.completeopt = { "menuone", "noselect" }
+
+-- Wildmenu
+opt.wildmenu = true
+opt.wildmode = { "longest", "list", "full" }
 
 -- Window/Buffer
 opt.splitright = true
@@ -50,6 +69,8 @@ opt.splitbelow = true
 opt.selection = "exclusive"
 opt.modifiable = true
 
--- Key mappings
+-- Key Mappings
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlighting" })
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })

@@ -1,42 +1,90 @@
 return {
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    version = "*", -- You could specify a stable version here
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      "windwp/nvim-ts-autotag",
-      "JoosepAlviste/nvim-ts-context-commentstring",
-    },
-    config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = {
-          "javascript",
-          "lua",
-          "typescript",
-          "python",           -- Limit this to what you need
+  "nvim-treesitter/nvim-treesitter",
+  build = ":TSUpdate",
+  event = { "BufReadPost", "BufNewFile" },
+  dependencies = {
+    { "nvim-treesitter/nvim-treesitter-textobjects" },
+    { "windwp/nvim-ts-autotag" },
+    { "JoosepAlviste/nvim-ts-context-commentstring" },
+  },
+  config = function()
+    require("nvim-treesitter.configs").setup({
+      ensure_installed = {
+        "bash", "css", "html", "javascript", "json",
+        "lua", "markdown", "python", "typescript", "yaml",
+      },
+      sync_install = false,
+      highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = false,
+      },
+      indent = { enable = true },
+      incremental_selection = {
+        enable = true,
+        keymaps = {
+          init_selection = "<C-space>",
+          node_incremental = "<C-space>",
+          scope_incremental = "<C-s>",
+          node_decremental = "<C-backspace>",
         },
-        sync_install = false, -- Already in place for faster startup
-        highlight = {
+      },
+      autotag = { enable = true },
+      textobjects = {
+        select = {
           enable = true,
-          additional_vim_regex_highlighting = false, -- Disabling regex highlighting
-          disable = { "markdown", "html" },          -- Disable for unnecessary languages
-        },
-        indent = { enable = true },
-        incremental_selection = {
-          enable = false, -- Disable if not using it
-        },
-        autotag = { enable = true },
-        textobjects = {
-          select = {
-            enable = false, -- Disable if not using it
+          lookahead = true,
+          keymaps = {
+            ["af"] = "@function.outer",
+            ["if"] = "@function.inner",
+            ["ac"] = "@class.outer",
+            ["ic"] = "@class.inner",
+            ["aa"] = "@parameter.outer",
+            ["ia"] = "@parameter.inner",
+            ["ai"] = "@conditional.outer",
+            ["ii"] = "@conditional.inner",
+            ["al"] = "@loop.outer",
+            ["il"] = "@loop.inner",
+            ["ab"] = "@block.outer",
+            ["ib"] = "@block.inner",
+            ["as"] = "@statement.outer",
           },
         },
-      })
+        move = {
+          enable = true,
+          set_jumps = true,
+          goto_next_start = {
+            ["]f"] = "@function.outer",
+            ["]c"] = "@class.outer",
+            ["]a"] = "@parameter.outer",
+            ["]i"] = "@conditional.outer",
+            ["]l"] = "@loop.outer",
+            ["]b"] = "@block.outer",
+            ["]s"] = "@statement.outer",
+          },
+          goto_previous_start = {
+            ["[f"] = "@function.outer",
+            ["[c"] = "@class.outer",
+            ["[a"] = "@parameter.outer",
+            ["[i"] = "@conditional.outer",
+            ["[l"] = "@loop.outer",
+            ["[b"] = "@block.outer",
+            ["[s"] = "@statement.outer",
+          },
+        },
+        swap = {
+          enable = true,
+          swap_next = {
+            ["<leader>sn"] = "@parameter.inner",
+          },
+          swap_previous = {
+            ["<leader>sp"] = "@parameter.inner",
+          },
+        },
+      },
+    })
 
-      -- Context commentstring module
-      vim.g.skip_ts_context_commentstring_module = true
-      require("ts_context_commentstring").setup({})
-    end,
-  },
+    -- Only needed if using Comment.nvim
+    vim.g.skip_ts_context_commentstring_module = true
+    require("ts_context_commentstring").setup({})
+  end,
 }

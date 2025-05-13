@@ -1,32 +1,45 @@
 return {
+  -- Mason Setup
   {
     "williamboman/mason.nvim",
     version = "*",
-    lazy = false,
+    lazy = true,
+    event = "BufRead", -- Lazy load on BufRead
     config = function()
-      require("mason").setup()
+      require("mason").setup({
+        ui = {
+          border = "rounded",          -- Optional border styling for Mason UI
+        },
+        automatic_installation = true, -- Automatically install missing servers
+      })
 
       -- Ensure fidget is installed properly
       local fidget_ok, fidget = pcall(require, "fidget")
       if fidget_ok then
         fidget.setup({})
+      else
+        vim.notify("Fidget plugin not found. Some features may be missing.")
       end
     end,
   },
 
+  -- Mason-LSPConfig Setup
   {
     "williamboman/mason-lspconfig.nvim",
     version = "*",
-    lazy = false,
+    lazy = true,
+    event = "BufRead", -- Lazy load on BufRead
     opts = {
       automatic_installation = true,
     },
   },
 
+  -- LSPConfig Setup
   {
     "neovim/nvim-lspconfig",
     version = "*",
-    lazy = false,
+    lazy = true,
+    event = "BufRead", -- Lazy load on BufRead
     config = function()
       local lspconfig = require("lspconfig")
       local mason_lspconfig = require("mason-lspconfig")
@@ -57,7 +70,7 @@ return {
         end
       end
 
-      -- Updated diagnostic config (no deprecated sign_define)
+      -- Diagnostic config (no deprecated sign_define)
       vim.diagnostic.config({
         virtual_text = true,
         signs = {
