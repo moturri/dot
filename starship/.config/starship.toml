@@ -1,63 +1,42 @@
 format = """
-[](surface0)\
+[](mantle)\
 $os\
-$username\
-[](bg:mantle fg:surface0)\
+[](bg:mantle fg:mantle)\
 $directory\
-[](fg:mantle bg:green)\
+[](fg:mantle bg:deep_purple)\
 $git_branch\
 $git_status\
-[](fg:green bg:blue)\
-$c\
-$rust\
-$golang\
-$nodejs\
-$php\
-$java\
-$kotlin\
-$haskell\
-$python\
-[](fg:blue bg:purple)\
-$docker_context\
-[ ](fg:purple)\
+[](fg:deep_purple bg:surface1)\
+[ ](fg:surface1)\
 $line_break$character"""
 
-palette = 'term256_dark'
+palette = 'base'
 
-[palettes.term256_dark]
+[palettes.base]
 # Base Colors
 text = "#cdd6f4"
-surface0 = "#313244"
-surface1 = "#45475a"
-mantle = "#181825"
+surface1 = "#4a4c68"
+mantle = "#191919"
 base = "#1e1e2e"
 
-# Accent Colors (vibrant)
+# Accent Colors
 green = "#a6e3a1"
 blue = "#89b4fa"
 purple = "#cba6f7"
+deep_purple = "#a58bd4"
+yellow = "#f9e2af"
+deep_yellow = "#e0c063"
 peach = "#fab387"
 red = "#f38ba8"
-yellow = "#f9e2af"
 teal = "#94e2d5"
 lavender = "#b4befe"
-
-color_fg0 = "#cdd6f4"
-color_bg1 = "#1e1e2e"
-color_bg3 = "#313244"
 
 [os.symbols]
 Arch = "󰣇"
 
 [os]
 disabled = false
-style = "bg:surface0 fg:text"
-
-[username]
-show_always = true
-style_user = "bg:surface0 fg:text"
-style_root = "bg:surface0 fg:text"
-format = '[ $user ]($style)'
+style = "bg:mantle fg:text"
 
 [directory]
 style = "fg:text bg:mantle"
@@ -73,81 +52,16 @@ truncation_symbol = "…/"
 "Developer" = "󰲋 "
 
 [git_branch]
-symbol = ""
-style = "bg:green"
-format = '[[ $symbol $branch ](fg:base bg:green)]($style)'
+symbol = ""
+style = "bg:deep_purple"
+format = '[[ $symbol $branch ](fg:base bg:deep_purple)]($style)'
 
 [git_status]
-# disabled = true
-# ignore_submodules = true
-# untracked_files = "normal"
-style = "fg:base bg:green"
-format = '[$all_status$ahead_behind]($style)'
-ahead = '⇡${count}'
-diverged = '⇕⇡${ahead_count}⇣${behind_count}'
-behind = '⇣${count}'
+style = "fg:base bg:deep_purple"
+format = '[$all_status$_ahead_behind]($style)'
+ahead = '^${count}'
+behind = 'v${count}'
 
-# Language Modules Grouped with bg:blue
-[c]
-disabled = true
-symbol = " "
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[rust]
-disabled = true
-symbol = ""
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[golang]
-disabled = true
-symbol = ""
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[nodejs]
-disabled = true
-symbol = ""
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[php]
-disabled = true
-symbol = ""
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[java]
-disabled = true
-symbol = " "
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[kotlin]
-disabled = true
-symbol = ""
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[haskell]
-disabled = true
-symbol = ""
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[python]
-symbol = ""
-style = "bg:blue"
-format = '[[ $symbol( $version) ](fg:base bg:blue)]($style)'
-
-[docker_context]
-symbol = ""
-style = "bg:purple"
-format = '[[ $symbol( $context) ](fg:base bg:purple)]($style)'
-
-[time]
-disabled = true
 
 [line_break]
 disabled = false
@@ -160,4 +74,3 @@ vimcmd_symbol = '[](bold fg:teal)'
 vimcmd_replace_one_symbol = '[](bold fg:purple)'
 vimcmd_replace_symbol = '[](bold fg:purple)'
 vimcmd_visual_symbol = '[](bold fg:lavender)'
-
