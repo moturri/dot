@@ -31,7 +31,7 @@ def get_current_volume() -> int:
         return 0
 
 
-@cached(600)
+@cached(0.5)
 def vol() -> str:
     """
     Returns formatted volume widget string.

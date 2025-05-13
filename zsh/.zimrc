@@ -29,7 +29,7 @@ zmodule kiesman99/zim-zoxide
 # Adds aliases and better defaults for exa.
 zmodule exa
 # Provides a convenient way to load ssh-agent.
-# zmodule ssh
+zmodule ssh
 # Shown when there is no command and user presses ENTER.
 # zmodule magic-enter
 
@@ -39,9 +39,10 @@ zmodule exa
 
 # zmodule duration-info
 # zmodule eriner
-zmodule agnoster
-zmodule git-info
-zmodule prompt-pwd
+# zmodule agnoster
+# zmodule git-info
+# zmodule prompt-pwd
+zmodule joke/zim-starship
 
 
 #

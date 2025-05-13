@@ -33,7 +33,7 @@ def get_current_mic_volume() -> int:
         return 0
 
 
-@cached(600)
+@cached(0.5)
 def mic() -> str:
     """
     Returns formatted microphone widget string.
