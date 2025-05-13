@@ -1,14 +1,14 @@
 from pathlib import Path
 
-from utils import cached, fmt, get_file_int
+from utils import cached, fmt
 
-# Paths to battery and AC adapter
+# Paths
 _BAT_CAPACITY_PATH = Path("/sys/class/power_supply/BAT0/capacity")
 _AC_ONLINE_PATHS = tuple(
     p / "online" for p in Path("/sys/class/power_supply").glob("AC*")
 )
 
-# Battery states: (threshold, icon, (discharging_color, charging_color))
+# Threshold icons: (min%, icon, (color on battery, color on AC))
 _BATTERY_STATES = [
     (80, "", ("lime", "aqua")),
     (60, "", ("palegreen", "aqua")),
@@ -18,30 +18,39 @@ _BATTERY_STATES = [
 ]
 
 
-def is_charging():
-    """Check if the device is currently charging (AC connected)."""
+def is_charging() -> bool:
+    """
+    Returns True if any AC adapter is online.
+    """
     for ac_path in _AC_ONLINE_PATHS:
-        if ac_path.exists():
-            status = ac_path.read_text().strip()
-            if status == "1":
+        try:
+            if ac_path.exists() and ac_path.read_text().strip() == "1":
                 return True
+        except Exception:
+            continue
     return False
 
 
 @cached(10)
-def batt():
-    """Return formatted battery level string with icon and color."""
-    v = get_file_int(_BAT_CAPACITY_PATH)
-    if v is None:
-        return '<span foreground="grey">  --%</span>'
+def batt() -> str:
+    """
+    Returns formatted battery widget string with charging status and color.
+    """
+    try:
+        if not _BAT_CAPACITY_PATH.exists():
+            raise FileNotFoundError("Battery capacity file not found")
 
-    chg = is_charging()
+        percent = int(_BAT_CAPACITY_PATH.read_text().strip())
+        charging = is_charging()
 
-    for level, icon, (dis_col, chg_col) in _BATTERY_STATES:
-        if v >= level:
-            color = chg_col if chg else dis_col
-            final_icon = " " + icon if chg else icon
-            return fmt(final_icon, v, color)
+        for level, icon, (dis_col, chg_col) in _BATTERY_STATES:
+            if percent >= level:
+                color = chg_col if charging else dis_col
+                display_icon = f" {icon}" if charging else icon
+                return fmt(display_icon, percent, color)
 
-    # Fallback (shouldn't really hit this)
-    return fmt("", v, "red")
+    except Exception as e:
+        print(f"[battery] Error: {e}")
+        return '<span foreground="grey">  --%</span>'
+
+    return '<span foreground="grey">  --%</span>'

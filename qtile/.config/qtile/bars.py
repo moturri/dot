@@ -1,13 +1,12 @@
 import subprocess
 
 from battery import batt
-from brightness import bright, bright_up, bright_down
-from mic import mic, mic_down, mic_mute, mic_up
-from volume import vol, vol_down, vol_mute, vol_up
-
+from brightness import bright, bright_down, bright_up
 from libqtile.lazy import lazy
+from mic import mic, mic_down, mic_mute, mic_up
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
+from volume import vol, vol_down, vol_mute, vol_up
 
 rangi = ["#000000", "#FFFFFF"]
 accent_color = "#6f3aea"
@@ -81,7 +80,7 @@ ming = [
         **wdecor,
     ),
     widget.Spacer(length=10),
-    widget.GenPollText(func=batt, update_interval=2, **wdecor),
+    widget.GenPollText(func=batt, update_interval=10, **wdecor),
 ]
 
 
