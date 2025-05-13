@@ -1,4 +1,5 @@
 from mic import mic_mute
+from brightness import bright_up, bright_down
 from volume import vol_down, vol_mute, vol_up
 from libqtile.config import Click, Drag, DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
@@ -47,8 +48,8 @@ keys = [
     Key([mod], "comma", lazy.prev_screen()),
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
     Key([mod], "Print", lazy.spawn("screengrab")),
-    Key([], "XF86MonBrightnessDown", lazy.spawn("brillo -U 2")),
-    Key([], "XF86MonBrightnessUp", lazy.spawn("brillo -A 2")),
+    Key([], "XF86MonBrightnessDown", lazy.function(bright_down)),
+    Key([], "XF86MonBrightnessUp", lazy.function(bright_up)),
     Key([], "XF86AudioLowerVolume", lazy.function(vol_down)),
     Key([], "XF86AudioRaiseVolume", lazy.function(vol_up)),
     Key([], "XF86AudioMicMute", lazy.function(mic_mute)),

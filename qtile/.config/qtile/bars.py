@@ -1,6 +1,7 @@
 import subprocess
 
-from functions import batt, bright
+from battery import batt
+from brightness import bright, bright_up, bright_down
 from mic import mic, mic_down, mic_mute, mic_up
 from volume import vol, vol_down, vol_mute, vol_up
 
@@ -113,10 +114,10 @@ def main():
             ),
             widget.GenPollText(
                 func=bright,
-                update_interval=0.2,
+                update_interval=0.5,
                 mouse_callbacks={
-                    "Button4": lazy.spawn("brillo -A 2"),
-                    "Button5": lazy.spawn("brillo -U 2"),
+                    "Button4": lazy.function(bright_up),
+                    "Button5": lazy.function(bright_down),
                 },
                 **wdecor,
             ),
