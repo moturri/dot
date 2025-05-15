@@ -1,13 +1,10 @@
 format = """
-[](mantle)\
-$os\
-[](bg:mantle fg:mantle)\
+[](dark)\
 $directory\
-[](fg:mantle bg:deep_purple)\
+[](fg:dark bg:deep_purple)\
 $git_branch\
 $git_status\
-[](fg:deep_purple bg:surface1)\
-[ ](fg:surface1)\
+[](fg:deep_purple)\
 $line_break$character"""
 
 palette = 'base'
@@ -15,8 +12,7 @@ palette = 'base'
 [palettes.base]
 # Base Colors
 text = "#cdd6f4"
-surface1 = "#4a4c68"
-mantle = "#191919"
+dark = "#191919"
 base = "#1e1e2e"
 
 # Accent Colors
@@ -31,15 +27,8 @@ red = "#f38ba8"
 teal = "#94e2d5"
 lavender = "#b4befe"
 
-[os.symbols]
-Arch = "󰣇"
-
-[os]
-disabled = false
-style = "bg:mantle fg:text"
-
 [directory]
-style = "fg:text bg:mantle"
+style = "fg:text bg:dark"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -61,7 +50,6 @@ style = "fg:base bg:deep_purple"
 format = '[$all_status$_ahead_behind]($style)'
 ahead = '^${count}'
 behind = 'v${count}'
-
 
 [line_break]
 disabled = false
