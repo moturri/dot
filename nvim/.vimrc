@@ -23,19 +23,20 @@ set foldmethod=manual
 set foldlevelstart=1
 set foldcolumn=1
 set showtabline=2
-
 set tabstop=4
 set shiftwidth=4
 set expandtab
 set smartindent
 set autoindent
-
 set laststatus=2
 set showmatch
 set timeoutlen=300
+set undodir=~/.vim/undo//
+set clipboard+=unnamedplus
+highlight FoldColumn guibg=#000000 guifg=#5f5f5f
+highlight SignColumn guibg=#000000
 
 let NERDTreeShowHidden=1
-
 let g:airline_powerline_fonts = 1
 let g:airline_highlighting_cache = 1
 let g:airline#extensions#tabline#enabled = 1
@@ -48,7 +49,3 @@ nnoremap <C-n> :NERDTreeToggle<CR>
 
 filetype plugin indent on
 syntax enable
-
-set undodir=~/.vim/undo//
-set clipboard+=unnamedplus
-
