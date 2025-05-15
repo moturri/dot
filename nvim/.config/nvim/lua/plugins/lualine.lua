@@ -2,9 +2,9 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     lazy = true,
-    event = "BufRead",                -- Lazy load on BufRead
+    event = "BufRead",
     dependencies = {
-      "kyazdani42/nvim-web-devicons", -- No version needed
+      "kyazdani42/nvim-web-devicons",
       "j-hui/fidget.nvim",
     },
     config = function()
@@ -19,7 +19,7 @@ return {
             winbar = {},
           },
           always_divide_middle = true,
-          globalstatus = true, -- Ensure theme supports this
+          globalstatus = true,
         },
 
         sections = {
