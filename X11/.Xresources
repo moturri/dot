@@ -1,17 +1,21 @@
-! Set font size and family
+! ────── Font Settings ──────
 XTerm*faceName: JetBrainsMonoNL Nerd Font
 XTerm*faceSize: 12
 XTerm*faceAntialias: true
 XTerm*faceBold: JetBrainsMonoNL Nerd Font:bold
 
-! Enable True Color (24-bit color support)
+! ────── True Color Support ──────
 XTerm*termName: xterm-256color
 XTerm*allowColorOps: true
 XTerm*dynamicColors: true
 
-! Colorscheme (OLED-optimized Dracula)
-XTerm*foreground: #f8f8f2
-XTerm*background: #000000
+! ────── Dracula OLED Theme ──────
+XTerm*foreground:  #f8f8f2
+XTerm*background:  #000000
+XTerm*cursorColor: #ff79c6
+XTerm*pointerColor: #f8f8f2
+
+! Base Colors
 XTerm*color0:  #000000
 XTerm*color1:  #ff5555
 XTerm*color2:  #50fa7b
@@ -29,14 +33,12 @@ XTerm*color13: #ff92d0
 XTerm*color14: #9aedfe
 XTerm*color15: #ffffff
 
-! Cursor customization
+! ────── Cursor Settings ──────
 XTerm*cursorBlink: true
-XTerm*cursorColor: #ff79c6
 XTerm*cursorShape: block
-XTerm*pointerColor: #f8f8f2
 XTerm*cursorUnderline: false
 
-! Scrollback buffer
+! ────── Scrollback & Mouse ──────
 XTerm*saveLines: 10000
 XTerm*scrollBar: true
 XTerm*rightScrollBar: true
@@ -44,42 +46,39 @@ XTerm*scrollTtyOutput: false
 XTerm*scrollKey: true
 XTerm*multiScroll: true
 
-! Performance improvements
+! ────── Performance Tweaks ──────
 XTerm*fastScroll: true
 XTerm*jumpScroll: true
 XTerm*multiClickTime: 250
 
-! Input behavior
+! ────── Input & Keyboard ──────
 XTerm*boldMode: true
 XTerm*utf8: 2
-XTerm*allowBoldFonts: true 
+XTerm*allowBoldFonts: true
 XTerm*metaSendsEscape: true
 XTerm*modifyCursorKeys: 2
-XTerm*disallowedWindowOps: 20,21,SetXprop
-XTerm*loginShell: true
 XTerm*eightBitInput: false
 XTerm*backarrowKey: false
 
-! Copy/Paste improvements
+! ────── Clipboard / Selection ──────
 XTerm*selectToClipboard: true
 XTerm*trimSelection: true
 XTerm*highlightSelection: true
 
-! Bell behavior
+! ────── Bell Behavior ──────
 XTerm*visualBell: true
 XTerm*bellIsUrgent: true
 
-! Remove window border
+! ────── Window Aesthetics ──────
 XTerm*borderWidth: 0
 XTerm*internalBorder: 8
-
-! Set window title features
 XTerm*title: XTerm
 XTerm*iconName: terminal
 XTerm*allowTitleOps: true
 XTerm*allowWindowOps: true
+XTerm*disallowedWindowOps: 20,21,SetXprop
 
-! Key bindings for convenience
+! ────── Keyboard Shortcuts ──────
 XTerm*translations: #override \
     Shift Ctrl <Key>C: copy-selection(CLIPBOARD) \n\
     Shift Ctrl <Key>V: insert-selection(CLIPBOARD) \n\
@@ -88,3 +87,4 @@ XTerm*translations: #override \
     Shift Ctrl <Key>0: set-vt-font(d) \n\
     Alt <Key>1: set-terminal-attributes() \n\
     Shift Ctrl <Key>N: spawn-new-terminal()
+
