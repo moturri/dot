@@ -98,6 +98,7 @@ groups = [
         matches=[
             Match(wm_class="stacer"),
             Match(wm_class="pcmanfm-qt"),
+            Match(wm_class="vscodium"),
         ],
     ),
     Group(
@@ -205,7 +206,7 @@ groups.append(
                 opacity=1,
             ),
             DropDown(
-                "iwgtk", "iwgtk", width=0.2, height=0.6, x=0.4, y=0.1, opacity=0.9
+                "iwgtk", "iwgtk", width=0.4, height=0.6, x=0.3, y=0.1, opacity=0.9
             ),
             DropDown(
                 "kitty",
@@ -237,6 +238,15 @@ groups.append(
                 y=0.1,
                 opacity=1,
             ),
+            DropDown(
+                "pcmanfm-qt",
+                "pcmanfm-qt",
+                width=0.7,
+                height=0.7,
+                x=0.15,
+                y=0.1,
+                opacity=1,
+            ),
         ],
     )
 )
@@ -249,6 +259,7 @@ scratches = {
     "localsend": "l",
     "obsidian": "o",
     "pavucontrol-qt": "v",
+    "pcmanfm-qt": "p",
 }
 
 

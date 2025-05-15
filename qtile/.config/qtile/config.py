@@ -2,7 +2,7 @@ import os
 import subprocess
 
 from bars import main, misc
-from keys import groups, keys, mouse
+from keys import *
 from libqtile import bar, hook, layout
 from libqtile.config import Match, Screen
 

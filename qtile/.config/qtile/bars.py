@@ -40,6 +40,16 @@ yao = [
 
 
 ming = [
+    widget.GenPollText(
+        func=bright,
+        update_interval=0.5,
+        mouse_callbacks={
+            "Button4": lazy.function(bright_up),
+            "Button5": lazy.function(bright_down),
+        },
+        **wdecor,
+    ),
+    widget.Spacer(length=10),
     widget.Mpris2(
         name="mpris",
         format=" 󰝚",
@@ -111,17 +121,8 @@ def main():
                 margin=3,
                 padding=5,
             ),
-            widget.GenPollText(
-                func=bright,
-                update_interval=0.5,
-                mouse_callbacks={
-                    "Button4": lazy.function(bright_up),
-                    "Button5": lazy.function(bright_down),
-                },
-                **wdecor,
-            ),
             widget.Systray(padding=10),
-            widget.Spacer(length=5),
+            widget.Spacer(length=10),
         ]
         + ming
     )

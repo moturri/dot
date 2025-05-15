@@ -6,7 +6,7 @@ from utils import cached, fmt
 # Volume icons and colors based on level
 _VOLUME_STATES = [
     (70, "󰕾", "salmon"),
-    (40, "󰖀", "orchid"),
+    (40, "󰖀", "mediumpurple"),
     (15, "󰕿", "springgreen"),
     (0, "󰕿", "palegreen"),
 ]

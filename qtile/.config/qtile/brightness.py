@@ -11,13 +11,13 @@ _MAX_BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/max_brightness
 _BRIGHTNESS_ICONS = [
     (80, "󰃠", "gold"),
     (60, "󰃝", "darkorange"),
-    (40, "󰃟", "darkorchid"),
-    (20, "󰃞", "lightgreen"),
+    (40, "󰃟", "tan"),
+    (20, "󰃞", "lime"),
     (0, "󰃜", "dimgrey"),
 ]
 
 
-@cached(600)
+@cached(0.5)
 def bright():
     try:
         current = int(_BRIGHTNESS_PATH.read_text().strip())
@@ -51,3 +51,4 @@ def bright_down(qtile=None):
         ["brillo", "-U", "2"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
     bright(force=True)
+

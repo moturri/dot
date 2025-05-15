@@ -10,8 +10,8 @@ _ACTIVE_ICON = "󰍬"
 # Volume thresholds and colors
 _MIC_VOLUME_STATES = [
     (70, "salmon"),
-    (40, "violet"),
-    (1, "springgreen"),
+    (40, "mediumpurple"),
+    (15, "springgreen"),
     (0, "palegreen"),
 ]
 
