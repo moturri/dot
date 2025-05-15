@@ -74,3 +74,15 @@ vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagn
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlighting" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
+
+-- Recall cursor position
+vim.api.nvim_create_autocmd("BufReadPost", {
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
