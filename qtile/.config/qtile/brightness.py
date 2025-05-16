@@ -1,13 +1,12 @@
 import subprocess
 from pathlib import Path
-
 from utils import cached, fmt
 
-# Paths for brightness values
+# Brightness system paths
 _BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/brightness")
 _MAX_BRIGHTNESS_PATH = Path("/sys/class/backlight/intel_backlight/max_brightness")
 
-# Icon thresholds: (minimum %, icon, color)
+# Brightness levels: (min %, icon, color)
 _BRIGHTNESS_ICONS = [
     (80, "󰃠", "gold"),
     (60, "󰃝", "darkorange"),
@@ -16,15 +15,22 @@ _BRIGHTNESS_ICONS = [
     (0, "󰃜", "dimgrey"),
 ]
 
+# Fallback text for when brightness can't be read
+_FALLBACK = '<span foreground="grey">󰳲  --%</span>'
+
 
 @cached(0.5)
 def bright():
+    """
+    Returns formatted brightness string from system brightness files.
+    Falls back gracefully if data is unreadable.
+    """
     try:
         current = int(_BRIGHTNESS_PATH.read_text().strip())
         maximum = int(_MAX_BRIGHTNESS_PATH.read_text().strip())
 
-        if maximum == 0:
-            raise ValueError("Maximum brightness is zero")
+        if maximum <= 0:
+            raise ValueError("Invalid max brightness value")
 
         percent = int((current / maximum) * 100)
 
@@ -32,23 +38,34 @@ def bright():
             if percent >= level:
                 return fmt(icon, percent, color)
 
+        # Fallback to lowest icon if none matched
+        return fmt(_BRIGHTNESS_ICONS[-1][1], percent, _BRIGHTNESS_ICONS[-1][2])
+
     except Exception as e:
         print(f"[brightness] Error: {e}")
-        return '<span foreground="grey">󰳲  --%</span>'
-
-    return '<span foreground="grey">󰳲  --%</span>'
+        return _FALLBACK
 
 
-def bright_up(qtile=None):
+def bright_up(qtile=None, step=2):
+    """
+    Increases brightness using brillo.
+    """
     subprocess.run(
-        ["brillo", "-A", "2"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ["brillo", "-A", str(step)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     bright(force=True)
 
 
-def bright_down(qtile=None):
+def bright_down(qtile=None, step=2):
+    """
+    Decreases brightness using brillo.
+    """
     subprocess.run(
-        ["brillo", "-U", "2"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ["brillo", "-U", str(step)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     bright(force=True)
 
