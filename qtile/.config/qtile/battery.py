@@ -2,6 +2,10 @@ import subprocess
 import re
 from utils import cached, fmt
 
+# Pre-compile the regular expressions
+PERCENTAGE_PATTERN = re.compile(r"percentage:\s+(\d+)%")
+STATE_PATTERN = re.compile(r"state:\s+(\w+)")
+
 # Battery level thresholds: (min %, icon, (discharging color, charging color))
 _BATTERY_STATES = [
     (80, "", ("lime", "lime")),
@@ -26,11 +30,11 @@ def get_upower_output() -> str:
         )
         if not battery_path:
             raise RuntimeError("No battery device found")
-
         return subprocess.check_output(["upower", "-i", battery_path], text=True)
-
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"UPower call failed: {e}")
+    except Exception as e:
+        raise RuntimeError(f"Error retrieving battery info: {e}")
 
 
 def parse_upower(output: str) -> tuple[int, bool]:
@@ -38,8 +42,8 @@ def parse_upower(output: str) -> tuple[int, bool]:
     Extracts battery percentage and charging state from upower output.
     Returns (percentage, is_charging).
     """
-    percent_match = re.search(r"percentage:\s+(\d+)%", output)
-    state_match = re.search(r"state:\s+(\w+)", output)
+    percent_match = PERCENTAGE_PATTERN.search(output)
+    state_match = STATE_PATTERN.search(output)
 
     if not percent_match or not state_match:
         raise ValueError("Could not parse battery status from upower output")
@@ -53,19 +57,24 @@ def parse_upower(output: str) -> tuple[int, bool]:
 def batt() -> str:
     """
     Returns a formatted battery widget string with dynamic icon and color.
+
+    Uses a 10-second cache to reduce system calls while maintaining
+    reasonable accuracy for battery status display.
     """
     try:
         output = get_upower_output()
         percent, charging = parse_upower(output)
 
+        # Find the appropriate battery state based on percentage
         for level, icon, (dis_col, chg_col) in _BATTERY_STATES:
             if percent >= level:
                 color = chg_col if charging else dis_col
                 icon_display = f" {icon}" if charging else icon
                 return fmt(icon_display, percent, color)
 
+        # This should never happen as the lowest threshold is 0%,
+        # but included as a fallback
+        return _FALLBACK
     except Exception as e:
         print(f"[battery] Error: {e}")
         return _FALLBACK
-
-    return _FALLBACK
