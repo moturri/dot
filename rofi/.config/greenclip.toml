@@ -1,6 +1,6 @@
 
 [greenclip]
-  blacklisted_applications = ["keepassxc"]
+  blacklisted_applications = ["keepassxc bitwarden"]
   enable_image_support = true
   history_file = "/home/m/.cache/greenclip.history"
   image_cache_directory = "/tmp/greenclip"
