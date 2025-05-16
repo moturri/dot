@@ -2,35 +2,47 @@ import re
 import subprocess
 from utils import cached, fmt
 
-# Volume icons and color thresholds
+# Regex pattern for parsing 'wpctl get-volume' output
+VOLUME_PATTERN = re.compile(r"Volume:\s+(\d+(?:\.\d+)?)")
+
+# Volume display thresholds
 _VOLUME_STATES = [
-    (70, "󰕾", "salmon"),
-    (40, "󰖀", "mediumpurple"),
-    (15, "󰕿", "springgreen"),
-    (0, "󰕿", "palegreen"),
+    (70, "󰕾", "salmon"),  # High volume
+    (40, "󰖀", "mediumpurple"),  # Medium volume
+    (15, "󰕿", "springgreen"),  # Low volume
+    (0, "󰕿", "palegreen"),  # Very low
 ]
 
-# Muted icon/color
+# Muted icon & color
 _MUTED_ICON = "󰝟"
 _MUTED_COLOR = "dimgrey"
+
+# PipeWire default audio sink
+_DEFAULT_SINK = "@DEFAULT_AUDIO_SINK@"
 
 
 def get_volume_state() -> tuple[int, bool]:
     """
-    Returns the current volume and mute state of the default sink.
+    Returns the current volume (0–100) and mute status using wpctl.
     Falls back to (0, True) on error.
     """
     try:
-        volume_output = subprocess.check_output(
-            ["pactl", "get-sink-volume", "@DEFAULT_SINK@"], stderr=subprocess.DEVNULL
-        ).decode()
-        mute_output = subprocess.check_output(
-            ["pactl", "get-sink-mute", "@DEFAULT_SINK@"], stderr=subprocess.DEVNULL
-        ).decode()
+        output = (
+            subprocess.check_output(
+                ["wpctl", "get-volume", _DEFAULT_SINK], stderr=subprocess.DEVNULL
+            )
+            .decode()
+            .strip()
+        )
 
-        match = re.search(r"(\d+)%", volume_output)
-        volume = int(match.group(1)) if match else 0
-        muted = "yes" in mute_output.lower()
+        match = VOLUME_PATTERN.search(output)
+        if not match:
+            return 0, True
+
+        volume_float = float(match.group(1))
+        volume = int(volume_float * 100)
+        muted = "[MUTED]" in output
+
         return volume, muted
 
     except Exception as e:
@@ -41,19 +53,18 @@ def get_volume_state() -> tuple[int, bool]:
 @cached(0.5)
 def vol() -> str:
     """
-    Returns formatted volume widget string.
+    Returns formatted string for volume widget (icon + value + color).
     """
     try:
         volume, muted = get_volume_state()
-
         if muted:
             return fmt(_MUTED_ICON, volume, _MUTED_COLOR)
 
-        for level, icon, color in _VOLUME_STATES:
+        for level, icon, color in sorted(_VOLUME_STATES, reverse=True):
             if volume >= level:
                 return fmt(icon, volume, color)
-        return fmt(_VOLUME_STATES[-1][1], volume, _VOLUME_STATES[-1][2])
 
+        return fmt(_VOLUME_STATES[-1][1], volume, _VOLUME_STATES[-1][2])
     except Exception as e:
         print(f"[volume] Error: {e}")
         return fmt(_MUTED_ICON, 0, _MUTED_COLOR)
@@ -61,39 +72,70 @@ def vol() -> str:
 
 def vol_up(qtile=None, step=2):
     """
-    Increases system volume by `step` percent.
+    Increases system volume by `step` percent, capped at 100%.
     """
-    volume, _ = get_volume_state()
-    if volume < 100:
-        increment = min(step, 100 - volume)
+    if step <= 0:
+        return
+
+    try:
+        volume, _ = get_volume_state()
+        new_volume = min(100, volume + step)
         subprocess.run(
-            ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"+{increment}%"],
+            ["wpctl", "set-volume", _DEFAULT_SINK, f"{new_volume / 100:.2f}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+    except Exception as e:
+        print(f"[vol_up] Error: {e}")
     vol(force=True)
 
 
 def vol_down(qtile=None, step=2):
     """
-    Decreases system volume by `step` percent.
+    Decreases system volume by `step` percent, not below 0%.
     """
-    subprocess.run(
-        ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"-{step}%"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    if step <= 0:
+        return
+
+    try:
+        volume, _ = get_volume_state()
+        new_volume = max(0, volume - step)
+        subprocess.run(
+            ["wpctl", "set-volume", _DEFAULT_SINK, f"{new_volume / 100:.2f}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception as e:
+        print(f"[vol_down] Error: {e}")
     vol(force=True)
 
 
 def vol_mute(qtile=None):
     """
-    Toggles mute on the default sink.
+    Toggles mute on the default sink using wpctl.
     """
-    subprocess.run(
-        ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    try:
+        subprocess.run(
+            ["wpctl", "set-mute", _DEFAULT_SINK, "toggle"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception as e:
+        print(f"[vol_mute] Error: {e}")
     vol(force=True)
 
+
+def vol_set(level: int):
+    """
+    Sets system volume to an exact level (0–100).
+    """
+    level = max(0, min(level, 100))
+    try:
+        subprocess.run(
+            ["wpctl", "set-volume", _DEFAULT_SINK, f"{level / 100:.2f}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception as e:
+        print(f"[vol_set] Error: {e}")
+    vol(force=True)
