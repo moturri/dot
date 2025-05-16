@@ -216,6 +216,7 @@ groups.append(
                 x=0.1,
                 y=0.1,
                 opacity=1,
+                on_focus_lost_hide=True,
             ),
             DropDown(
                 "localsend",
@@ -246,6 +247,7 @@ groups.append(
                 x=0.15,
                 y=0.1,
                 opacity=1,
+                on_focus_lost_hide=True,
             ),
         ],
     )
