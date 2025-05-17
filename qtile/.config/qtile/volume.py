@@ -6,7 +6,7 @@ from utils import cached, fmt
 VOLUME_PATTERN = re.compile(r"Volume:\s+(\d+(?:\.\d+)?)")
 
 # Volume display thresholds
-_VOLUME_STATES = [
+VOLUME_STATES = [
     (70, "󰕾", "salmon"),  # High volume
     (40, "󰖀", "mediumpurple"),  # Medium volume
     (15, "󰕿", "springgreen"),  # Low volume
@@ -14,11 +14,11 @@ _VOLUME_STATES = [
 ]
 
 # Muted icon & color
-_MUTED_ICON = "󰝟"
-_MUTED_COLOR = "dimgrey"
+MUTED_ICON = "󰝟"
+MUTED_COLOR = "dimgrey"
 
 # PipeWire default audio sink
-_DEFAULT_SINK = "@DEFAULT_AUDIO_SINK@"
+DEFAULT_SINK = "@DEFAULT_AUDIO_SINK@"
 
 
 def get_volume_state() -> tuple[int, bool]:
@@ -29,7 +29,7 @@ def get_volume_state() -> tuple[int, bool]:
     try:
         output = (
             subprocess.check_output(
-                ["wpctl", "get-volume", _DEFAULT_SINK], stderr=subprocess.DEVNULL
+                ["wpctl", "get-volume", DEFAULT_SINK], stderr=subprocess.DEVNULL
             )
             .decode()
             .strip()
@@ -44,7 +44,6 @@ def get_volume_state() -> tuple[int, bool]:
         muted = "[MUTED]" in output
 
         return volume, muted
-
     except Exception as e:
         print(f"[volume] get_volume_state error: {e}")
         return 0, True
@@ -57,17 +56,18 @@ def vol() -> str:
     """
     try:
         volume, muted = get_volume_state()
-        if muted:
-            return fmt(_MUTED_ICON, volume, _MUTED_COLOR)
 
-        for level, icon, color in sorted(_VOLUME_STATES, reverse=True):
+        if muted:
+            return fmt(MUTED_ICON, volume, MUTED_COLOR)
+
+        for level, icon, color in sorted(VOLUME_STATES, reverse=True):
             if volume >= level:
                 return fmt(icon, volume, color)
 
-        return fmt(_VOLUME_STATES[-1][1], volume, _VOLUME_STATES[-1][2])
+        return fmt(VOLUME_STATES[-1][1], volume, VOLUME_STATES[-1][2])
     except Exception as e:
         print(f"[volume] Error: {e}")
-        return fmt(_MUTED_ICON, 0, _MUTED_COLOR)
+        return fmt(MUTED_ICON, 0, MUTED_COLOR)
 
 
 def vol_up(qtile=None, step=2):
@@ -81,12 +81,13 @@ def vol_up(qtile=None, step=2):
         volume, _ = get_volume_state()
         new_volume = min(100, volume + step)
         subprocess.run(
-            ["wpctl", "set-volume", _DEFAULT_SINK, f"{new_volume / 100:.2f}"],
+            ["wpctl", "set-volume", DEFAULT_SINK, f"{new_volume / 100:.2f}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except Exception as e:
         print(f"[vol_up] Error: {e}")
+
     vol(force=True)
 
 
@@ -101,12 +102,13 @@ def vol_down(qtile=None, step=2):
         volume, _ = get_volume_state()
         new_volume = max(0, volume - step)
         subprocess.run(
-            ["wpctl", "set-volume", _DEFAULT_SINK, f"{new_volume / 100:.2f}"],
+            ["wpctl", "set-volume", DEFAULT_SINK, f"{new_volume / 100:.2f}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except Exception as e:
         print(f"[vol_down] Error: {e}")
+
     vol(force=True)
 
 
@@ -116,12 +118,13 @@ def vol_mute(qtile=None):
     """
     try:
         subprocess.run(
-            ["wpctl", "set-mute", _DEFAULT_SINK, "toggle"],
+            ["wpctl", "set-mute", DEFAULT_SINK, "toggle"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except Exception as e:
         print(f"[vol_mute] Error: {e}")
+
     vol(force=True)
 
 
@@ -130,12 +133,15 @@ def vol_set(level: int):
     Sets system volume to an exact level (0–100).
     """
     level = max(0, min(level, 100))
+
     try:
         subprocess.run(
-            ["wpctl", "set-volume", _DEFAULT_SINK, f"{level / 100:.2f}"],
+            ["wpctl", "set-volume", DEFAULT_SINK, f"{level / 100:.2f}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except Exception as e:
         print(f"[vol_set] Error: {e}")
+
     vol(force=True)
+
