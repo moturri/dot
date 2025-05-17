@@ -6,11 +6,11 @@ from utils import cached, fmt
 VOLUME_PATTERN = re.compile(r"Volume:\s+(\d+(?:\.\d+)?)")
 
 # Icons
-_MUTED_ICON = "󰍭"  # Mic muted
-_ACTIVE_ICON = "󰍬"  # Mic active
+MUTED_ICON = "󰍭"  # Mic muted
+ACTIVE_ICON = "󰍬"  # Mic active
 
 # Color thresholds
-_MIC_VOLUME_STATES = [
+MIC_VOLUME_STATES = [
     (70, "salmon"),
     (40, "mediumpurple"),
     (15, "springgreen"),
@@ -18,7 +18,7 @@ _MIC_VOLUME_STATES = [
 ]
 
 # PipeWire default source (microphone)
-_DEFAULT_SOURCE = "@DEFAULT_AUDIO_SOURCE@"
+DEFAULT_SOURCE = "@DEFAULT_AUDIO_SOURCE@"
 
 
 def get_mic_state() -> tuple[int, bool]:
@@ -28,20 +28,17 @@ def get_mic_state() -> tuple[int, bool]:
     try:
         output = (
             subprocess.check_output(
-                ["wpctl", "get-volume", _DEFAULT_SOURCE], stderr=subprocess.DEVNULL
+                ["wpctl", "get-volume", DEFAULT_SOURCE], stderr=subprocess.DEVNULL
             )
             .decode()
             .strip()
         )
-
         match = VOLUME_PATTERN.search(output)
         if not match:
             return 0, True
-
         volume_float = float(match.group(1))
         volume = int(volume_float * 100)
         muted = "[MUTED]" in output
-
         return volume, muted
     except Exception as e:
         print(f"[mic] get_mic_state error: {e}")
@@ -55,25 +52,23 @@ def mic() -> str:
     """
     try:
         volume, muted = get_mic_state()
-        icon = _MUTED_ICON if muted else _ACTIVE_ICON
-
+        icon = MUTED_ICON if muted else ACTIVE_ICON
         color = (
             "dimgrey"
             if muted
             else next(
                 (
                     col
-                    for level, col in sorted(_MIC_VOLUME_STATES, reverse=True)
+                    for level, col in sorted(MIC_VOLUME_STATES, reverse=True)
                     if volume >= level
                 ),
-                _MIC_VOLUME_STATES[-1][1],
+                MIC_VOLUME_STATES[-1][1],
             )
         )
-
         return fmt(icon, volume, color)
     except Exception as e:
         print(f"[mic] Error: {e}")
-        return fmt(_MUTED_ICON, 0, "dimgrey")
+        return fmt(MUTED_ICON, 0, "dimgrey")
 
 
 def mic_up(qtile=None, step=2):
@@ -82,12 +77,11 @@ def mic_up(qtile=None, step=2):
     """
     if step <= 0:
         return
-
     try:
         volume, _ = get_mic_state()
         new_volume = min(100, volume + step)
         subprocess.run(
-            ["wpctl", "set-volume", _DEFAULT_SOURCE, f"{new_volume / 100:.2f}"],
+            ["wpctl", "set-volume", DEFAULT_SOURCE, f"{new_volume / 100:.2f}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -102,12 +96,11 @@ def mic_down(qtile=None, step=2):
     """
     if step <= 0:
         return
-
     try:
         volume, _ = get_mic_state()
         new_volume = max(0, volume - step)
         subprocess.run(
-            ["wpctl", "set-volume", _DEFAULT_SOURCE, f"{new_volume / 100:.2f}"],
+            ["wpctl", "set-volume", DEFAULT_SOURCE, f"{new_volume / 100:.2f}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -122,7 +115,7 @@ def mic_mute(qtile=None):
     """
     try:
         subprocess.run(
-            ["wpctl", "set-mute", _DEFAULT_SOURCE, "toggle"],
+            ["wpctl", "set-mute", DEFAULT_SOURCE, "toggle"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -138,10 +131,11 @@ def mic_set(level: int):
     level = max(0, min(level, 100))
     try:
         subprocess.run(
-            ["wpctl", "set-volume", _DEFAULT_SOURCE, f"{level / 100:.2f}"],
+            ["wpctl", "set-volume", DEFAULT_SOURCE, f"{level / 100:.2f}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except Exception as e:
         print(f"[mic_set] Error: {e}")
     mic(force=True)
+
