@@ -7,7 +7,7 @@ PERCENTAGE_PATTERN = re.compile(r"percentage:\s+(\d+)%")
 STATE_PATTERN = re.compile(r"state:\s+(\w+)")
 
 # Battery level thresholds: (min %, icon, (discharging color, charging color))
-_BATTERY_STATES = [
+BATTERY_STATES = [
     (80, "", ("lime", "lime")),
     (60, "", ("palegreen", "palegreen")),
     (40, "", ("orange", "orange")),
@@ -16,7 +16,7 @@ _BATTERY_STATES = [
 ]
 
 # Fallback display if battery info can't be retrieved
-_FALLBACK = '<span foreground="grey">  --%</span>'
+_FALLBACK = '<span foreground="grey">  --%</span>'
 
 
 def get_upower_output() -> str:
@@ -30,6 +30,7 @@ def get_upower_output() -> str:
         )
         if not battery_path:
             raise RuntimeError("No battery device found")
+
         return subprocess.check_output(["upower", "-i", battery_path], text=True)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"UPower call failed: {e}")
@@ -50,6 +51,7 @@ def parse_upower(output: str) -> tuple[int, bool]:
 
     percent = int(percent_match.group(1))
     charging = state_match.group(1).lower() == "charging"
+
     return percent, charging
 
 
@@ -57,7 +59,6 @@ def parse_upower(output: str) -> tuple[int, bool]:
 def batt() -> str:
     """
     Returns a formatted battery widget string with dynamic icon and color.
-
     Uses a 10-second cache to reduce system calls while maintaining
     reasonable accuracy for battery status display.
     """
@@ -66,10 +67,10 @@ def batt() -> str:
         percent, charging = parse_upower(output)
 
         # Find the appropriate battery state based on percentage
-        for level, icon, (dis_col, chg_col) in _BATTERY_STATES:
+        for level, icon, (dis_col, chg_col) in BATTERY_STATES:
             if percent >= level:
                 color = chg_col if charging else dis_col
-                icon_display = f" {icon}" if charging else icon
+                icon_display = f" {icon}" if charging else icon
                 return fmt(icon_display, percent, color)
 
         # This should never happen as the lowest threshold is 0%,
@@ -78,3 +79,4 @@ def batt() -> str:
     except Exception as e:
         print(f"[battery] Error: {e}")
         return _FALLBACK
+
