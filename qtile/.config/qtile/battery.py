@@ -70,7 +70,7 @@ def batt() -> str:
         for level, icon, (dis_col, chg_col) in BATTERY_STATES:
             if percent >= level:
                 color = chg_col if charging else dis_col
-                icon_display = f" {icon}" if charging else icon
+                icon_display = f" {icon}" if charging else icon
                 return fmt(icon_display, percent, color)
 
         # This should never happen as the lowest threshold is 0%,
@@ -79,4 +79,3 @@ def batt() -> str:
     except Exception as e:
         print(f"[battery] Error: {e}")
         return _FALLBACK
-
