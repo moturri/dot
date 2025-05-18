@@ -52,7 +52,7 @@ ahead = '^${count}'
 behind = 'v${count}'
 
 [line_break]
-disabled = false
+disabled = true
 
 [character]
 disabled = false
