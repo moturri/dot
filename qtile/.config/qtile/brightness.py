@@ -1,13 +1,13 @@
 import logging
-import subprocess
 from pathlib import Path
 
-from utils import cached, fmt
+from utils import cached, fmt, run_command
 
-BRIGHTNESS_DIR = Path("/sys/class/backlight/intel_backlight")
-BRIGHTNESS_PATH = BRIGHTNESS_DIR / "brightness"
-MAX_BRIGHTNESS_PATH = BRIGHTNESS_DIR / "max_brightness"
+logger = logging.getLogger(__name__)
 
+# Constants
+BRIGHTNESS_DIR = Path("/sys/class/backlight")
+BRIGHTNESS_FALLBACK = '<span foreground="grey">󰳲  --%</span>'
 BRIGHTNESS_ICONS = [
     (80, "󰃠", "gold"),
     (60, "󰃝", "darkorange"),
@@ -16,66 +16,95 @@ BRIGHTNESS_ICONS = [
     (0, "󰃜", "dimgrey"),
 ]
 
-FALLBACK = '<span foreground="grey">󰳲  --%</span>'
+# Global device info
+BACKLIGHT_DEVICE = None
+MAX_BRIGHTNESS = 0
+BRIGHTNESS_PATH = None
+MAX_BRIGHTNESS_PATH = None
 
-try:
-    MAX_BRIGHTNESS = int(MAX_BRIGHTNESS_PATH.read_text().strip())
-except Exception as e:
-    logging.error(f"[brightness] Failed to read max brightness: {e}")
-    MAX_BRIGHTNESS = 0
+# Detect brillo at load time
+HAS_BRILLO = run_command(["which", "brillo"], get_output=True) != ""
+
+
+def find_backlight_device():
+    """Detect the appropriate backlight device and read its max value."""
+    global BACKLIGHT_DEVICE, MAX_BRIGHTNESS, BRIGHTNESS_PATH, MAX_BRIGHTNESS_PATH
+    try:
+        if (BRIGHTNESS_DIR / "intel_backlight").exists():
+            BACKLIGHT_DEVICE = "intel_backlight"
+        else:
+            devices = list(BRIGHTNESS_DIR.iterdir())
+            if devices:
+                BACKLIGHT_DEVICE = devices[0].name
+
+        if BACKLIGHT_DEVICE:
+            BRIGHTNESS_PATH = BRIGHTNESS_DIR / BACKLIGHT_DEVICE / "brightness"
+            MAX_BRIGHTNESS_PATH = BRIGHTNESS_DIR / BACKLIGHT_DEVICE / "max_brightness"
+            if MAX_BRIGHTNESS_PATH.exists():
+                MAX_BRIGHTNESS = int(MAX_BRIGHTNESS_PATH.read_text().strip())
+    except Exception as e:
+        logger.error(f"[brightness] Init error: {e}")
+
+
+# Initialize at import time
+find_backlight_device()
+
+
+def read_brightness():
+    """Read current brightness percentage from sysfs."""
+    try:
+        current = int(BRIGHTNESS_PATH.read_text().strip())
+        return current
+    except Exception as e:
+        logger.error(f"[brightness] Read error: {e}")
+        return 0
 
 
 @cached(10, cache_none=True)
 def bright():
     """
-    Returns formatted brightness string.
-    Caches for 10s to avoid frequent I/O.
+    Brightness widget display.
+    Returns a Qtile markup string showing brightness percentage and icon.
     """
     if MAX_BRIGHTNESS <= 0:
-        return FALLBACK
+        return BRIGHTNESS_FALLBACK
 
     try:
-        current = int(BRIGHTNESS_PATH.read_text().strip())
+        current = read_brightness()
         percent = int((current / MAX_BRIGHTNESS) * 100)
 
-        # Choose the appropriate icon and color based on the brightness percentage
         for level, icon, color in BRIGHTNESS_ICONS:
             if percent >= level:
                 return fmt(icon, percent, color)
 
+        # Fallback to lowest level
         return fmt(BRIGHTNESS_ICONS[-1][1], percent, BRIGHTNESS_ICONS[-1][2])
     except Exception as e:
-        logging.error(f"[brightness] Error reading brightness: {e}")
-        return FALLBACK
+        logger.error(f"[brightness] Format error: {e}")
+        return BRIGHTNESS_FALLBACK
 
 
 def adjust_brightness(amount: int, increase: bool = True):
-    if amount <= 0:
-        return
-
-    if (
-        not subprocess.run(
-            ["which", "brillo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        ).returncode
-        == 0
-    ):
-        logging.warning(
-            "[brightness] Brillo command not found. Brightness adjustment may not work."
-        )
+    """
+    Adjust brightness using `brillo`.
+    Amount is in percent, not absolute values.
+    """
+    if amount <= 0 or not HAS_BRILLO:
         return
 
     cmd = ["brillo", "-A" if increase else "-U", str(amount)]
     try:
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        run_command(cmd)
     except Exception as e:
-        logging.error(f"[brightness] Failed to adjust brightness: {e}")
+        logger.error(f"[brightness] Adjust error: {e}")
 
     bright(force=True)
 
 
-def bright_up(qtile=None, step=2):
+# Qtile mouse callbacks or keybind functions
+def bright_up(qtile=None, step=5):
     adjust_brightness(step, increase=True)
 
 
-def bright_down(qtile=None, step=2):
+def bright_down(qtile=None, step=5):
     adjust_brightness(step, increase=False)

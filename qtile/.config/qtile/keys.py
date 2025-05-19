@@ -1,8 +1,7 @@
+from audio import mic_mute, vol_down, vol_mute, vol_up
 from brightness import bright_down, bright_up
 from libqtile.config import Click, Drag, Key
 from libqtile.lazy import lazy
-from mic import mic_mute
-from volume import vol_down, vol_mute, vol_up
 
 mod = "mod4"
 terminal = "kitty"
