@@ -1,15 +1,12 @@
-import re
 import subprocess
+
 from utils import cached, fmt
 
-# Regex pattern for parsing wpctl output
-VOLUME_PATTERN = re.compile(r"Volume:\s+(\d+(?:\.\d+)?)")
+DEFAULT_SOURCE = "@DEFAULT_AUDIO_SOURCE@"
 
-# Icons
-MUTED_ICON = "󰍭"  # Mic muted
-ACTIVE_ICON = "󰍬"  # Mic active
+MUTED_ICON = "󰍭"
+ACTIVE_ICON = "󰍬"
 
-# Color thresholds
 MIC_VOLUME_STATES = [
     (70, "salmon"),
     (40, "mediumpurple"),
@@ -17,125 +14,91 @@ MIC_VOLUME_STATES = [
     (0, "palegreen"),
 ]
 
-# PipeWire default source (microphone)
-DEFAULT_SOURCE = "@DEFAULT_AUDIO_SOURCE@"
+mic_state = {"volume": 0, "muted": True}
 
 
-def get_mic_state() -> tuple[int, bool]:
-    """
-    Returns current microphone volume (0–100) and mute status using wpctl.
-    """
+def update_mic_state():
     try:
         output = (
             subprocess.check_output(
-                ["wpctl", "get-volume", DEFAULT_SOURCE], stderr=subprocess.DEVNULL
+                ["wpctl", "get-volume", DEFAULT_SOURCE],
+                stderr=subprocess.DEVNULL,
             )
             .decode()
             .strip()
         )
-        match = VOLUME_PATTERN.search(output)
-        if not match:
-            return 0, True
-        volume_float = float(match.group(1))
-        volume = int(volume_float * 100)
+
+        parts = output.split()
+        volume = int(float(parts[1]) * 100)
         muted = "[MUTED]" in output
-        return volume, muted
+
+        mic_state["volume"] = volume
+        mic_state["muted"] = muted
     except Exception as e:
-        print(f"[mic] get_mic_state error: {e}")
-        return 0, True
+        print(f"[mic] update error: {e}")
+        mic_state["volume"] = 0
+        mic_state["muted"] = True
 
 
-@cached(0.5)
+@cached(10)
 def mic() -> str:
-    """
-    Returns formatted microphone widget string (icon + volume + color).
-    """
-    try:
-        volume, muted = get_mic_state()
-        icon = MUTED_ICON if muted else ACTIVE_ICON
-        color = (
-            "dimgrey"
-            if muted
-            else next(
-                (
-                    col
-                    for level, col in sorted(MIC_VOLUME_STATES, reverse=True)
-                    if volume >= level
-                ),
-                MIC_VOLUME_STATES[-1][1],
-            )
+    update_mic_state()
+
+    icon = MUTED_ICON if mic_state["muted"] else ACTIVE_ICON
+    color = (
+        "dimgrey"
+        if mic_state["muted"]
+        else next(
+            (
+                col
+                for level, col in sorted(MIC_VOLUME_STATES, reverse=True)
+                if mic_state["volume"] >= level
+            ),
+            MIC_VOLUME_STATES[-1][1],
         )
-        return fmt(icon, volume, color)
+    )
+    return fmt(icon, mic_state["volume"], color)
+
+
+def set_mic_volume(level: float):
+    try:
+        subprocess.run(
+            ["wpctl", "set-volume", DEFAULT_SOURCE, f"{level:.2f}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        new_volume = int(level * 100)
+        if mic_state["volume"] != new_volume:
+            mic_state["volume"] = new_volume
+            if level > 0:
+                mic_state["muted"] = False
+            mic(force=True)
     except Exception as e:
-        print(f"[mic] Error: {e}")
-        return fmt(MUTED_ICON, 0, "dimgrey")
+        print(f"[mic_set] Error: {e}")
 
 
 def mic_up(qtile=None, step=2):
-    """
-    Increases mic volume by `step` percent, capped at 100%.
-    """
-    if step <= 0:
-        return
-    try:
-        volume, _ = get_mic_state()
-        new_volume = min(100, volume + step)
-        subprocess.run(
-            ["wpctl", "set-volume", DEFAULT_SOURCE, f"{new_volume / 100:.2f}"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except Exception as e:
-        print(f"[mic_up] Error: {e}")
-    mic(force=True)
+    new_level = min(100, mic_state["volume"] + step) / 100
+    set_mic_volume(new_level)
 
 
 def mic_down(qtile=None, step=2):
-    """
-    Decreases mic volume by `step` percent, not below 0%.
-    """
-    if step <= 0:
-        return
-    try:
-        volume, _ = get_mic_state()
-        new_volume = max(0, volume - step)
-        subprocess.run(
-            ["wpctl", "set-volume", DEFAULT_SOURCE, f"{new_volume / 100:.2f}"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except Exception as e:
-        print(f"[mic_down] Error: {e}")
-    mic(force=True)
+    new_level = max(0, mic_state["volume"] - step) / 100
+    set_mic_volume(new_level)
+
+
+def mic_set(level: int):
+    set_mic_volume(max(0, min(level, 100)) / 100)
 
 
 def mic_mute(qtile=None):
-    """
-    Toggles microphone mute.
-    """
     try:
         subprocess.run(
             ["wpctl", "set-mute", DEFAULT_SOURCE, "toggle"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+        mic_state["muted"] = not mic_state["muted"]
+        mic(force=True)
     except Exception as e:
         print(f"[mic_mute] Error: {e}")
-    mic(force=True)
-
-
-def mic_set(level: int):
-    """
-    Sets microphone volume to a specific level (0–100%).
-    """
-    level = max(0, min(level, 100))
-    try:
-        subprocess.run(
-            ["wpctl", "set-volume", DEFAULT_SOURCE, f"{level / 100:.2f}"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except Exception as e:
-        print(f"[mic_set] Error: {e}")
-    mic(force=True)
-
