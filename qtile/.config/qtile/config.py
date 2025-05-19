@@ -6,7 +6,6 @@ from groups import *
 from keys import *
 from libqtile import bar, hook, layout
 from libqtile.config import Match, Screen
-from scratches import *
 
 widget_defaults = dict(
     font="Inter Variable Bold",
