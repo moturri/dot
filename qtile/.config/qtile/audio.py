@@ -74,10 +74,15 @@ class AudioDevice:
             if self.state["volume"] >= level:
                 return fmt(icon, self.state["volume"], color)
 
+        # This line should never be reached due to having 0 as the lowest threshold
+        # but keeping it as a fallback
         return fmt(self.icons[-1][1], self.state["volume"], self.icons[-1][2])
 
     def set_volume(self, level: float):
         """Set volume from 0.0 to 1.0"""
+        if not 0.0 <= level <= 1.0:
+            level = max(0.0, min(level, 1.0))
+
         try:
             run_command(["wpctl", "set-volume", self.device_id, f"{level:.2f}"])
             self.state["volume"] = int(level * 100)
@@ -85,7 +90,12 @@ class AudioDevice:
                 self.state["muted"] = False
         except Exception as e:
             logger.error(f"[{self.device_type}_set_volume] {e}")
-        self._refresh_widget()
+
+        # Force refresh of the appropriate widget
+        if self.is_mic:
+            mic(force=True)
+        else:
+            vol(force=True)
 
     def volume_up(self, step=VOLUME_STEP):
         new_level = min(100, self.state["volume"] + step) / 100
@@ -104,9 +114,8 @@ class AudioDevice:
             self.update_state()
         except Exception as e:
             logger.error(f"[{self.device_type}_mute] {e}")
-        self._refresh_widget()
 
-    def _refresh_widget(self):
+        # Force refresh of the appropriate widget
         if self.is_mic:
             mic(force=True)
         else:
@@ -129,7 +138,7 @@ def mic() -> str:
     return microphone.format()
 
 
-# === Optional control shortcuts (e.g. key bindings) ===
+# === Control functions for key bindings ===
 def vol_up(qtile=None):
     speaker.volume_up()
 
@@ -160,4 +169,3 @@ def mic_set(level: int):
 
 def mic_mute(qtile=None):
     microphone.toggle_mute()
-

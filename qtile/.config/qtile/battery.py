@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from pathlib import Path
 
 from utils import cached, fmt, run_command
 
@@ -23,10 +24,12 @@ FALLBACK = '<span foreground="grey">󰁾  --%</span>'
 PERCENTAGE_PATTERN = re.compile(r"percentage:\s+(\d+)%")
 STATE_PATTERN = re.compile(r"state:\s+(\w+)")
 
-# Cached sysfs path discovery
-BATTERY_SYSFS_PATH = "/sys/class/power_supply"
+# Battery paths
+BATTERY_SYSFS_PATH = Path("/sys/class/power_supply")
 BATTERY_SYSFS_DIR = None
+BATTERY_PATH = None  # For upower
 
+# Find battery directory in sysfs
 try:
     for dev in os.listdir(BATTERY_SYSFS_PATH):
         if "BAT" in dev or "battery" in dev.lower():
@@ -37,19 +40,16 @@ except (FileNotFoundError, PermissionError) as e:
     BATTERY_SYSFS_DIR = None
 
 
-# Fallback battery device path for upower
-BATTERY_PATH = None
-
-
 def get_battery_path():
     """Find battery path via upower, cached once."""
     global BATTERY_PATH
     if BATTERY_PATH is None:
         try:
             devices = run_command(["upower", "-e"], get_output=True)
-            BATTERY_PATH = next(
-                (d for d in devices.splitlines() if "battery" in d), None
-            )
+            if devices:
+                BATTERY_PATH = next(
+                    (d for d in devices.splitlines() if "battery" in d), None
+                )
         except Exception as e:
             logger.error(f"[battery] Error finding battery path: {e}")
             BATTERY_PATH = None
@@ -60,15 +60,23 @@ def get_battery_info_sysfs():
     """Read battery percentage and charging state from sysfs."""
     if not BATTERY_SYSFS_DIR:
         return None
+
     try:
-        with open(os.path.join(BATTERY_SYSFS_DIR, "status"), "r") as f:
+        status_path = os.path.join(BATTERY_SYSFS_DIR, "status")
+        capacity_path = os.path.join(BATTERY_SYSFS_DIR, "capacity")
+
+        if not os.path.exists(status_path) or not os.path.exists(capacity_path):
+            return None
+
+        with open(status_path, "r") as f:
             status = f.read().strip()
 
-        with open(os.path.join(BATTERY_SYSFS_DIR, "capacity"), "r") as f:
+        with open(capacity_path, "r") as f:
             percent = int(f.read().strip())
 
         is_charging = status.lower() in {"charging", "full"}
         return percent, is_charging
+
     except (FileNotFoundError, PermissionError, ValueError) as e:
         logger.warning(f"[battery] sysfs read error: {e}")
         return None
@@ -79,11 +87,13 @@ def get_battery_info_upower():
     battery_path = get_battery_path()
     if not battery_path:
         return None
+
     try:
         output = run_command(["upower", "-i", battery_path], get_output=True)
         if not output:
             return None
         return parse_upower(output)
+
     except Exception as e:
         logger.error(f"[battery] upower error: {e}")
         return None
@@ -93,15 +103,18 @@ def parse_upower(output: str) -> tuple[int, bool]:
     """Extract battery percentage and charging state from upower output."""
     percent_match = PERCENTAGE_PATTERN.search(output)
     state_match = STATE_PATTERN.search(output)
+
     if not percent_match or not state_match:
         raise ValueError("Battery info could not be parsed")
+
     percent = int(percent_match.group(1))
     state = state_match.group(1).lower()
-    is_charging = state in {"charging", "pending-charge"}
+    is_charging = state in {"charging", "pending-charge", "fully-charged"}
+
     return percent, is_charging
 
 
-@cached(10, cache_none=True)
+@cached(30, cache_none=True)  # Increased cache time since battery status changes slowly
 def batt() -> str:
     """
     Battery widget function for Qtile GenPollText.
@@ -109,21 +122,25 @@ def batt() -> str:
         str: Markup-formatted battery status.
     """
     try:
+        # Try sysfs first, then fall back to upower
         battery_info = get_battery_info_sysfs() or get_battery_info_upower()
+
         if not battery_info:
             return FALLBACK
 
         percent, charging = battery_info
         charging_icon = ""  # Lightning bolt
 
+        # Find the appropriate icon and color based on battery level
         for level, icon, (dis_color, chg_color) in BATTERY_STATES:
             if percent >= level:
                 color = chg_color if charging else dis_color
                 display_icon = f"{charging_icon} {icon}" if charging else icon
                 return fmt(display_icon, percent, color)
 
+        # This should never be reached due to 0 threshold
         return FALLBACK
+
     except Exception as e:
         logger.error(f"[battery] Unhandled error: {e}")
         return FALLBACK
-

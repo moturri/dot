@@ -40,19 +40,28 @@ def cached(seconds: float, *, cache_none: bool = False, debug: bool = False):
     return wrap
 
 
+# Define format string once as a constant
 FMT = '<span foreground="{color}">{icon}  {val:>3}%</span>'
 
 
-def fmt(icon: str, val: int, color: str, _FMT=FMT) -> str:
+def fmt(icon: str, val: int, color: str) -> str:
     """
     Format Qtile widget markup string with color, icon, and value.
     """
-    return _FMT.format(icon=icon, val=val, color=color)
+    return FMT.format(icon=icon, val=val, color=color)
 
 
 def run_command(cmd_list, get_output=False, handle_errors=True):
     """
     Run a system command and optionally capture output.
+
+    Args:
+        cmd_list: List of command arguments
+        get_output: If True, return command output
+        handle_errors: If True, catch and log exceptions
+
+    Returns:
+        Command output string if get_output=True, else None
     """
     try:
         if get_output:
