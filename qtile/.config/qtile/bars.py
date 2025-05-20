@@ -60,8 +60,8 @@ def system_widgets():
         widget.TextBox(
             text=" 󰂚 ",
             mouse_callbacks={
-                "Button3": lazy.spawn("dunstctl history-pop"),
-                "Button2": lazy.spawn("dunstctl history-clear"),
+                "Button1": lazy.spawn("dunstctl history-pop"),
+                "Button3": lazy.spawn("dunstctl history-clear"),
             },
             **wdecor,
         ),

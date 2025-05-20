@@ -85,10 +85,6 @@ def bright():
 
 
 def adjust_brightness(amount: int, increase: bool = True):
-    """
-    Adjust brightness using `brillo`.
-    Amount is in percent, not absolute values.
-    """
     if amount <= 0 or not HAS_BRILLO:
         return
 
