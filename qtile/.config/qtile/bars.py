@@ -67,7 +67,7 @@ def system_widgets():
         ),
         widget.Spacer(length=10),
         widget.GenPollText(
-            update_interval=0.2,
+            update_interval=0.5,
             func=vol,
             mouse_callbacks={
                 "Button3": lazy.function(vol_mute),
@@ -77,7 +77,7 @@ def system_widgets():
             **wdecor,
         ),
         widget.GenPollText(
-            update_interval=0.2,
+            update_interval=0.5,
             func=mic,
             mouse_callbacks={
                 "Button3": lazy.function(mic_mute),

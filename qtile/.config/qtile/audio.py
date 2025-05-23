@@ -1,62 +1,63 @@
+from typing import List, Tuple
+
 from utils import cached, fmt, run_command
 
-DEFAULT_SINK = "@DEFAULT_AUDIO_SINK@"
-DEFAULT_SOURCE = "@DEFAULT_AUDIO_SOURCE@"
 VOLUME_STEP = 5
 
 
 class AudioDevice:
-    def __init__(self, device_type="sink", device_id=None):
-        self.device_type = device_type
-        self.device_id = device_id or (
-            DEFAULT_SOURCE if device_type == "source" else DEFAULT_SINK
+    def __init__(self, device_type: str = "sink"):
+        self.device_id = (
+            "@DEFAULT_AUDIO_SOURCE@"
+            if device_type == "source"
+            else "@DEFAULT_AUDIO_SINK@"
         )
-        self.state = {"volume": 0, "muted": True}
         self.is_mic = device_type == "source"
         self.muted_icon = "󰍭" if self.is_mic else "󰝟"
-        self.icons = [
+        self.volume = 0
+        self.muted = True
+
+        self.icons: List[Tuple[int, str, str]] = [
             (70, "󰍬" if self.is_mic else "󰕾", "salmon"),
             (40, "󰍬" if self.is_mic else "󰖀", "mediumpurple"),
-            (15, "󰍬" if self.is_mic else "󰕿", "springgreen"),
-            (0, "󰍬" if self.is_mic else "󰕿", "palegreen"),
+            (0, "󰍬" if self.is_mic else "󰕿", "springgreen"),
         ]
 
-    def update_state(self):
-        output = run_command(["wpctl", "get-volume", self.device_id], get_output=True)
+    def update(self) -> None:
+        output = run_command(["wpctl", "get-volume", self.device_id], True)
         if output:
             parts = output.split()
-            if len(parts) >= 2:
-                self.state["volume"] = int(float(parts[1]) * 100)
-                self.state["muted"] = "[MUTED]" in output
+            try:
+                self.volume = int(float(parts[1]) * 100)
+                self.muted = "[MUTED]" in output
+            except (IndexError, ValueError):
+                pass
 
-    def format(self):
-        self.update_state()
-        if self.state["muted"]:
-            return fmt(self.muted_icon, self.state["volume"], "dimgrey")
+    def format(self) -> str:
+        self.update()
+        if self.muted:
+            return fmt(self.muted_icon, self.volume, "dimgrey")
         for level, icon, color in self.icons:
-            if self.state["volume"] >= level:
-                return fmt(icon, self.state["volume"], color)
-        return fmt(self.icons[-1][1], self.state["volume"], self.icons[-1][2])
+            if self.volume >= level:
+                return fmt(icon, self.volume, color)
+        return fmt(self.icons[-1][1], self.volume, self.icons[-1][2])
 
-    def set_volume(self, level: float):
-        level = max(0.0, min(level, 1.0))
+    def set_volume(self, level: float) -> None:
+        level = max(0.0, min(1.0, level))
         run_command(["wpctl", "set-volume", self.device_id, f"{level:.2f}"])
-        self.state["volume"] = int(level * 100)
-        self.state["muted"] = False if level > 0 else self.state["muted"]
+        self.volume = int(level * 100)
+        self.muted = False if level > 0 else self.muted
         (mic if self.is_mic else vol)(force=True)
 
-    def volume_up(self, step=VOLUME_STEP):
-        self.set_volume(min(100, self.state["volume"] + step) / 100)
+    def volume_up(self, step: int = VOLUME_STEP) -> None:
+        self.set_volume((self.volume + step) / 100)
 
-    def volume_down(self, step=VOLUME_STEP):
-        self.set_volume(max(0, self.state["volume"] - step) / 100)
+    def volume_down(self, step: int = VOLUME_STEP) -> None:
+        self.set_volume((self.volume - step) / 100)
 
-    def volume_set(self, level: int):
-        self.set_volume(max(0, min(level, 100)) / 100)
-
-    def toggle_mute(self):
+    def toggle_mute(self) -> None:
         run_command(["wpctl", "set-mute", self.device_id, "toggle"])
-        self.update_state()
+        self.update()
         (mic if self.is_mic else vol)(force=True)
 
 
@@ -64,16 +65,17 @@ speaker = AudioDevice("sink")
 microphone = AudioDevice("source")
 
 
-@cached(10)
+@cached(0.5)
 def vol() -> str:
     return speaker.format()
 
 
-@cached(10)
+@cached(0.5)
 def mic() -> str:
     return microphone.format()
 
 
+# Volume controls
 def vol_up(qtile=None):
     speaker.volume_up()
 
@@ -82,14 +84,15 @@ def vol_down(qtile=None):
     speaker.volume_down()
 
 
-def vol_set(level: int):
-    speaker.volume_set(level)
-
-
 def vol_mute(qtile=None):
     speaker.toggle_mute()
 
 
+def vol_set(level: int):
+    speaker.set_volume(max(0, min(level, 100)) / 100)
+
+
+# Mic controls
 def mic_up(qtile=None):
     microphone.volume_up()
 
@@ -98,9 +101,10 @@ def mic_down(qtile=None):
     microphone.volume_down()
 
 
-def mic_set(level: int):
-    microphone.volume_set(level)
-
-
 def mic_mute(qtile=None):
     microphone.toggle_mute()
+
+
+def mic_set(level: int):
+    microphone.set_volume(max(0, min(level, 100)) / 100)
+

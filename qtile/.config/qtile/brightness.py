@@ -1,10 +1,36 @@
 from pathlib import Path
+from typing import Optional
 
 from utils import cached, fmt, run_command
 
-BRIGHTNESS_DIR = Path("/sys/class/backlight")
-BRIGHTNESS_FALLBACK = '<span foreground="grey">󰳲  --%</span>'
-BRIGHTNESS_ICONS = [
+
+class Backlight:
+    def __init__(self):
+        self.device = next((p for p in Path("/sys/class/backlight").iterdir()), None)
+        self.max_brightness = self._get_max_brightness()
+        self.has_brillo = bool(run_command(["which", "brillo"], True))
+
+    def _get_max_brightness(self) -> int:
+        if not self.device:
+            return 0
+        try:
+            return int((self.device / "max_brightness").read_text())
+        except (OSError, ValueError):
+            return 0
+
+    def get_brightness(self) -> Optional[int]:
+        if not self.device or self.max_brightness <= 0:
+            return None
+        try:
+            current = int((self.device / "brightness").read_text())
+            return int((current / self.max_brightness) * 100)
+        except (OSError, ValueError):
+            return None
+
+
+backlight = Backlight()
+
+ICONS = [
     (80, "󰃠", "gold"),
     (60, "󰃝", "darkorange"),
     (40, "󰃟", "tan"),
@@ -12,66 +38,24 @@ BRIGHTNESS_ICONS = [
     (0, "󰃜", "dimgrey"),
 ]
 
-BACKLIGHT_DEVICE = None
-MAX_BRIGHTNESS = 0
-BRIGHTNESS_PATH = None
-MAX_BRIGHTNESS_PATH = None
 
-HAS_BRILLO = run_command(["which", "brillo"], get_output=True) != ""
-
-
-def find_backlight_device():
-    global BACKLIGHT_DEVICE, MAX_BRIGHTNESS, BRIGHTNESS_PATH, MAX_BRIGHTNESS_PATH
-    if (BRIGHTNESS_DIR / "intel_backlight").exists():
-        BACKLIGHT_DEVICE = "intel_backlight"
-    else:
-        devices = list(BRIGHTNESS_DIR.iterdir())
-        if devices:
-            BACKLIGHT_DEVICE = devices[0].name
-    if BACKLIGHT_DEVICE:
-        BRIGHTNESS_PATH = BRIGHTNESS_DIR / BACKLIGHT_DEVICE / "brightness"
-        MAX_BRIGHTNESS_PATH = BRIGHTNESS_DIR / BACKLIGHT_DEVICE / "max_brightness"
-        if MAX_BRIGHTNESS_PATH.exists():
-            MAX_BRIGHTNESS = int(MAX_BRIGHTNESS_PATH.read_text().strip())
-
-
-find_backlight_device()
-
-
-def read_brightness():
-    """Read current brightness percentage from sysfs."""
-    if not BRIGHTNESS_PATH or not BRIGHTNESS_PATH.exists():
-        return 0
-    try:
-        current = int(BRIGHTNESS_PATH.read_text().strip())
-        return current
-    except (OSError, ValueError):
-        return 0
-
-
-@cached(10, cache_none=True)
-def bright():
-    if MAX_BRIGHTNESS <= 0:
-        return BRIGHTNESS_FALLBACK
-    current = read_brightness()
-    percent = int((current / MAX_BRIGHTNESS) * 100)
-    for level, icon, color in BRIGHTNESS_ICONS:
+@cached(0.5)
+def bright() -> str:
+    percent = backlight.get_brightness()
+    if percent is None:
+        return '<span foreground="grey">󰳲  --%</span>'
+    for level, icon, color in ICONS:
         if percent >= level:
             return fmt(icon, percent, color)
-    return fmt(BRIGHTNESS_ICONS[-1][1], percent, BRIGHTNESS_ICONS[-1][2])
+    return fmt(ICONS[-1][1], percent, ICONS[-1][2])
 
 
-def adjust_brightness(amount: int, increase: bool = True):
-    if amount <= 0 or not HAS_BRILLO:
-        return
-    cmd = ["brillo", "-A" if increase else "-U", str(amount)]
-    run_command(cmd)
-    bright(force=True)
+def bright_up(qtile=None, step: int = 5):
+    if backlight.has_brillo:
+        run_command(["brillo", "-A", str(step)])
 
 
-def bright_up(qtile=None, step=5):
-    adjust_brightness(step, increase=True)
+def bright_down(qtile=None, step: int = 5):
+    if backlight.has_brillo:
+        run_command(["brillo", "-U", str(step)])
 
-
-def bright_down(qtile=None, step=5):
-    adjust_brightness(step, increase=False)
