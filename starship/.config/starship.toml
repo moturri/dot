@@ -11,9 +11,9 @@ palette = 'base'
 
 [palettes.base]
 # Base Colors
-text = "#cdd6f4"
-dark = "#191919"
-base = "#1e1e2e"
+text = "#ffffff"
+dark = "#000000"
+base = "#000000"
 
 # Accent Colors
 green = "#a6e3a1"
