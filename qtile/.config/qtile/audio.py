@@ -58,6 +58,7 @@ class AudioDevice:
         self.update()
 
 
+# Qtile Callbacks
 speaker = AudioDevice("sink")
 microphone = AudioDevice("source")
 
@@ -72,7 +73,6 @@ def mic() -> str:
     return microphone.format()
 
 
-# Qtile Callbacks
 def vol_up(qtile=None):
     speaker.volume_up()
 

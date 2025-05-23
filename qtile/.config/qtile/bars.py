@@ -71,8 +71,8 @@ def system_widgets():
         ),
         spacer(),
         widget.GenPollText(
-            update_interval=0.5,
             func=vol,
+            update_interval=0.5,
             mouse_callbacks={
                 "Button3": lazy.function(vol_mute),
                 "Button4": lazy.function(vol_up),
@@ -81,8 +81,8 @@ def system_widgets():
             **wdecor,
         ),
         widget.GenPollText(
-            update_interval=0.5,
             func=mic,
+            update_interval=0.5,
             mouse_callbacks={
                 "Button3": lazy.function(mic_mute),
                 "Button4": lazy.function(mic_up),
@@ -136,3 +136,4 @@ def main():
 
 def misc():
     return wakati + group_widgets() + system_widgets()
+
