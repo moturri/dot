@@ -50,12 +50,15 @@ def bright() -> str:
     return fmt(ICONS[-1][1], percent, ICONS[-1][2])
 
 
-def bright_up(qtile=None, step: int = 5):
+def _adjust_brightness(op: str, step: int = 5):
     if backlight.has_brillo:
-        run_command(["brillo", "-A", str(step)])
+        run_command(["brillo", op, str(step)])
+
+
+# Qtile Callbacks
+def bright_up(qtile=None, step: int = 5):
+    _adjust_brightness("-A", step)
 
 
 def bright_down(qtile=None, step: int = 5):
-    if backlight.has_brillo:
-        run_command(["brillo", "-U", str(step)])
-
+    _adjust_brightness("-U", step)

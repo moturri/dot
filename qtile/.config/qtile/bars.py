@@ -21,6 +21,10 @@ wdecor = {
 }
 
 
+def spacer(length=10):
+    return widget.Spacer(length=length)
+
+
 def show_dunst_history():
     subprocess.Popen(["dunstctl", "history-pop"])
 
@@ -46,7 +50,7 @@ def system_widgets():
             },
             **wdecor,
         ),
-        widget.Spacer(length=10),
+        spacer(),
         widget.Mpris2(
             name="mpris",
             format=" 󰝚",
@@ -65,7 +69,7 @@ def system_widgets():
             },
             **wdecor,
         ),
-        widget.Spacer(length=10),
+        spacer(),
         widget.GenPollText(
             update_interval=0.5,
             func=vol,
@@ -86,7 +90,7 @@ def system_widgets():
             },
             **wdecor,
         ),
-        widget.Spacer(length=10),
+        spacer(),
         widget.GenPollText(func=batt, update_interval=10, **wdecor),
     ]
 
@@ -122,7 +126,7 @@ def group_widgets():
 def system_tray_widget():
     return [
         widget.Systray(padding=10),
-        widget.Spacer(length=10),
+        spacer(),
     ]
 
 
