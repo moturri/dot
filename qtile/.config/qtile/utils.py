@@ -4,10 +4,6 @@ from time import monotonic
 from typing import Callable, List, Optional
 
 
-class CommandError(Exception):
-    pass
-
-
 def cached(seconds: int):
     def decorator(func: Callable):
         last_call = {}
@@ -48,3 +44,4 @@ def run_command(cmd_list: List[str], get_output: bool = False) -> Optional[str]:
         return None
     except (subprocess.SubprocessError, OSError):
         return "" if get_output else None
+

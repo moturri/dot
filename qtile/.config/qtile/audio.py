@@ -43,22 +43,24 @@ class AudioDevice:
         return fmt(self.icons[-1][1], self.volume, self.icons[-1][2])
 
     def set_volume(self, level: float) -> None:
-        level = max(0.0, min(1.0, level))
+        level = max(0.0, min(level, 1.0))
         run_command(["wpctl", "set-volume", self.device_id, f"{level:.2f}"])
         self.update()
 
     def volume_up(self, step: int = VOLUME_STEP) -> None:
-        self.set_volume((self.volume + step) / 100)
+        new_level = min((self.volume + step) / 100, 1.0)
+        self.set_volume(new_level)
 
     def volume_down(self, step: int = VOLUME_STEP) -> None:
-        self.set_volume((self.volume - step) / 100)
+        new_level = max((self.volume - step) / 100, 0.0)
+        self.set_volume(new_level)
 
     def toggle_mute(self) -> None:
         run_command(["wpctl", "set-mute", self.device_id, "toggle"])
         self.update()
 
 
-# Qtile Callbacks
+# Initialize speaker and microphone devices
 speaker = AudioDevice("sink")
 microphone = AudioDevice("source")
 
@@ -73,6 +75,7 @@ def mic() -> str:
     return microphone.format()
 
 
+# Qtile callbacks
 def vol_up(qtile=None):
     speaker.volume_up()
 
