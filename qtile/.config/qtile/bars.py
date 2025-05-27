@@ -1,9 +1,8 @@
 import subprocess
 
-from audio import mic, mic_down, mic_mute, mic_up, vol, vol_down, vol_mute, vol_up
-
-from battery import batt
-from brightness import bright, bright_down, bright_up
+from audio import AudioWidget, MicWidget
+from battery import BatteryWidget
+from brightness import BrightnessWidget
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
@@ -42,13 +41,12 @@ wakati = [
 
 def system_widgets():
     return [
-        widget.GenPollText(
-            func=bright,
-            update_interval=0.5,
+        BrightnessWidget(
             mouse_callbacks={
-                "Button4": lazy.function(bright_up),
-                "Button5": lazy.function(bright_down),
+                "Button4": lazy.widget["brightness"].increase(),
+                "Button5": lazy.widget["brightness"].decrease(),
             },
+            name="brightness",
             **wdecor,
         ),
         spacer(),
@@ -71,28 +69,26 @@ def system_widgets():
             **wdecor,
         ),
         spacer(),
-        widget.GenPollText(
-            func=vol,
-            update_interval=0.5,
+        AudioWidget(
             mouse_callbacks={
-                "Button3": lazy.function(vol_mute),
-                "Button4": lazy.function(vol_up),
-                "Button5": lazy.function(vol_down),
+                "Button3": lazy.widget["audio"].toggle_mute(),
+                "Button4": lazy.widget["audio"].volume_up(),
+                "Button5": lazy.widget["audio"].volume_down(),
             },
+            name="audio",
             **wdecor,
         ),
-        widget.GenPollText(
-            func=mic,
-            update_interval=0.5,
+        MicWidget(
             mouse_callbacks={
-                "Button3": lazy.function(mic_mute),
-                "Button4": lazy.function(mic_up),
-                "Button5": lazy.function(mic_down),
+                "Button3": lazy.widget["mic"].toggle_mute(),
+                "Button4": lazy.widget["mic"].volume_up(),
+                "Button5": lazy.widget["mic"].volume_down(),
             },
+            name="mic",
             **wdecor,
         ),
         spacer(),
-        widget.GenPollText(func=batt, update_interval=10, **wdecor),
+        BatteryWidget(**wdecor),
     ]
 
 
