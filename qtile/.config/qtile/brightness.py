@@ -35,7 +35,7 @@ ICONS = [
 ]
 
 
-class BrightnessWidget(GenPollText):
+class BrilloWidget(GenPollText):
     def __init__(self, update_interval=0.5, step=5, **config):
         self.step = step
         self.device = next((p for p in Path("/sys/class/backlight").iterdir()), None)
