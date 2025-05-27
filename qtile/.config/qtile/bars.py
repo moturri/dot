@@ -1,6 +1,7 @@
 import subprocess
 
 from audio import mic, mic_down, mic_mute, mic_up, vol, vol_down, vol_mute, vol_up
+
 from battery import batt
 from brightness import bright, bright_down, bright_up
 from libqtile.lazy import lazy
@@ -136,4 +137,3 @@ def main():
 
 def misc():
     return wakati + group_widgets() + system_widgets()
-

@@ -55,6 +55,7 @@ floating_layout = layout.Floating(
         Match(wm_class="firetools"),
         Match(wm_class="iwgtk"),
         Match(wm_class="crx_nngceckbapebfimnlniiiahkandclblb"),
+        Match(wm_class="remote-viewer"),
     ],
 )
 

@@ -44,4 +44,3 @@ def run_command(cmd_list: List[str], get_output: bool = False) -> Optional[str]:
         return None
     except (subprocess.SubprocessError, OSError):
         return "" if get_output else None
-

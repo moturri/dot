@@ -6,15 +6,11 @@ groups = [
     Group(
         "1",
         label="󰣇",
-        matches=[
-            Match(wm_class="stacer"),
-            Match(wm_class="pcmanfm-qt"),
-            Match(wm_class="vscodium"),
-        ],
+        matches=[],
     ),
     Group(
         "2",
-        label="",
+        label="󰆍",
         matches=[
             Match(wm_class="alacritty"),
             Match(wm_class="org.wezfurlong.wezterm"),
@@ -22,7 +18,7 @@ groups = [
     ),
     Group(
         "3",
-        label="󰈹",
+        label="󰖟",
         matches=[
             Match(wm_class="firefox"),
             Match(wm_class="brave-browser"),
@@ -31,22 +27,24 @@ groups = [
     ),
     Group(
         "4",
-        label="󰊠",
+        label="󰌽",
         matches=[
-            Match(wm_class="VirtualBox Manager"),
+            Match(wm_class="pcmanfm-qt"),
             Match(wm_class="octopi"),
         ],
     ),
     Group(
         "5",
-        label="󰇮",
+        label="󰚗",
         matches=[
-            Match(wm_class="Mail"),
+            Match(wm_class="VirtualBox Manager"),
+            Match(wm_class="virt-manager"),
+            Match(wm_class="vscodium"),
         ],
     ),
     Group(
         "6",
-        label="󰉌",
+        label="󱉟",
         matches=[
             Match(wm_class="soffice.bin"),
             Match(wm_class="calibre"),
@@ -57,7 +55,7 @@ groups = [
     ),
     Group(
         "7",
-        label="󰠹",
+        label="󰟴",
         matches=[
             Match(wm_class="stremio"),
             Match(wm_class="mpv"),
@@ -73,6 +71,7 @@ groups = [
             Match(wm_class="timeshift-gtk"),
             Match(wm_class="KeePassXC"),
             Match(wm_class="GParted"),
+            Match(wm_class="stacer"),
         ],
     ),
     Group(
@@ -84,6 +83,14 @@ groups = [
             Match(wm_class="galaxybudsclient"),
             Match(wm_class="spotify"),
             Match(wm_class="strawberry"),
+        ],
+    ),
+    Group(
+        "0",
+        label="󱘖",
+        matches=[
+            Match(wm_class="Mail"),
+            Match(wm_class="discord"),
         ],
     ),
 ]
