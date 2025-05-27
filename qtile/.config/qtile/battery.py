@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional, Tuple
 
-from utils import cached, fmt
+from qtile_extras.widget import GenPollText
 
 ICONS = [
     (80, "", "lime"),
@@ -23,14 +23,21 @@ def get_battery_info() -> Optional[Tuple[int, bool]]:
     return None
 
 
-@cached(10)
-def batt() -> str:
-    info = get_battery_info()
-    if not info:
+def fmt(icon: str, val: int, color: str) -> str:
+    return f'<span foreground="{color}">{icon}  {val:>3}%</span>'
+
+
+class BatteryWidget(GenPollText):
+    def __init__(self, update_interval=10, **config):
+        super().__init__(func=self.poll, update_interval=update_interval, **config)
+
+    def poll(self) -> str:
+        info = get_battery_info()
+        if not info:
+            return '<span foreground="grey">󰁾  --%</span>'
+        percent, charging = info
+        for level, icon, color in ICONS:
+            if percent >= level:
+                display_icon = f"󱐋 {icon}" if charging else icon
+                return fmt(display_icon, percent, color)
         return '<span foreground="grey">󰁾  --%</span>'
-    percent, charging = info
-    for level, icon, color in ICONS:
-        if percent >= level:
-            display_icon = f"󱐋 {icon}" if charging else icon
-            return fmt(display_icon, percent, color)
-    return '<span foreground="grey">󰁾  --%</span>'
