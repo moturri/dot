@@ -1,38 +1,16 @@
-format = """
-[](dark)\
-$directory\
-[](fg:dark bg:deep_purple)\
-$git_branch\
-$git_status\
-[](fg:deep_purple)\
-$line_break$character"""
+# Starship Prompt Format
+format = """$directory$git_branch$git_status"""
 
-palette = 'base'
+palette = "dracula"
 
-[palettes.base]
-# Base Colors
-text = "#ffffff"
-dark = "#000000"
-base = "#000000"
+# Dracula Palette (Essential Colors Only)
+[palettes.dracula]
+text = "#f8f8f2"
+dracula_bg = "#000010"
+dracula_fg = "#44475a"
+dracula_purple = "#bd93f9"
 
-# Accent Colors
-green = "#a6e3a1"
-blue = "#89b4fa"
-purple = "#cba6f7"
-deep_purple = "#a58bd4"
-yellow = "#f9e2af"
-deep_yellow = "#e0c063"
-peach = "#fab387"
-red = "#f38ba8"
-teal = "#94e2d5"
-lavender = "#b4befe"
-
-[directory]
-style = "fg:text bg:dark"
-format = "[ $path ]($style)"
-truncation_length = 3
-truncation_symbol = "…/"
-
+# Directory Module
 [directory.substitutions]
 "Documents" = "󰈙 "
 "Downloads" = " "
@@ -40,25 +18,36 @@ truncation_symbol = "…/"
 "Pictures" = " "
 "Developer" = "󰲋 "
 
+# Git Branch Styling
 [git_branch]
 symbol = ""
-style = "bg:deep_purple"
-format = '[[ $symbol $branch ](fg:base bg:deep_purple)]($style)'
+style = "bg:dracula_purple fg:dracula_bg"
+format = '[ $symbol $branch ]($style)'
 
+# Git Status Styling
 [git_status]
-style = "fg:base bg:deep_purple"
+style = "bg:dracula_purple fg:dracula_bg"
 format = '[$all_status$_ahead_behind]($style)'
-ahead = '^${count}'
-behind = 'v${count}'
+ahead = '⇡${count}'
+behind = '⇣${count}'
 
-[line_break]
+# Disable all other modules
+[aws]
 disabled = true
 
-[character]
-disabled = false
-success_symbol = '[](bold fg:green)'
-error_symbol = '[](bold fg:red)'
-vimcmd_symbol = '[](bold fg:teal)'
-vimcmd_replace_one_symbol = '[](bold fg:purple)'
-vimcmd_replace_symbol = '[](bold fg:purple)'
-vimcmd_visual_symbol = '[](bold fg:lavender)'
+[gcloud]
+disabled = true
+
+[package]
+disabled = true
+
+[username]
+disabled = true
+
+[hostname]
+disabled = true
+
+[time]
+disabled = true
+
+

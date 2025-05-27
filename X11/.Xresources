@@ -88,3 +88,5 @@ XTerm*translations: #override \
     Alt <Key>1: set-terminal-attributes() \n\
     Shift Ctrl <Key>N: spawn-new-terminal()
 
+Xcursor.theme: material_cursors
+Xcursor.size: 21

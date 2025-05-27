@@ -1,48 +1,48 @@
 import os
 
 from audio import AudioWidget, MicWidget
-from brightness import BrilloWidget
-from libqtile.config import Click, Drag, Key
+from brillo import BrilloWidget
+from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.lazy import lazy
 
 mod = "mod4"
 terminal = "kitty"
 
-# Custom widgets
+# Custom widget instances
 audio_widget = AudioWidget()
 mic_widget = MicWidget()
-brightness_widget = BrilloWidget()
+brillo_widget = BrilloWidget()
 
 
-# Define functions instead of inline lambdas
+# Define functions for system control (updated to use new method names)
 def increase_brightness(qtile):
-    brightness_widget.cmd_increase()
+    brillo_widget.increase()
 
 
 def decrease_brightness(qtile):
-    brightness_widget.cmd_decrease()
+    brillo_widget.decrease()
 
 
 def volume_up(qtile):
-    audio_widget.cmd_volume_up()
+    audio_widget.volume_up()
 
 
 def volume_down(qtile):
-    audio_widget.cmd_volume_down()
+    audio_widget.volume_down()
 
 
 def toggle_mute(qtile):
-    audio_widget.cmd_toggle_mute()
+    audio_widget.toggle_mute()
 
 
 def toggle_mic_mute(qtile):
-    mic_widget.cmd_toggle_mute()
+    mic_widget.toggle_mute()
 
 
 # Common paths
-rofi_scripts_path = "/home/m/.config/rofi/scripts/"
+rofi_scripts_path = os.path.expanduser("~/.config/rofi/scripts/")
 
-# Keybinding groups
+# Window navigation
 window_navigation_keys = [
     Key([mod], "h", lazy.layout.left()),
     Key([mod], "l", lazy.layout.right()),
@@ -50,6 +50,7 @@ window_navigation_keys = [
     Key([mod], "k", lazy.layout.up()),
 ]
 
+# Window swapping
 window_swapping_keys = [
     Key([mod, "shift"], "h", lazy.layout.swap_left()),
     Key([mod, "shift"], "l", lazy.layout.swap_right()),
@@ -57,6 +58,7 @@ window_swapping_keys = [
     Key([mod, "shift"], "k", lazy.layout.shuffle_up()),
 ]
 
+# Window resizing
 window_resize_keys = [
     Key([mod], "i", lazy.layout.grow()),
     Key([mod], "m", lazy.layout.shrink()),
@@ -64,6 +66,7 @@ window_resize_keys = [
     Key([mod, "shift"], "n", lazy.layout.normalize()),
 ]
 
+# Layout control
 layout_control_keys = [
     Key([mod], "o", lazy.layout.maximize()),
     Key([mod, "shift"], "space", lazy.layout.flip()),
@@ -71,6 +74,7 @@ layout_control_keys = [
     Key([mod], "Tab", lazy.next_layout()),
 ]
 
+# Program launchers
 program_launch_keys = [
     Key([mod], "Return", lazy.spawn(terminal)),
     Key([mod], "r", lazy.spawn("rofi -show drun")),
@@ -88,6 +92,7 @@ program_launch_keys = [
     ),
 ]
 
+# Session/window management
 session_keys = [
     Key([mod], "w", lazy.window.kill()),
     Key([mod], "F11", lazy.window.toggle_fullscreen()),
@@ -98,16 +103,19 @@ session_keys = [
     Key([mod], "comma", lazy.prev_screen()),
 ]
 
+# System control
 system_keys = [
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
     Key([mod], "Print", lazy.spawn("screengrab")),
 ]
 
+# Brightness controls
 brightness_keys = [
     Key([], "XF86MonBrightnessUp", lazy.function(increase_brightness)),
     Key([], "XF86MonBrightnessDown", lazy.function(decrease_brightness)),
 ]
 
+# Audio controls
 audio_keys = [
     Key([], "XF86AudioRaiseVolume", lazy.function(volume_up)),
     Key([], "XF86AudioLowerVolume", lazy.function(volume_down)),
@@ -115,8 +123,22 @@ audio_keys = [
     Key([], "XF86AudioMicMute", lazy.function(toggle_mic_mute)),
 ]
 
+# Media controls (requires mpris widget)
 media_keys = [
     Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
+]
+
+# Optional: KeyChord example
+# Press mod + c, then f (file manager), t (terminal), etc.
+keychords = [
+    KeyChord(
+        [mod],
+        "b",
+        [
+            Key([], "p", lazy.spawn("pcmanfm-qt")),
+            Key([], "t", lazy.spawn("kitty")),
+        ],
+    )
 ]
 
 # Combine all keybindings
@@ -131,6 +153,7 @@ keys = (
     + brightness_keys
     + audio_keys
     + media_keys
+    + keychords
 )
 
 # Mouse bindings

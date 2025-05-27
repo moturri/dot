@@ -6,7 +6,9 @@ groups = [
     Group(
         "1",
         label="󰣇",
-        matches=[],
+        matches=[
+            Match(wm_class="pcmanfm-qt"),
+        ],
     ),
     Group(
         "2",
@@ -29,7 +31,6 @@ groups = [
         "4",
         label="󰌽",
         matches=[
-            Match(wm_class="pcmanfm-qt"),
             Match(wm_class="octopi"),
         ],
     ),

@@ -2,7 +2,7 @@ import subprocess
 
 from audio import AudioWidget, MicWidget
 from battery import BatteryWidget
-from brightness import BrilloWidget
+from brillo import BrilloWidget
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
