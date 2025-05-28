@@ -24,19 +24,21 @@ layouts = [
     layout.Max(**ldecor),
 ]
 
-uwazi = "#00000000"
+transparent = "#00000000"
 wallpaper_path = "/home/m/.config/qtile/wallpaper/arc.jpg"
+if not os.path.exists(wallpaper_path):
+    wallpaper_path = "/usr/share/backgrounds/default.jpg"
 
 screens = [
     Screen(
         wallpaper=wallpaper_path,
         wallpaper_mode="stretch",
-        top=bar.Bar(main(), 28, background=uwazi, margin=[4, 8, 0, 8]),
+        top=bar.Bar(main(), 28, background=transparent, margin=[4, 8, 0, 8]),
     ),
     Screen(
         wallpaper=wallpaper_path,
         wallpaper_mode="stretch",
-        top=bar.Bar(misc(), 28, background=uwazi, margin=[4, 8, 0, 8]),
+        top=bar.Bar(misc(), 28, background=transparent, margin=[4, 8, 0, 8]),
     ),
 ]
 
@@ -75,11 +77,12 @@ wmname = "LG3D"
 @hook.subscribe.startup_once
 def autostart():
     """
-    Run startup scripts when Qtile starts for the first time.
+    Run startup scripts asynchronously when Qtile starts for the first time.
     """
     home = os.path.expanduser("~/.config/qtile/scripts")
     scripts = ["autostart.sh", "monitors.sh"]
     for script in scripts:
         script_path = os.path.join(home, script)
         if os.path.exists(script_path):
-            subprocess.run([script_path], check=False)
+            subprocess.Popen([script_path])
+

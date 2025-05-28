@@ -3,20 +3,11 @@ from libqtile.config import DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
 groups = [
-    Group(
-        "1",
-        label="󰣇",
-        matches=[
-            Match(wm_class="pcmanfm-qt"),
-        ],
-    ),
+    Group("1", label="󰣇", matches=[Match(wm_class="pcmanfm-qt")]),
     Group(
         "2",
         label="󰆍",
-        matches=[
-            Match(wm_class="alacritty"),
-            Match(wm_class="org.wezfurlong.wezterm"),
-        ],
+        matches=[Match(wm_class="alacritty"), Match(wm_class="org.wezfurlong.wezterm")],
     ),
     Group(
         "3",
@@ -27,13 +18,7 @@ groups = [
             Match(wm_class="zen"),
         ],
     ),
-    Group(
-        "4",
-        label="󰌽",
-        matches=[
-            Match(wm_class="octopi"),
-        ],
-    ),
+    Group("4", label="󰌽", matches=[Match(wm_class="octopi")]),
     Group(
         "5",
         label="󰚗",
@@ -54,14 +39,7 @@ groups = [
             Match(wm_class="obsidian"),
         ],
     ),
-    Group(
-        "7",
-        label="󰟴",
-        matches=[
-            Match(wm_class="stremio"),
-            Match(wm_class="mpv"),
-        ],
-    ),
+    Group("7", label="󰟴", matches=[Match(wm_class="stremio"), Match(wm_class="mpv")]),
     Group(
         "8",
         label="󰒃",
@@ -86,19 +64,13 @@ groups = [
             Match(wm_class="strawberry"),
         ],
     ),
-    Group(
-        "0",
-        label="󱘖",
-        matches=[
-            Match(wm_class="Mail"),
-            Match(wm_class="discord"),
-        ],
-    ),
+    Group("0", label="󱘖", matches=[Match(wm_class="Mail"), Match(wm_class="discord")]),
 ]
 
-
+# Add group keys once
+group_keys = []
 for group in groups:
-    keys.extend(
+    group_keys.extend(
         [
             Key([mod], group.name, lazy.group[group.name].toscreen()),
             Key(
@@ -110,7 +82,9 @@ for group in groups:
         ]
     )
 
+keys.extend(group_keys)
 
+# Add ScratchPad group
 groups.append(
     ScratchPad(
         "scratchpad",
@@ -172,7 +146,6 @@ groups.append(
     )
 )
 
-
 scratches = {
     "calcurse": "c",
     "iwgtk": "i",
@@ -183,8 +156,10 @@ scratches = {
     "pcmanfm-qt": "p",
 }
 
+scratch_keys = [
+    Key([mod, "control"], key, lazy.group["scratchpad"].dropdown_toggle(name))
+    for name, key in scratches.items()
+]
 
-for name, key in scratches.items():
-    keys.append(
-        Key([mod, "control"], key, lazy.group["scratchpad"].dropdown_toggle(name))
-    )
+keys.extend(scratch_keys)
+

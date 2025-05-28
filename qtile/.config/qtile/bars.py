@@ -14,14 +14,14 @@ theme = {
     "padding": 6,
 }
 
-# Common widget decoration
+# Common widget decoration dictionary
 wdecor = {
     "background": theme["bg"],
     "foreground": theme["fg"],
     "decorations": [
         RectDecoration(use_widget_background=True, radius=12, filled=True, group=True)
     ],
-    "padding": 6,
+    "padding": theme["padding"],
 }
 
 
@@ -29,7 +29,8 @@ def spacer(length=10):
     return widget.Spacer(length=length)
 
 
-time = [
+# Clock widget setup
+timeWidget = [
     widget.Clock(format="   %e %b    %H:%M  ", **wdecor),
     spacer(),
 ]
@@ -39,40 +40,39 @@ def system_widgets():
     return [
         widget.Mpris2(
             name="mpris",
-            format=" 󰓃 ",
-            no_metadata_text=" 󰓄 ",
+            format=" 󰓃 ",  # Play icon
+            no_metadata_text=" 󰓄 ",  # Stop icon
             paused_text=" 󰓄 ",
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
             **wdecor,
         ),
-        spacer(),
         AudioWidget(
+            name="audio",
             mouse_callbacks={
                 "Button3": lazy.widget["audio"].toggle_mute(),
                 "Button4": lazy.widget["audio"].volume_up(),
                 "Button5": lazy.widget["audio"].volume_down(),
             },
-            name="audio",
             **wdecor,
         ),
         MicWidget(
+            name="mic",
             mouse_callbacks={
                 "Button3": lazy.widget["mic"].toggle_mute(),
                 "Button4": lazy.widget["mic"].volume_up(),
                 "Button5": lazy.widget["mic"].volume_down(),
             },
-            name="mic",
             **wdecor,
         ),
         spacer(),
         BrilloWidget(
+            name="brightness",
             mouse_callbacks={
                 "Button4": lazy.widget["brightness"].increase(),
                 "Button5": lazy.widget["brightness"].decrease(),
             },
-            name="brightness",
             **wdecor,
         ),
         spacer(),
@@ -116,8 +116,8 @@ def system_tray_widget():
 
 
 def main():
-    return time + group_widgets() + system_tray_widget() + system_widgets()
+    return timeWidget + group_widgets() + system_tray_widget() + system_widgets()
 
 
 def misc():
-    return time + group_widgets() + system_widgets()
+    return timeWidget + group_widgets() + system_widgets()

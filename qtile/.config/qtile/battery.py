@@ -1,12 +1,15 @@
-import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 from qtile_extras.widget import GenPollText
 
+# Constants
+FALLBACK_ICON = "󰂑"
+FALLBACK_COLOR = "grey"
+
 
 def get_battery_info() -> Optional[Dict[str, Any]]:
-    """Basic battery info from /sys/class/power_supply."""
+    """Read battery status from /sys/class/power_supply/BAT*."""
     power_supply_path = Path("/sys/class/power_supply")
     batteries = list(power_supply_path.glob("BAT*"))
 
@@ -26,43 +29,44 @@ def get_battery_info() -> Optional[Dict[str, Any]]:
 
 
 def format_output(icon: str, percent: int, color: str) -> str:
+    """Format battery display string."""
     return f'<span foreground="{color}">{icon} {percent:3d}%</span>'
 
 
 class BatteryWidget(GenPollText):
-    """Simplified battery widget."""
+    """Minimal and efficient battery widget."""
 
     def __init__(self, update_interval: int = 30, **config):
         self.update_interval = update_interval
 
-        # Basic icon and color thresholds
         self.icons = [
             (80, "󰂂", "lime"),
-            (60, "󰂀", "green"),
+            (60, "󰂀", "palegreen"),
             (40, "󰁿", "orange"),
             (20, "󰁻", "coral"),
-            (0,  "󰁺", "red"),
+            (0, "󰁺", "red"),
         ]
         self.charging_icon = "󱐋"
         self.full_icon = "󰂄"
 
         super().__init__(func=self.poll, update_interval=update_interval, **config)
 
-    def _get_icon_and_color(self, percentage: int, is_charging: bool, is_full: bool) -> Tuple[str, str]:
+    def _get_icon_and_color(
+        self, percentage: int, is_charging: bool, is_full: bool
+    ) -> Tuple[str, str]:
         if is_full:
             return self.full_icon, "lime"
 
         for threshold, icon, color in self.icons:
             if percentage >= threshold:
-                icon = f"{self.charging_icon} {icon}" if is_charging else icon
-                return icon, color
+                return (f"{self.charging_icon} {icon}" if is_charging else icon), color
 
-        return "󰁺", "grey"  # fallback
+        return FALLBACK_ICON, FALLBACK_COLOR
 
     def poll(self) -> str:
         info = get_battery_info()
         if not info:
-            return '<span foreground="grey">󰂑  N/A</span>'
+            return format_output(FALLBACK_ICON, 0, FALLBACK_COLOR)
 
         percent = info["percentage"]
         icon, color = self._get_icon_and_color(
