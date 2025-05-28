@@ -1,5 +1,3 @@
-import subprocess
-
 from audio import AudioWidget, MicWidget
 from battery import BatteryWidget
 from brillo import BrilloWidget
@@ -13,6 +11,7 @@ theme = {
     "alert": "#ff5555",
     "fg": "#FFFFFF",
     "bg": "#000000",
+    "padding": 6,
 }
 
 # Common widget decoration
@@ -30,16 +29,7 @@ def spacer(length=10):
     return widget.Spacer(length=length)
 
 
-# Dunst notification handlers
-def show_dunst_history(qtile):
-    subprocess.Popen(["dunstctl", "history-pop"])
-
-
-def clear_dunst_history(qtile):
-    subprocess.Popen(["dunstctl", "history-clear"])
-
-
-wakati = [
+time = [
     widget.Clock(format="   %e %b    %H:%M  ", **wdecor),
     spacer(),
 ]
@@ -47,31 +37,14 @@ wakati = [
 
 def system_widgets():
     return [
-        BrilloWidget(
-            mouse_callbacks={
-                "Button4": lazy.widget["brightness"].increase(),
-                "Button5": lazy.widget["brightness"].decrease(),
-            },
-            name="brightness",
-            **wdecor,
-        ),
-        spacer(),
         widget.Mpris2(
             name="mpris",
-            format=" 󰓃",
-            no_metadata_text=" 󰓄",
-            paused_text=" 󰓄",
+            format=" 󰓃 ",
+            no_metadata_text=" 󰓄 ",
+            paused_text=" 󰓄 ",
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
-            **wdecor,
-        ),
-        widget.TextBox(
-            text=" 󰂚 ",
-            mouse_callbacks={
-                "Button1": lazy.function(show_dunst_history),
-                "Button3": lazy.function(clear_dunst_history),
-            },
             **wdecor,
         ),
         spacer(),
@@ -91,6 +64,15 @@ def system_widgets():
                 "Button5": lazy.widget["mic"].volume_down(),
             },
             name="mic",
+            **wdecor,
+        ),
+        spacer(),
+        BrilloWidget(
+            mouse_callbacks={
+                "Button4": lazy.widget["brightness"].increase(),
+                "Button5": lazy.widget["brightness"].decrease(),
+            },
+            name="brightness",
             **wdecor,
         ),
         spacer(),
@@ -134,8 +116,8 @@ def system_tray_widget():
 
 
 def main():
-    return wakati + group_widgets() + system_tray_widget() + system_widgets()
+    return time + group_widgets() + system_tray_widget() + system_widgets()
 
 
 def misc():
-    return wakati + group_widgets() + system_widgets()
+    return time + group_widgets() + system_widgets()
