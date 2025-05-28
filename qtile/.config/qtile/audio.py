@@ -82,7 +82,10 @@ class AudioWidget(GenPollText):
         icons = icons or defaults["icons"]
         self.muted_icon = muted_icon or defaults["muted_icon"]
 
-        self.icons = list(zip(thresholds, icons, colors))
+        # Icons, colors paired with thresholds sorted descending for correct matching
+        self.icons = sorted(
+            zip(thresholds, icons, colors), key=lambda x: x[0], reverse=True
+        )
         self.debounce_time = debounce_time
 
         self._last_output = ""
@@ -150,4 +153,11 @@ class AudioWidget(GenPollText):
     def toggle_mute(self):
         run(["wpctl", "set-mute", self.device, "toggle"])
         self._cached_volume_info = None
+
+
+class MicWidget(AudioWidget):
+    """Mic widget based on AudioWidget but for input devices."""
+
+    def __init__(self, **config):
+        super().__init__(kind="input", **config)
 
