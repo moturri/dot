@@ -58,9 +58,9 @@ def system_widgets():
         spacer(),
         widget.Mpris2(
             name="mpris",
-            format=" 󰝚",
-            no_metadata_text=" 󰝛",
-            paused_text=" 󰝛",
+            format=" 󰓃",
+            no_metadata_text=" 󰓄",
+            paused_text=" 󰓄",
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
