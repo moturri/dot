@@ -67,7 +67,7 @@ groups = [
     Group("0", label="󱘖", matches=[Match(wm_class="Mail"), Match(wm_class="discord")]),
 ]
 
-# Add group keys once
+
 group_keys = []
 for group in groups:
     group_keys.extend(
@@ -84,7 +84,7 @@ for group in groups:
 
 keys.extend(group_keys)
 
-# Add ScratchPad group
+
 groups.append(
     ScratchPad(
         "scratchpad",
@@ -162,4 +162,3 @@ scratch_keys = [
 ]
 
 keys.extend(scratch_keys)
-

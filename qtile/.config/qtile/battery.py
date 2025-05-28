@@ -1,42 +1,40 @@
-from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+from pydbus import SystemBus
 from qtile_extras.widget import GenPollText
 
 # Constants
 FALLBACK_ICON = "󰂑"
 FALLBACK_COLOR = "grey"
 
+UP_DEVICE_PATH = "/org/freedesktop/UPower/devices/battery_BAT0"
+UP_INTERFACE = "org.freedesktop.UPower.Device"
+
 
 def get_battery_info() -> Optional[Dict[str, Any]]:
-    """Read battery status from /sys/class/power_supply/BAT*."""
-    power_supply_path = Path("/sys/class/power_supply")
-    batteries = list(power_supply_path.glob("BAT*"))
+    try:
+        bus = SystemBus()
+        battery = bus.get("org.freedesktop.UPower", UP_DEVICE_PATH)
+        percent = int(battery.Percentage)
+        state = battery.State  # Enum: 1=Charging, 2=Discharging, 4=Full
 
-    for bat in batteries:
-        try:
-            capacity = int((bat / "capacity").read_text().strip())
-            status = (bat / "status").read_text().strip().lower()
-            return {
-                "percentage": max(0, min(100, capacity)),
-                "is_charging": status == "charging",
-                "is_full": status == "full",
-            }
-        except (OSError, ValueError):
-            continue
+        return {
+            "percentage": max(0, min(100, percent)),
+            "is_charging": state == 1,
+            "is_full": state == 4,
+        }
 
-    return None
+    except Exception as e:
+        print(f"Battery info error: {e}")
+        return None
 
 
 def format_output(icon: str, percent: int, color: str) -> str:
-    """Format battery display string."""
     return f'<span foreground="{color}">{icon} {percent:3d}%</span>'
 
 
 class BatteryWidget(GenPollText):
-    """Minimal and efficient battery widget."""
-
-    def __init__(self, update_interval: int = 30, **config):
+    def __init__(self, update_interval: int = 10, **config):
         self.update_interval = update_interval
 
         self.icons = [

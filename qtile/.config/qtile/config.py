@@ -76,13 +76,9 @@ wmname = "LG3D"
 
 @hook.subscribe.startup_once
 def autostart():
-    """
-    Run startup scripts asynchronously when Qtile starts for the first time.
-    """
     home = os.path.expanduser("~/.config/qtile/scripts")
     scripts = ["autostart.sh", "monitors.sh"]
     for script in scripts:
         script_path = os.path.join(home, script)
         if os.path.exists(script_path):
             subprocess.Popen([script_path])
-

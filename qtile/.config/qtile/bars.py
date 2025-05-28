@@ -5,16 +5,14 @@ from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
 
-# Theme colors
 theme = {
     "accent": "#6f3aea",
     "alert": "#ff5555",
     "fg": "#FFFFFF",
-    "bg": "#000000",
+    "bg": "#110000",
     "padding": 6,
 }
 
-# Common widget decoration dictionary
 wdecor = {
     "background": theme["bg"],
     "foreground": theme["fg"],
@@ -29,7 +27,6 @@ def spacer(length=10):
     return widget.Spacer(length=length)
 
 
-# Clock widget setup
 timeWidget = [
     widget.Clock(format="   %e %b    %H:%M  ", **wdecor),
     spacer(),
@@ -38,16 +35,25 @@ timeWidget = [
 
 def system_widgets():
     return [
+        widget.TextBox(
+            text=" 󰂚 ",
+            mouse_callbacks={
+                "Button3": lazy.spawn("dunstctl history-clear"),
+                "Button1": lazy.spawn("dunstctl history-pop"),
+            },
+            **wdecor,
+        ),
         widget.Mpris2(
             name="mpris",
-            format=" 󰓃 ",  # Play icon
-            no_metadata_text=" 󰓄 ",  # Stop icon
-            paused_text=" 󰓄 ",
+            format="󰓃 ",
+            no_metadata_text="󰓄 ",
+            paused_text="󰓄 ",
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
             **wdecor,
         ),
+        spacer(),
         AudioWidget(
             name="audio",
             mouse_callbacks={
