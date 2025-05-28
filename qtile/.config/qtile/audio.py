@@ -160,19 +160,3 @@ class MicWidget(AudioWidget):
 
     def __init__(self, **config):
         super().__init__(kind="input", **config)
-
-# Audio control helpers
-def volume_up(qtile):
-    AudioWidget.volume_up()
-
-
-def volume_down(qtile):
-    AudioWidget.volume_down()
-
-
-def toggle_mute(qtile):
-    AudioWidget.toggle_mute()
-
-
-def toggle_mic_mute(qtile):
-    AudioWidget.toggle_mute()

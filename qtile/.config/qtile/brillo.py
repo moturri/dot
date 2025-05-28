@@ -187,12 +187,3 @@ class BrilloWidget(GenPollText):
         """Return backend and device info."""
         device = self.device.name if self.device else "None"
         return f"Backend: {self.backend}, Device: {device}, Brillo: {self.has_brillo}"
-
-
-# Brightness control helpers
-def brillo_up(qtile):
-    BrilloWidget.increase()
-
-
-def brillo_down(qtile):
-    BrilloWidget.decrease()

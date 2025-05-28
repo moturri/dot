@@ -1,12 +1,43 @@
 import os
 
-from audio import toggle_mic_mute, toggle_mute, volume_down, volume_up
-from brillo import brillo_down, brillo_up
+from audio import AudioWidget, MicWidget
+from brillo import BrilloWidget
 from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.lazy import lazy
 
 mod = "mod4"
 terminal = "kitty"
+
+# Instantiate custom widgets to call their methods in keybindings
+audio = AudioWidget()
+mic = MicWidget()
+brillo = BrilloWidget()
+
+
+# Brightness control helpers
+def increase_brightness(qtile):
+    brillo.increase()
+
+
+def decrease_brightness(qtile):
+    brillo.decrease()
+
+
+# Audio control helpers
+def volume_up(qtile):
+    audio.volume_up()
+
+
+def volume_down(qtile):
+    audio.volume_down()
+
+
+def toggle_mute(qtile):
+    audio.toggle_mute()
+
+
+def toggle_mic_mute(qtile):
+    mic.toggle_mute()
 
 
 # Common rofi scripts path
@@ -62,8 +93,8 @@ keys = [
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
     Key([], "Print", lazy.spawn("screengrab")),
     # Brightness keys
-    Key([], "XF86MonBrightnessUp", lazy.function(brillo_up)),
-    Key([], "XF86MonBrightnessDown", lazy.function(brillo_down)),
+    Key([], "XF86MonBrightnessUp", lazy.function(increase_brightness)),
+    Key([], "XF86MonBrightnessDown", lazy.function(decrease_brightness)),
     # Audio keys
     Key([], "XF86AudioRaiseVolume", lazy.function(volume_up)),
     Key([], "XF86AudioLowerVolume", lazy.function(volume_down)),
@@ -100,3 +131,4 @@ mouse = [
     ),
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
+
