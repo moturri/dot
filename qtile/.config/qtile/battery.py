@@ -1,73 +1,154 @@
+import logging
+import time
 from typing import Any, Dict, Optional, Tuple
 
-from pydbus import SystemBus
+from pydbus import SystemBus  # type: ignore[import]
 from qtile_extras.widget import GenPollText
 
+# Logger setup
+logger = logging.getLogger(__name__)
+
 # Constants
+CACHE_TIMEOUT = 5.0
 FALLBACK_ICON = "󰂑"
-FALLBACK_COLOR = "grey"
+FALLBACK_COLOR = "dimgrey"
 
-UP_DEVICE_PATH = "/org/freedesktop/UPower/devices/battery_BAT0"
-UP_INTERFACE = "org.freedesktop.UPower.Device"
+UPOWER_SERVICE = "org.freedesktop.UPower"
+DEVICE_INTERFACE = "org.freedesktop.UPower.Device"
+
+# Icon thresholds: (percent, icon, color)
+BATTERY_ICONS = [
+    (95, "󰂂", "lime"),
+    (80, "󰂁", "springgreen"),
+    (60, "󰂀", "palegreen"),
+    (40, "󰁿", "orange"),
+    (20, "󰁻", "coral"),
+    (5, "󰁻", "tomato"),
+    (0, "󰁺", "red"),
+]
+
+CHARGING_ICON = "󱐋"
+FULL_ICON = "󰂄"
+
+BATTERY_STATE = {
+    1: "charging",
+    2: "discharging",
+    3: "empty",
+    4: "full",
+    5: "pending_charge",
+    6: "pending_discharge",
+}
 
 
-def get_battery_info() -> Optional[Dict[str, Any]]:
+def find_battery_path() -> Optional[str]:
+    """Discover the first available battery path from UPower."""
     try:
         bus = SystemBus()
-        battery = bus.get("org.freedesktop.UPower", UP_DEVICE_PATH)
-        percent = int(battery.Percentage)
-        state = battery.State  # Enum: 1=Charging, 2=Discharging, 4=Full
+        upower = bus.get(UPOWER_SERVICE, "/org/freedesktop/UPower")
+        devices = upower.EnumerateDevices()
+        for dev in devices:
+            if "battery" in dev:
+                return dev
+    except Exception as e:
+        logger.warning(f"Failed to find battery path: {e}")
+    return None
+
+
+def get_battery_info(battery_path: str) -> Optional[Dict[str, Any]]:
+    """Query battery info from UPower D-Bus."""
+    try:
+        bus = SystemBus()
+        battery = bus.get(UPOWER_SERVICE, battery_path)
+        percentage = max(0, min(100, int(battery.Percentage)))
+        state = battery.State
 
         return {
-            "percentage": max(0, min(100, percent)),
+            "percentage": percentage,
+            "state": BATTERY_STATE.get(state, "unknown"),
             "is_charging": state == 1,
+            "is_discharging": state == 2,
             "is_full": state == 4,
+            "is_critical": percentage <= 5,
         }
-
     except Exception as e:
-        print(f"Battery info error: {e}")
+        logger.warning(f"Failed to query battery info: {e}")
         return None
 
 
-def format_output(icon: str, percent: int, color: str) -> str:
-    return f'<span foreground="{color}">{icon} {percent:3d}%</span>'
-
-
 class BatteryWidget(GenPollText):
-    def __init__(self, update_interval: int = 10, **config):
-        self.update_interval = update_interval
+    """Qtile Battery Widget with UPower backend."""
 
-        self.icons = [
-            (80, "󰂂", "lime"),
-            (60, "󰂀", "palegreen"),
-            (40, "󰁿", "orange"),
-            (20, "󰁻", "coral"),
-            (0, "󰁺", "red"),
-        ]
-        self.charging_icon = "󱐋"
-        self.full_icon = "󰂄"
+    def __init__(
+        self,
+        update_interval: float = 10.0,
+        battery_path: Optional[str] = None,
+        icons: Optional[list] = None,
+        **config,
+    ):
+        self.battery_path = battery_path or find_battery_path()
+        if not self.battery_path:
+            logger.warning("No battery path detected; battery widget will show N/A.")
 
-        super().__init__(func=self.poll, update_interval=update_interval, **config)
+        self.icons = icons or BATTERY_ICONS
+        self._cache: Optional[Tuple[Dict[str, Any], float]] = None
 
-    def _get_icon_and_color(
-        self, percentage: int, is_charging: bool, is_full: bool
-    ) -> Tuple[str, str]:
-        if is_full:
-            return self.full_icon, "lime"
+        super().__init__(func=self._poll, update_interval=update_interval, **config)
+
+    def _get_battery_info(
+        self, force_refresh: bool = False
+    ) -> Optional[Dict[str, Any]]:
+        now = time.time()
+        if not force_refresh and self._cache:
+            cached_data, cached_at = self._cache
+            if now - cached_at < CACHE_TIMEOUT:
+                return cached_data
+
+        new_data: Optional[Dict[str, Any]] = None
+        if self.battery_path:
+            new_data = get_battery_info(self.battery_path)
+
+        if new_data is not None:
+            self._cache = (new_data, now)
+
+        return new_data
+
+    def _get_icon_and_color(self, info: Dict[str, Any]) -> Tuple[str, str]:
+        percent = info["percentage"]
+
+        if info["is_full"]:
+            return FULL_ICON, "#32cd32"
+
+        if info["is_critical"]:
+            icon = "󰂃" if info["is_charging"] else "󰁺"
+            return icon, "#ff0000"
 
         for threshold, icon, color in self.icons:
-            if percentage >= threshold:
-                return (f"{self.charging_icon} {icon}" if is_charging else icon), color
+            if percent >= threshold:
+                if info["is_charging"]:
+                    return f"{CHARGING_ICON} {icon}", color
+                return icon, color
 
         return FALLBACK_ICON, FALLBACK_COLOR
 
-    def poll(self) -> str:
-        info = get_battery_info()
-        if not info:
-            return format_output(FALLBACK_ICON, 0, FALLBACK_COLOR)
+    def _format_display(self, info: Dict[str, Any]) -> str:
+        icon, color = self._get_icon_and_color(info)
+        return f'<span foreground="{color}">{icon} {info["percentage"]:3d}%</span>'
 
-        percent = info["percentage"]
-        icon, color = self._get_icon_and_color(
-            percent, info["is_charging"], info["is_full"]
+    def _poll(self) -> str:
+        info = self._get_battery_info()
+        if not info:
+            return f'<span foreground="{FALLBACK_COLOR}">{FALLBACK_ICON}  N/A</span>'
+        return self._format_display(info)
+
+    # Additional helper to get info string
+    def get_info(self) -> str:
+        info = self._get_battery_info(force_refresh=True)
+        if not info:
+            return "Battery: Not available"
+        return (
+            f"Battery: {info['percentage']}% | "
+            f"State: {info['state']} | "
+            f"Charging: {info['is_charging']} | "
+            f"Critical: {info['is_critical']}"
         )
-        return format_output(icon, percent, color)
+

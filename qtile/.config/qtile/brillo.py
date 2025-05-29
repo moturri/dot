@@ -1,105 +1,95 @@
 import subprocess
 import time
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional, Tuple
 
 from libqtile.widget.base import expose_command
 from qtile_extras.widget import GenPollText
 
+# Constants
+BRIGHTNESS_STEP = 5
+CACHE_TIMEOUT = 0.3
+CMD_TIMEOUT = 1.0
 
-def run(cmd: List[str]) -> str:
-    """Run a command and return stdout, or empty string on failure."""
+BRIGHTNESS_ICONS: List[Tuple[int, str, str]] = [
+    (80, "󰃠", "gold"),
+    (60, "󰃝", "darkorange"),
+    (40, "󰃟", "tan"),
+    (20, "󰃞", "lime"),
+    (0, "󰃜", "dimgrey"),
+]
+
+DEVICE_PRIORITY: List[str] = ["intel_backlight", "amdgpu_bl0", "acpi_video0"]
+
+
+def run_cmd(cmd: List[str]) -> str:
+    """Run a command safely and return its output, or empty string on failure."""
     try:
         return subprocess.check_output(
-            cmd, text=True, stderr=subprocess.DEVNULL, timeout=1
+            cmd, text=True, stderr=subprocess.DEVNULL, timeout=CMD_TIMEOUT
         ).strip()
-    except (subprocess.SubprocessError, FileNotFoundError, TimeoutError):
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
         return ""
 
 
-def format_output(icon: str, value: int, color: str) -> str:
-    """Format widget output string with icon and color."""
-    return f'<span foreground="{color}">{icon}  {value:3d}%</span>'
+def find_backlight_device(device_name: Optional[str] = None) -> Optional[Path]:
+    """Detect available backlight device."""
+    base = Path("/sys/class/backlight")
+    if not base.exists():
+        return None
+
+    try:
+        devices = list(base.iterdir())
+        if not devices:
+            return None
+
+        if device_name:
+            for d in devices:
+                if device_name in d.name:
+                    return d
+
+        for name in DEVICE_PRIORITY:
+            for d in devices:
+                if name in d.name:
+                    return d
+
+        return devices[0]  # fallback to the first one found
+    except (OSError, PermissionError):
+        return None
 
 
 class BrilloWidget(GenPollText):
-    """Simple and efficient brightness widget supporting sysfs and brillo."""
-
     def __init__(
         self,
         update_interval: float = 0.5,
-        step: int = 5,
+        step: int = BRIGHTNESS_STEP,
         device_name: Optional[str] = None,
-        icons: Optional[List[tuple]] = None,
+        icons: Optional[List[Tuple[int, str, str]]] = None,
         prefer_brillo: bool = True,
-        **config,
+        **config: Any,
     ):
         self.step = step
-        self.device_name = device_name
-        self.prefer_brillo = prefer_brillo
+        self.icons: List[Tuple[int, str, str]] = icons or BRIGHTNESS_ICONS
 
-        # Icon levels
-        self.icons = icons or [
-            (80, "󰃠", "gold"),
-            (60, "󰃝", "darkorange"),
-            (40, "󰃟", "tan"),
-            (20, "󰃞", "lime"),
-            (0, "󰃜", "dimgrey"),
-        ]
+        self.device: Optional[Path] = find_backlight_device(device_name)
+        self.max_brightness: int = self._get_max_brightness()
+        self.has_brillo: bool = bool(run_cmd(["which", "brillo"]))
+        self.backend: str = self._select_backend(prefer_brillo)
 
-        self.device = self._find_backlight_device()
-        self.max_brightness = self._get_max_brightness()
-        self.has_brillo = bool(run(["which", "brillo"]))
-        self.backend = self._select_backend()
+        self._cache: Optional[Tuple[int, float]] = None
 
-        self._last_percent = None
-        self._last_check = 0.0
-        self._cache_duration = 0.3
-
-        super().__init__(func=self.poll, update_interval=update_interval, **config)
-
-    def _find_backlight_device(self) -> Optional[Path]:
-        path = Path("/sys/class/backlight")
-        if not path.exists():
-            return None
-
-        try:
-            devices = list(path.iterdir())
-            if self.device_name:
-                for d in devices:
-                    if self.device_name in d.name:
-                        return d
-            for name in ["intel_backlight", "acpi_video0", "amdgpu_bl0"]:
-                for d in devices:
-                    if name in d.name:
-                        return d
-            return devices[0] if devices else None
-        except (OSError, PermissionError):
-            return None
+        super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _get_max_brightness(self) -> int:
+        if not self.device:
+            return 0
         try:
             return int((self.device / "max_brightness").read_text().strip())
-        except Exception:
+        except (OSError, ValueError):
             return 0
 
-    def _read_current_brightness(self) -> Optional[int]:
-        try:
-            return int((self.device / "brightness").read_text().strip())
-        except Exception:
-            return None
-
-    def _write_brightness(self, value: int) -> bool:
-        try:
-            (self.device / "brightness").write_text(
-                str(min(value, self.max_brightness))
-            )
-            return True
-        except Exception:
-            return False
-
-    def _select_backend(self) -> str:
-        if self.prefer_brillo and self.has_brillo:
+    def _select_backend(self, prefer_brillo: bool) -> str:
+        if prefer_brillo and self.has_brillo:
             return "brillo"
         if self.device and self.max_brightness > 0:
             return "sysfs"
@@ -107,83 +97,86 @@ class BrilloWidget(GenPollText):
             return "brillo"
         return "none"
 
-    def _get_current_percent(self, use_cache=True) -> Optional[int]:
+    def _get_brightness_percent(self, force_refresh: bool = False) -> Optional[int]:
         now = time.time()
-        if (
-            use_cache
-            and self._last_percent
-            and (now - self._last_check) < self._cache_duration
-        ):
-            return self._last_percent
+        if not force_refresh and self._cache:
+            percent_cached, cached_time = self._cache
+            if now - cached_time < CACHE_TIMEOUT:
+                return percent_cached
 
-        percent = None
+        percent_value: Optional[int] = None
+
         if self.backend == "brillo":
-            output = run(["brillo", "-G"])
+            output = run_cmd(["brillo", "-G"])
             try:
-                percent = int(float(output))
-            except ValueError:
+                percent_value = int(float(output))
+            except (ValueError, TypeError):
                 pass
-        elif self.backend == "sysfs":
-            current = self._read_current_brightness()
-            if current is not None and self.max_brightness > 0:
-                percent = int((current / self.max_brightness) * 100)
+        elif self.backend == "sysfs" and self.device:
+            try:
+                current = int((self.device / "brightness").read_text().strip())
+                if self.max_brightness > 0:
+                    percent_value = int((current / self.max_brightness) * 100)
+            except (OSError, ValueError):
+                pass
 
-        if percent is not None:
-            self._last_percent = percent
-            self._last_check = now
+        if percent_value is not None:
+            self._cache = (percent_value, now)
 
-        return percent
+        return percent_value
 
-    def poll(self) -> str:
-        percent = self._get_current_percent()
-        if percent is None:
-            return '<span foreground="grey">󰳲  N/A</span>'
+    def _set_brightness_percent(self, percent: int) -> bool:
+        percent = max(0, min(100, percent))
+        success = False
 
-        for level, icon, color in self.icons:
-            if percent >= level:
-                return format_output(icon, percent, color)
-        return format_output(self.icons[-1][1], percent, self.icons[-1][2])
-
-    def _change_brightness_percent(self, delta: int) -> bool:
-        current = self._get_current_percent(use_cache=False)
-        if current is None:
-            return False
-
-        new_percent = max(0, min(100, current + delta))
         if self.backend == "brillo":
-            return bool(run(["brillo", "-A" if delta > 0 else "-U", str(abs(delta))]))
-        elif self.backend == "sysfs":
-            new_value = int((new_percent / 100) * self.max_brightness)
-            if self._write_brightness(new_value):
-                self._last_percent = None
-                return True
-        return False
+            run_cmd(["brillo", "-S", str(percent)])
+            success = True
+        elif self.backend == "sysfs" and self.device:
+            try:
+                value = int((percent / 100) * self.max_brightness)
+                (self.device / "brightness").write_text(str(value))
+                success = True
+            except (OSError, ValueError):
+                pass
+
+        if success:
+            self._cache = None
+        return success
+
+    def _format_display(self, percent: int) -> str:
+        for threshold, icon, color in self.icons:
+            if percent >= threshold:
+                return f'<span foreground="{color}">{icon}  {percent:3d}%</span>'
+        return f'<span foreground="grey">󰳲  {percent:3d}%</span>'
+
+    def _poll(self) -> str:
+        if self.backend == "none":
+            return '<span foreground="grey">󰳲  N/A</span>'
+        percent = self._get_brightness_percent()
+        if percent is None:
+            return '<span foreground="grey">󰳲  ERR</span>'
+        return self._format_display(percent)
+
+    # --- Commands exposed to Qtile ---
 
     @expose_command()
     def increase(self):
-        """Increase brightness."""
-        if self.backend != "none":
-            self._change_brightness_percent(self.step)
+        current = self._get_brightness_percent(force_refresh=True)
+        if current is not None:
+            self._set_brightness_percent(current + self.step)
 
     @expose_command()
     def decrease(self):
-        """Decrease brightness."""
-        if self.backend != "none":
-            self._change_brightness_percent(-self.step)
+        current = self._get_brightness_percent(force_refresh=True)
+        if current is not None:
+            self._set_brightness_percent(current - self.step)
 
     @expose_command()
     def set_percent(self, percent: int):
-        """Set brightness to a specific percentage."""
-        percent = max(0, min(100, percent))
-        if self.backend == "brillo":
-            run(["brillo", "-S", str(percent)])
-        elif self.backend == "sysfs":
-            value = int((percent / 100) * self.max_brightness)
-            if self._write_brightness(value):
-                self._last_percent = None
+        self._set_brightness_percent(percent)
 
     @expose_command()
     def get_info(self) -> str:
-        """Return backend and device info."""
-        device = self.device.name if self.device else "None"
-        return f"Backend: {self.backend}, Device: {device}, Brillo: {self.has_brillo}"
+        name = self.device.name if self.device else "None"
+        return f"Backend: {self.backend} | Device: {name} | Max Brightness: {self.max_brightness}"

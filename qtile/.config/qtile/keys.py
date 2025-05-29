@@ -15,11 +15,11 @@ brillo = BrilloWidget()
 
 
 # Brightness control helpers
-def increase_brightness(qtile):
+def brillo_up(qtile):
     brillo.increase()
 
 
-def decrease_brightness(qtile):
+def brillo_down(qtile):
     brillo.decrease()
 
 
@@ -93,8 +93,8 @@ keys = [
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
     Key([], "Print", lazy.spawn("screengrab")),
     # Brightness keys
-    Key([], "XF86MonBrightnessUp", lazy.function(increase_brightness)),
-    Key([], "XF86MonBrightnessDown", lazy.function(decrease_brightness)),
+    Key([], "XF86MonBrightnessUp", lazy.function(brillo_up)),
+    Key([], "XF86MonBrightnessDown", lazy.function(brillo_down)),
     # Audio keys
     Key([], "XF86AudioRaiseVolume", lazy.function(volume_up)),
     Key([], "XF86AudioLowerVolume", lazy.function(volume_down)),
@@ -102,10 +102,7 @@ keys = [
     Key([], "XF86AudioMicMute", lazy.function(toggle_mic_mute)),
     # Media controls (with mpris widget)
     Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
-]
-
-# Optional key chords example (press mod+b then p/t)
-keychords = [
+] + [
     KeyChord(
         [mod],
         "b",
@@ -116,7 +113,6 @@ keychords = [
     )
 ]
 
-keys += [kc for kc in keychords]
 
 # Mouse bindings
 mouse = [
@@ -131,4 +127,3 @@ mouse = [
     ),
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
-

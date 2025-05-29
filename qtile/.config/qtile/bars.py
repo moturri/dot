@@ -33,7 +33,7 @@ timeWidget = [
 ]
 
 
-def system_widgets():
+def systemWidgets():
     return [
         widget.TextBox(
             text=" 󰂚 ",
@@ -86,7 +86,7 @@ def system_widgets():
     ]
 
 
-def group_widgets():
+def groupWidgets():
     return [
         widget.GroupBox(
             hide_unused=True,
@@ -114,7 +114,7 @@ def group_widgets():
     ]
 
 
-def system_tray_widget():
+def systemTrayWidget():
     return [
         widget.Systray(padding=10),
         spacer(),
@@ -122,8 +122,8 @@ def system_tray_widget():
 
 
 def main():
-    return timeWidget + group_widgets() + system_tray_widget() + system_widgets()
+    return timeWidget + groupWidgets() + systemTrayWidget() + systemWidgets()
 
 
 def misc():
-    return timeWidget + group_widgets() + system_widgets()
+    return timeWidget + groupWidgets() + systemWidgets()
