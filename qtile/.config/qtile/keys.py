@@ -3,6 +3,7 @@ import os
 from audio import AudioWidget, MicWidget
 from brillo import BrilloWidget
 from libqtile.config import Click, Drag, Key, KeyChord
+from libqtile.core.manager import Qtile
 from libqtile.lazy import lazy
 
 mod = "mod4"
@@ -15,34 +16,33 @@ brillo = BrilloWidget()
 
 
 # Brightness control helpers
-def brillo_up(qtile):
+def brillo_up(qtile: Qtile) -> None:
     brillo.increase()
 
 
-def brillo_down(qtile):
+def brillo_down(qtile: Qtile) -> None:
     brillo.decrease()
 
 
 # Audio control helpers
-def volume_up(qtile):
+def volume_up(qtile: Qtile) -> None:
     audio.volume_up()
 
 
-def volume_down(qtile):
+def volume_down(qtile: Qtile) -> None:
     audio.volume_down()
 
 
-def toggle_mute(qtile):
+def toggle_mute(qtile: Qtile) -> None:
     audio.toggle_mute()
 
 
-def toggle_mic_mute(qtile):
+def toggle_mic_mute(qtile: Qtile) -> None:
     mic.toggle_mute()
 
 
 # Common rofi scripts path
-rofi_scripts_path = os.path.expanduser("~/.config/rofi/scripts/")
-
+rofi_scripts_path: str = os.path.expanduser("~/.config/rofi/scripts/")
 
 # Keybindings:
 keys = [
@@ -113,7 +113,6 @@ keys = [
     )
 ]
 
-
 # Mouse bindings
 mouse = [
     Drag(
@@ -127,3 +126,4 @@ mouse = [
     ),
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
+

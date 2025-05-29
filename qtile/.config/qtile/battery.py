@@ -1,18 +1,14 @@
 import logging
 import time
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from pydbus import SystemBus  # type: ignore[import-untyped]
 
 if TYPE_CHECKING:
     from qtile_extras.widget import GenPollText
 
-from qtile_extras.widget import GenPollText
-
-# Logger setup
 logger = logging.getLogger(__name__)
 
-# Constants
 CACHE_TIMEOUT = 5.0
 FALLBACK_ICON = "󰂑"
 FALLBACK_COLOR = "dimgrey"
@@ -20,8 +16,7 @@ FALLBACK_COLOR = "dimgrey"
 UPOWER_SERVICE = "org.freedesktop.UPower"
 DEVICE_INTERFACE = "org.freedesktop.UPower.Device"
 
-# Icon thresholds: (percent, icon, color)
-BATTERY_ICONS: list[tuple[int, str, str]] = [
+BATTERY_ICONS: List[Tuple[int, str, str]] = [
     (95, "󰂂", "lime"),
     (80, "󰂁", "springgreen"),
     (60, "󰂀", "palegreen"),
@@ -51,7 +46,7 @@ def find_battery_path() -> Optional[str]:
         upower = bus.get(UPOWER_SERVICE, "/org/freedesktop/UPower")
         devices = upower.EnumerateDevices()
         for dev in devices:
-            if "battery" in dev:
+            if "battery" in dev.lower():  # case-insensitive match
                 return str(dev)
     except Exception as e:
         logger.warning(f"Failed to find battery path: {e}")
@@ -86,14 +81,14 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
         self,
         update_interval: float = 10.0,
         battery_path: Optional[str] = None,
-        icons: Optional[list[tuple[int, str, str]]] = None,
+        icons: Optional[List[Tuple[int, str, str]]] = None,
         **config: Any,
     ):
-        self.battery_path: Optional[str] = battery_path or find_battery_path()
+        self.battery_path = battery_path or find_battery_path()
         if not self.battery_path:
             logger.warning("No battery path detected; battery widget will show N/A.")
 
-        self.icons: list[tuple[int, str, str]] = icons or BATTERY_ICONS
+        self.icons = icons or BATTERY_ICONS
         self._cache: Optional[Tuple[Dict[str, Any], float]] = None
 
         super().__init__(func=self._poll, update_interval=update_interval, **config)
@@ -101,6 +96,7 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
     def _get_battery_info(
         self, force_refresh: bool = False
     ) -> Optional[Dict[str, Any]]:
+        """Return cached battery info or query fresh data if stale."""
         now = time.time()
         if not force_refresh and self._cache:
             cached_data, cached_at = self._cache
@@ -114,6 +110,7 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
         return fresh_data
 
     def _get_icon_and_color(self, info: Dict[str, Any]) -> Tuple[str, str]:
+        """Return icon and color based on battery info."""
         percent = info["percentage"]
 
         if info["is_full"]:
@@ -132,16 +129,19 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
         return FALLBACK_ICON, FALLBACK_COLOR
 
     def _format_display(self, info: Dict[str, Any]) -> str:
+        """Format widget output string."""
         icon, color = self._get_icon_and_color(info)
         return f'<span foreground="{color}">{icon} {info["percentage"]:3d}%</span>'
 
     def _poll(self) -> str:
+        """Return widget display string."""
         info = self._get_battery_info()
         if not info:
             return f'<span foreground="{FALLBACK_COLOR}">{FALLBACK_ICON}  N/A</span>'
         return self._format_display(info)
 
     def get_info(self) -> str:
+        """Return detailed battery info string."""
         info = self._get_battery_info(force_refresh=True)
         if not info:
             return "Battery: Not available"
@@ -151,3 +151,4 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
             f"Charging: {info['is_charging']} | "
             f"Critical: {info['is_critical']}"
         )
+

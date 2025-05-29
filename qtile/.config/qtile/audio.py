@@ -1,7 +1,7 @@
 import logging
 import subprocess
 import time
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Dict, Final, List, Optional, Tuple, TypedDict
 
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
@@ -9,13 +9,21 @@ from qtile_extras.widget import GenPollText
 logger = logging.getLogger(__name__)
 
 # Constants
-VOLUME_STEP = 5
-CACHE_TIMEOUT = 0.5
-DEBOUNCE_TIMEOUT = 0.1
-CMD_TIMEOUT = 1.0
+VOLUME_STEP: Final[int] = 5
+CACHE_TIMEOUT: Final[float] = 0.5
+DEBOUNCE_TIMEOUT: Final[float] = 0.1
+CMD_TIMEOUT: Final[float] = 1.0
 
-# Configurable settings
-VOLUME_CONFIG: Dict[str, Dict[str, Any]] = {
+
+class VolumeSettings(TypedDict):
+    device: str
+    thresholds: List[int]
+    colors: List[str]
+    icons: List[str]
+    muted_icon: str
+
+
+VOLUME_CONFIG: Dict[str, VolumeSettings] = {
     "output": {
         "device": "@DEFAULT_AUDIO_SINK@",
         "thresholds": [70, 40, 0],
@@ -42,14 +50,15 @@ def run_cmd(cmd: List[str]) -> str:
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
         FileNotFoundError,
-    ):
+    ) as e:
+        logger.debug(f"Command {cmd} failed: {e}")
         return ""
 
 
 def parse_wpctl_output(output: str) -> Tuple[int, bool]:
     try:
         parts = output.split()
-        volume = int(float(parts[1]) * 100)
+        volume = round(float(parts[1]) * 100)
         muted = "[MUTED]" in output
         return volume, muted
     except (IndexError, ValueError):
@@ -64,21 +73,19 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
         update_interval: float = 0.5,
         **config: Any,
     ) -> None:
-        self.kind: str = kind
-        self.config: Dict[str, Any] = VOLUME_CONFIG[kind]
-        self.device: str = device or self.config["device"]
+        self.kind = kind
+        self.config = VOLUME_CONFIG[kind]
+        self.device = device or self.config["device"]
 
-        thresholds: List[int] = cast(List[int], self.config["thresholds"])
-        icons: List[str] = cast(List[str], self.config["icons"])
-        colors: List[str] = cast(List[str], self.config["colors"])
+        thresholds = self.config["thresholds"]
+        icons = self.config["icons"]
+        colors = self.config["colors"]
 
-        self._icon_map: List[Tuple[int, str, str]] = list(
-            zip(thresholds, icons, colors)
+        self._icon_map = sorted(
+            zip(thresholds, icons, colors), key=lambda x: x[0], reverse=True
         )
-        self._icon_map.sort(key=lambda x: x[0], reverse=True)
-
         self._cache: Optional[Tuple[int, bool, float]] = None
-        self._last_poll_time: float = 0.0
+        self._last_poll_time = 0.0
 
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
@@ -100,7 +107,6 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
     def _format_display(self, volume: int, muted: bool) -> str:
         if volume == 0 and muted:
             return f'<span foreground="grey">{self.config["muted_icon"]}  N/A</span>'
-
         if muted:
             return f'<span foreground="dimgrey">{self.config["muted_icon"]} {volume:3d}%</span>'
 
@@ -128,6 +134,7 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 
     @expose_command()
     def volume_up(self) -> None:
+        """Increase volume by VOLUME_STEP."""
         volume, _ = self._get_volume_info(force_refresh=True)
         new_volume = min(100, volume + VOLUME_STEP) / 100
         self._execute_volume_cmd(
@@ -136,6 +143,7 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 
     @expose_command()
     def volume_down(self) -> None:
+        """Decrease volume by VOLUME_STEP."""
         volume, _ = self._get_volume_info(force_refresh=True)
         new_volume = max(0, volume - VOLUME_STEP) / 100
         self._execute_volume_cmd(
@@ -144,10 +152,12 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 
     @expose_command()
     def toggle_mute(self) -> None:
+        """Toggle mute state."""
         self._execute_volume_cmd(["wpctl", "set-mute", self.device, "toggle"])
 
     @expose_command()
     def get_state(self) -> Dict[str, Any]:
+        """Return current volume and mute state."""
         volume, muted = self._get_volume_info(force_refresh=True)
         return {"volume": volume, "muted": muted}
 
@@ -155,3 +165,4 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 class MicWidget(AudioWidget):
     def __init__(self, **config: Any) -> None:
         super().__init__(kind="input", **config)
+

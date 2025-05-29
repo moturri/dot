@@ -1,9 +1,10 @@
 import os
 import subprocess
+from typing import Any, List
 
 from bars import main, misc
-from groups import *
-from keys import *
+from groups import groups  # noqa: F401
+from keys import keys, mouse  # noqa: F401
 from libqtile import bar, hook, layout
 from libqtile.config import Match, Screen
 
@@ -18,10 +19,10 @@ ldecor = {
 }
 
 layouts = [
-    layout.MonadTall(**ldecor),
-    layout.MonadWide(**ldecor),
-    layout.MonadThreeCol(**ldecor),
-    layout.Max(**ldecor),
+    layout.MonadTall(**ldecor),  # type: ignore
+    layout.MonadWide(**ldecor),  # type: ignore
+    layout.MonadThreeCol(**ldecor),  # type: ignore
+    layout.Max(**ldecor),  # type: ignore
 ]
 
 transparent = "#00000000"
@@ -62,7 +63,7 @@ floating_layout = layout.Floating(
 )
 
 dgroups_key_binder = None
-dgroups_app_rules = []  # type: list
+dgroups_app_rules: List[Any] = []
 follow_mouse_focus = True
 bring_front_click = "floating_only"
 floats_kept_above = True
@@ -75,7 +76,7 @@ wmname = "LG3D"
 
 
 @hook.subscribe.startup_once
-def autostart():
+def autostart() -> None:
     home = os.path.expanduser("~/.config/qtile/scripts")
     scripts = ["autostart.sh", "monitors.sh"]
     for script in scripts:

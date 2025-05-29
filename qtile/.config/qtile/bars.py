@@ -1,11 +1,15 @@
+from typing import Any, Dict, List, Union
+
 from audio import AudioWidget, MicWidget
 from battery import BatteryWidget
 from brillo import BrilloWidget
 from libqtile.lazy import lazy
+from libqtile.widget.base import _Widget as Widget
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
 
-theme = {
+# Theme configuration
+theme: Dict[str, Union[str, int]] = {
     "accent": "#6f3aea",
     "alert": "#ff5555",
     "fg": "#FFFFFF",
@@ -13,27 +17,28 @@ theme = {
     "padding": 6,
 }
 
-wdecor = {
+# Widget decoration
+wdecor: Dict[str, Any] = {
     "background": theme["bg"],
     "foreground": theme["fg"],
     "decorations": [
-        RectDecoration(use_widget_background=True, radius=12, filled=True, group=True)
+        RectDecoration(use_widget_background=True, radius=12, filled=True, group=True)  # type: ignore
     ],
     "padding": theme["padding"],
 }
 
 
-def spacer(length=10):
+def spacer(length: int = 10) -> Any:
     return widget.Spacer(length=length)
 
 
-timeWidget = [
+timeWidget: List[Widget] = [
     widget.Clock(format="   %e %b    %H:%M  ", **wdecor),
     spacer(),
 ]
 
 
-def systemWidgets():
+def systemWidgets() -> List[Widget]:
     return [
         widget.TextBox(
             text=" 󰂚 ",
@@ -86,7 +91,7 @@ def systemWidgets():
     ]
 
 
-def groupWidgets():
+def groupWidgets() -> List[Widget]:
     return [
         widget.GroupBox(
             hide_unused=True,
@@ -114,16 +119,17 @@ def groupWidgets():
     ]
 
 
-def systemTrayWidget():
+def systemTrayWidget() -> List[Widget]:
     return [
         widget.Systray(padding=10),
         spacer(),
     ]
 
 
-def main():
+def main() -> List[Widget]:
     return timeWidget + groupWidgets() + systemTrayWidget() + systemWidgets()
 
 
-def misc():
+def misc() -> List[Widget]:
     return timeWidget + groupWidgets() + systemWidgets()
+
