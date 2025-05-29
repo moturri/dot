@@ -104,9 +104,9 @@ class UpowerWidget(GenPollText):  # type: ignore[misc]
         critical = bool(info["critical"])
 
         if full:
-            return FULL_ICON, "#50fa7b"
+            return FULL_ICON, "lime"
         if critical:
-            return ("󰂃" if charging else "󰁺"), "#ff0000"
+            return ("󰂃" if charging else "󰁺"), "dimgrey"
         for threshold, icon, color in self.icons:
             if pct >= threshold:
                 return (f"{CHARGING_ICON} {icon}" if charging else icon), color
