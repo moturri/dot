@@ -2,7 +2,6 @@
 XTerm*faceName: JetBrainsMonoNL Nerd Font
 XTerm*faceSize: 12
 XTerm*faceAntialias: true
-XTerm*faceBold: JetBrainsMonoNL Nerd Font:bold
 
 ! ────── True Color Support ──────
 XTerm*termName: xterm-256color
@@ -36,7 +35,6 @@ XTerm*color15: #ffffff
 ! ────── Cursor Settings ──────
 XTerm*cursorBlink: true
 XTerm*cursorShape: block
-XTerm*cursorUnderline: false
 
 ! ────── Scrollback & Mouse ──────
 XTerm*saveLines: 10000
@@ -44,21 +42,12 @@ XTerm*scrollBar: true
 XTerm*rightScrollBar: true
 XTerm*scrollTtyOutput: false
 XTerm*scrollKey: true
-XTerm*multiScroll: true
-
-! ────── Performance Tweaks ──────
-XTerm*fastScroll: true
-XTerm*jumpScroll: true
-XTerm*multiClickTime: 250
 
 ! ────── Input & Keyboard ──────
 XTerm*boldMode: true
-XTerm*utf8: 2
 XTerm*allowBoldFonts: true
 XTerm*metaSendsEscape: true
 XTerm*modifyCursorKeys: 2
-XTerm*eightBitInput: false
-XTerm*backarrowKey: false
 
 ! ────── Clipboard / Selection ──────
 XTerm*selectToClipboard: true
@@ -66,12 +55,12 @@ XTerm*trimSelection: true
 XTerm*highlightSelection: true
 
 ! ────── Bell Behavior ──────
-XTerm*visualBell: true
-XTerm*bellIsUrgent: true
+XTerm*visualBell: false
+XTerm*bellIsUrgent: false
 
 ! ────── Window Aesthetics ──────
 XTerm*borderWidth: 0
-XTerm*internalBorder: 8
+XTerm*internalBorder: 0
 XTerm*title: XTerm
 XTerm*iconName: terminal
 XTerm*allowTitleOps: true
@@ -85,8 +74,9 @@ XTerm*translations: #override \
     Shift Ctrl <Key>plus: larger-vt-font() \n\
     Shift Ctrl <Key>minus: smaller-vt-font() \n\
     Shift Ctrl <Key>0: set-vt-font(d) \n\
-    Alt <Key>1: set-terminal-attributes() \n\
     Shift Ctrl <Key>N: spawn-new-terminal()
 
+! ────── Cursor Theme ──────
 Xcursor.theme: material_cursors
 Xcursor.size: 21
+
