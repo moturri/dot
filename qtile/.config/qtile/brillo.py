@@ -3,7 +3,8 @@ import time
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
 
-from libqtile.widget.base import expose_command
+# Import expose_command with ignore for mypy since it’s not officially exported
+from libqtile.widget.base import expose_command  # type: ignore
 from qtile_extras.widget import GenPollText
 
 # Constants
@@ -58,7 +59,7 @@ def find_backlight_device(device_name: Optional[str] = None) -> Optional[Path]:
         return None
 
 
-class BrilloWidget(GenPollText):
+class BrilloWidget(GenPollText):  # type: ignore[misc]
     def __init__(
         self,
         update_interval: float = 0.5,
@@ -67,7 +68,7 @@ class BrilloWidget(GenPollText):
         icons: Optional[List[Tuple[int, str, str]]] = None,
         prefer_brillo: bool = True,
         **config: Any,
-    ):
+    ) -> None:
         self.step = step
         self.icons: List[Tuple[int, str, str]] = icons or BRIGHTNESS_ICONS
 
@@ -161,19 +162,19 @@ class BrilloWidget(GenPollText):
     # --- Commands exposed to Qtile ---
 
     @expose_command()
-    def increase(self):
+    def increase(self) -> None:
         current = self._get_brightness_percent(force_refresh=True)
         if current is not None:
             self._set_brightness_percent(current + self.step)
 
     @expose_command()
-    def decrease(self):
+    def decrease(self) -> None:
         current = self._get_brightness_percent(force_refresh=True)
         if current is not None:
             self._set_brightness_percent(current - self.step)
 
     @expose_command()
-    def set_percent(self, percent: int):
+    def set_percent(self, percent: int) -> None:
         self._set_brightness_percent(percent)
 
     @expose_command()
