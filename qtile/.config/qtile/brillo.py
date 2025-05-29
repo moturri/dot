@@ -1,10 +1,10 @@
-import shutil  # for improved 'brillo' detection
+import shutil
 import subprocess
 import time
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
 
-from libqtile.widget.base import expose_command  # type: ignore
+from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
 # Constants

@@ -3,7 +3,7 @@ import subprocess
 import time
 from typing import Any, Dict, Final, List, NamedTuple, Optional, Tuple, TypedDict
 
-from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
+from libqtile.widget.base import expose_command  # type: ignore
 from qtile_extras.widget import GenPollText
 
 logger = logging.getLogger(__name__)
@@ -174,4 +174,3 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 class MicWidget(AudioWidget):
     def __init__(self, **config: Any) -> None:
         super().__init__(kind="input", **config)
-
