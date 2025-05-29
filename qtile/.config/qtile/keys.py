@@ -1,10 +1,10 @@
 import os
 
-from audio import AudioWidget, MicWidget
 from brillo import BrilloWidget
 from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.core.manager import Qtile
 from libqtile.lazy import lazy
+from wpctl import AudioWidget, MicWidget
 
 mod = "mod4"
 terminal = "kitty"
@@ -126,4 +126,3 @@ mouse = [
     ),
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
-

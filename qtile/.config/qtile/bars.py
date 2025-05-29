@@ -1,12 +1,12 @@
 from typing import Any, Dict, List, Union, cast
 
-from audio import AudioWidget, MicWidget
 from brillo import BrilloWidget
 from libqtile.lazy import lazy
 from libqtile.widget.base import _Widget as Widget
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
 from upower import UpowerWidget
+from wpctl import AudioWidget, MicWidget
 
 # Theme configuration
 theme: Dict[str, Union[str, int]] = {
@@ -171,4 +171,3 @@ def main() -> List[Widget]:
 # Secondary screen widgets (no systray)
 def misc() -> List[Widget]:
     return timeWidget + groupWidgets() + systemWidgets()
-
