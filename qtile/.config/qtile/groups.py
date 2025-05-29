@@ -156,9 +156,9 @@ scratches = {
     "pcmanfm-qt": "p",
 }
 
-scratch_keys = [
+scratchKeys = [
     Key([mod, "control"], key, lazy.group["scratchpad"].dropdown_toggle(name))
     for name, key in scratches.items()
 ]
 
-keys.extend(scratch_keys)
+keys.extend(scratchKeys)
