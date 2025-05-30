@@ -3,25 +3,29 @@ from libqtile.config import DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
 groups = [
-    Group("1", label="󰣇", matches=[Match(wm_class="pcmanfm-qt")]),
+    Group(
+        "1",
+        label="󰣇",
+        matches=[Match(wm_class="pcmanfm-qt"), Match(wm_class="discord")],
+    ),
     Group(
         "2",
-        label="󰆍",
+        label="󰞷",
         matches=[Match(wm_class="alacritty"), Match(wm_class="org.wezfurlong.wezterm")],
     ),
     Group(
         "3",
-        label="󰖟",
+        label="󰆋",
         matches=[
             Match(wm_class="firefox"),
             Match(wm_class="brave-browser"),
             Match(wm_class="zen"),
         ],
     ),
-    Group("4", label="󰌽", matches=[Match(wm_class="octopi")]),
+    Group("4", label="󰊠", matches=[Match(wm_class="octopi")]),
     Group(
         "5",
-        label="󰚗",
+        label="󱚣",
         matches=[
             Match(wm_class="VirtualBox Manager"),
             Match(wm_class="virt-manager"),
@@ -55,7 +59,7 @@ groups = [
     ),
     Group(
         "9",
-        label="󰌳",
+        label="󰎆",
         matches=[
             Match(wm_class="cider"),
             Match(wm_class="easyeffects"),
@@ -64,7 +68,13 @@ groups = [
             Match(wm_class="strawberry"),
         ],
     ),
-    Group("0", label="󱘖", matches=[Match(wm_class="Mail"), Match(wm_class="discord")]),
+    Group(
+        "0",
+        label="󰶍",
+        matches=[
+            Match(wm_class="Mail"),
+        ],
+    ),
 ]
 
 

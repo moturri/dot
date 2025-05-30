@@ -56,7 +56,6 @@ def groupWidgets() -> List[Widget]:
                 **wdecor,
             ),
         ),
-        spacer(10),
         cast(
             Widget,
             widget.TaskList(
