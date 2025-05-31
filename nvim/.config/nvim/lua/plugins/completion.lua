@@ -1,90 +1,78 @@
 return {
-  "nvim-treesitter/nvim-treesitter",
-  build = ":TSUpdate",
-  event = { "BufReadPost", "BufNewFile" },
+  "hrsh7th/nvim-cmp",
   dependencies = {
-    { "nvim-treesitter/nvim-treesitter-textobjects" },
-    { "windwp/nvim-ts-autotag" },
-    { "JoosepAlviste/nvim-ts-context-commentstring" },
+    "hrsh7th/cmp-nvim-lsp",
+    "hrsh7th/cmp-buffer",
+    "hrsh7th/cmp-path",
+    "hrsh7th/cmp-cmdline",
+    "saadparwaiz1/cmp_luasnip",
+    "L3MON4D3/LuaSnip",
+    "rafamadriz/friendly-snippets",
   },
   config = function()
-    require("nvim-treesitter.configs").setup({
-      ensure_installed = {
-        "bash", "css", "html", "javascript", "json",
-        "lua", "markdown", "python", "typescript", "yaml",
+    local cmp = require("cmp")
+    local luasnip = require("luasnip")
+    require("luasnip.loaders.from_vscode").lazy_load()
+
+    cmp.setup({
+      snippet = {
+        expand = function(args)
+          luasnip.lsp_expand(args.body)
+        end,
       },
-      sync_install = false,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false,
-      },
-      indent = { enable = true },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<C-space>",
-          node_incremental = "<C-space>",
-          scope_incremental = "<C-s>",
-          node_decremental = "<C-backspace>",
-        },
-      },
-      autotag = { enable = true },
-      textobjects = {
-        select = {
-          enable = true,
-          lookahead = true,
-          keymaps = {
-            ["af"] = "@function.outer",
-            ["if"] = "@function.inner",
-            ["ac"] = "@class.outer",
-            ["ic"] = "@class.inner",
-            ["aa"] = "@parameter.outer",
-            ["ia"] = "@parameter.inner",
-            ["ai"] = "@conditional.outer",
-            ["ii"] = "@conditional.inner",
-            ["al"] = "@loop.outer",
-            ["il"] = "@loop.inner",
-            ["ab"] = "@block.outer",
-            ["ib"] = "@block.inner",
-            ["as"] = "@statement.outer",
-          },
-        },
-        move = {
-          enable = true,
-          set_jumps = true,
-          goto_next_start = {
-            ["]f"] = "@function.outer",
-            ["]c"] = "@class.outer",
-            ["]a"] = "@parameter.outer",
-            ["]i"] = "@conditional.outer",
-            ["]l"] = "@loop.outer",
-            ["]b"] = "@block.outer",
-            ["]s"] = "@statement.outer",
-          },
-          goto_previous_start = {
-            ["[f"] = "@function.outer",
-            ["[c"] = "@class.outer",
-            ["[a"] = "@parameter.outer",
-            ["[i"] = "@conditional.outer",
-            ["[l"] = "@loop.outer",
-            ["[b"] = "@block.outer",
-            ["[s"] = "@statement.outer",
-          },
-        },
-        swap = {
-          enable = true,
-          swap_next = {
-            ["<leader>sn"] = "@parameter.inner",
-          },
-          swap_previous = {
-            ["<leader>sp"] = "@parameter.inner",
-          },
+      mapping = cmp.mapping.preset.insert({
+        ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+        ["<C-f>"] = cmp.mapping.scroll_docs(4),
+        ["<C-Space>"] = cmp.mapping.complete(),
+        ["<C-e>"] = cmp.mapping.abort(),
+        ["<CR>"] = cmp.mapping.confirm({ select = true }),
+        ["<Tab>"] = cmp.mapping(function(fallback)
+          if cmp.visible() then
+            cmp.select_next_item()
+          elseif luasnip.expand_or_jumpable() then
+            luasnip.expand_or_jump()
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+          if cmp.visible() then
+            cmp.select_prev_item()
+          elseif luasnip.jumpable(-1) then
+            luasnip.jump(-1)
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
+      }),
+      sources = cmp.config.sources({
+        { name = "nvim_lsp" },
+        { name = "luasnip" },
+      }, {
+        { name = "buffer" },
+      }),
+    })
+
+    -- Set up cmdline completion
+    cmp.setup.cmdline(":", {
+      mapping = cmp.mapping.preset.cmdline(),
+      sources = cmp.config.sources({
+        { name = "path" },
+      }, {
+        { name = "cmdline" },
+      }),
+    })
+
+    -- Diagnostic sign replacement to use vim.diagnostic.config()
+    vim.diagnostic.config({
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = "",
+          [vim.diagnostic.severity.WARN] = "",
+          [vim.diagnostic.severity.INFO] = "",
+          [vim.diagnostic.severity.HINT] = "",
         },
       },
     })
-
-    -- Only needed if using Comment.nvim
-    vim.g.skip_ts_context_commentstring_module = true
-    require("ts_context_commentstring").setup({})
   end,
 }

@@ -3,13 +3,22 @@ return {
   build = ":TSUpdate",
   event = { "BufReadPost", "BufNewFile" },
   dependencies = {
-    { "nvim-treesitter/nvim-treesitter-textobjects" },
-    { "windwp/nvim-ts-autotag" },
-    { "JoosepAlviste/nvim-ts-context-commentstring" },
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    "windwp/nvim-ts-autotag",
+    "JoosepAlviste/nvim-ts-context-commentstring",
   },
   config = function()
     require("nvim-treesitter.configs").setup({
       ensure_installed = {
+        "bash",
+        "css",
+        "html",
+        "javascript",
+        "json",
+        "lua",
+        "markdown",
+        "python",
+        "typescript",
         "yaml",
       },
       sync_install = false,
@@ -72,17 +81,13 @@ return {
         },
         swap = {
           enable = true,
-          swap_next = {
-            ["<leader>sn"] = "@parameter.inner",
-          },
-          swap_previous = {
-            ["<leader>sp"] = "@parameter.inner",
-          },
+          swap_next = { ["<leader>sn"] = "@parameter.inner" },
+          swap_previous = { ["<leader>sp"] = "@parameter.inner" },
         },
       },
     })
 
-    -- Only needed if using Comment.nvim
+    -- For integration with Comment.nvim
     vim.g.skip_ts_context_commentstring_module = true
     require("ts_context_commentstring").setup({})
   end,

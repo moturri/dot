@@ -4,11 +4,20 @@ import subprocess
 import time
 from typing import Any, Dict, Final, List, NamedTuple, Optional, Tuple, TypedDict
 
-from libqtile.widget.base import expose_command  # type: ignore [attr-defined]
+from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
+
+# Check for wpctl only once (fail fast if missing)
+if not shutil.which("wpctl"):
+    raise RuntimeError("wpctl not found in PATH")
 
 # Setup logger (disabled unless manually enabled)
 logger = logging.getLogger(__name__)
+if not logger.hasHandlers():
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.WARNING)  # Change to DEBUG for verbose logs
 
 # Constants
 DEFAULT_VOLUME_STEP: Final[int] = 5
@@ -25,7 +34,7 @@ class VolumeSettings(TypedDict):
     muted_icon: str
 
 
-# Color/Icon/Threshold settings
+# Color/Icon/Threshold settings (can be made externally configurable later)
 VOLUME_CONFIG: Dict[str, VolumeSettings] = {
     "output": {
         "device": "@DEFAULT_AUDIO_SINK@",
@@ -88,9 +97,6 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
         volume_step: int = DEFAULT_VOLUME_STEP,
         **config: Any,
     ) -> None:
-        if not shutil.which("wpctl"):
-            raise RuntimeError("wpctl not found in PATH")
-
         self.kind = kind
         self.config = VOLUME_CONFIG[kind]
         self.device = device or self.config["device"]
@@ -140,18 +146,14 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
     @expose_command()
     def volume_up(self) -> None:
         volume, _ = self._get_volume_info(force_refresh=True)
-        new_volume = min(100, volume + self.volume_step) / 100
-        self._execute_volume_cmd(
-            ["wpctl", "set-volume", self.device, f"{new_volume:.2f}"]
-        )
+        new_volume = f"{min(100, volume + self.volume_step)}%"
+        self._execute_volume_cmd(["wpctl", "set-volume", self.device, new_volume])
 
     @expose_command()
     def volume_down(self) -> None:
         volume, _ = self._get_volume_info(force_refresh=True)
-        new_volume = max(0, volume - self.volume_step) / 100
-        self._execute_volume_cmd(
-            ["wpctl", "set-volume", self.device, f"{new_volume:.2f}"]
-        )
+        new_volume = f"{max(0, volume - self.volume_step)}%"
+        self._execute_volume_cmd(["wpctl", "set-volume", self.device, new_volume])
 
     @expose_command()
     def toggle_mute(self) -> None:

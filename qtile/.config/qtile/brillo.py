@@ -3,20 +3,25 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, Final, List, Optional, Tuple
 
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
 # Setup logger (disabled unless manually enabled)
 logger = logging.getLogger(__name__)
+if not logger.hasHandlers():
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.WARNING)  # Change to DEBUG if needed
 
 # --- Constants ---
-BRIGHTNESS_STEP: int = 5
-CACHE_TIMEOUT: float = 0.5
-CMD_TIMEOUT: float = 1.0
+BRIGHTNESS_STEP: Final[int] = 5
+CACHE_TIMEOUT: Final[float] = 0.5
+CMD_TIMEOUT: Final[float] = 1.0
 
-BRIGHTNESS_ICONS: List[Tuple[int, str, str]] = [
+DEFAULT_ICONS: Final[List[Tuple[int, str, str]]] = [
     (80, "󰃠", "gold"),
     (60, "󰃝", "darkorange"),
     (40, "󰃟", "tan"),
@@ -24,7 +29,7 @@ BRIGHTNESS_ICONS: List[Tuple[int, str, str]] = [
     (0, "󰃜", "dimgrey"),
 ]
 
-DEVICE_PRIORITY: List[str] = ["intel_backlight", "amdgpu_bl0", "acpi_video0"]
+DEVICE_PRIORITY: Final[List[str]] = ["intel_backlight", "amdgpu_bl0", "acpi_video0"]
 
 
 # --- Helpers ---
@@ -33,11 +38,7 @@ def run_cmd(cmd: List[str]) -> str:
         return subprocess.check_output(
             cmd, text=True, stderr=subprocess.DEVNULL, timeout=CMD_TIMEOUT
         ).strip()
-    except (
-        subprocess.CalledProcessError,
-        subprocess.TimeoutExpired,
-        FileNotFoundError,
-    ) as e:
+    except Exception as e:
         logger.debug(f"[brillo.py] Failed cmd {cmd}: {e}")
         return ""
 
@@ -46,22 +47,18 @@ def find_backlight_device(device_name: Optional[str] = None) -> Optional[Path]:
     base = Path("/sys/class/backlight")
     if not base.exists():
         return None
-
     try:
         devices = list(base.iterdir())
         if not devices:
             return None
-
         if device_name:
             return next((d for d in devices if device_name in d.name), None)
-
         for name in DEVICE_PRIORITY:
             found = next((d for d in devices if name in d.name), None)
             if found:
                 return found
-
         return devices[0]
-    except (OSError, PermissionError) as e:
+    except Exception as e:
         logger.debug(f"[brillo.py] Error finding device: {e}")
         return None
 
@@ -78,22 +75,25 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
         **config: Any,
     ) -> None:
         self.step = step
-        self.icons = icons or BRIGHTNESS_ICONS
+        self.icons = icons or DEFAULT_ICONS
         self.device = find_backlight_device(device_name)
-        self.max_brightness = self._get_max_brightness()
         self.has_brillo = shutil.which("brillo") is not None
+        self.max_brightness = self._get_max_brightness() if self.device else 0
         self.backend = self._select_backend(prefer_brillo)
         self._cache: Optional[Tuple[int, float]] = None
+
+        # Pre-sort icons by threshold
+        self._icon_map = sorted(self.icons, key=lambda x: x[0], reverse=True)
 
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _get_max_brightness(self) -> int:
-        if not self.device:
-            return 0
+        if self.device is None:
+            raise RuntimeError("[brillo.py] Device is None in _get_max_brightness")
         try:
             return int((self.device / "max_brightness").read_text().strip())
-        except (OSError, ValueError) as e:
-            logger.debug(f"[brillo.py] Error reading max brightness: {e}")
+        except Exception as e:
+            logger.debug(f"[brillo.py] Error reading max_brightness: {e}")
             return 0
 
     def _select_backend(self, prefer_brillo: bool) -> str:
@@ -125,8 +125,9 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
             try:
                 current = int((self.device / "brightness").read_text().strip())
                 if self.max_brightness > 0:
-                    percent = int((current / self.max_brightness) * 100)
-            except (OSError, ValueError):
+                    percent = current * 100 // self.max_brightness
+            except Exception as e:
+                logger.debug(f"[brillo.py] Failed sysfs read: {e}")
                 return None
 
         if percent is not None:
@@ -144,12 +145,11 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
 
         elif self.backend == "sysfs" and self.device:
             try:
-                value = int((percent / 100) * self.max_brightness)
+                value = percent * self.max_brightness // 100
                 (self.device / "brightness").write_text(str(value))
                 success = True
-            except (OSError, ValueError) as e:
-                logger.debug(f"[brillo.py] Failed to set brightness: {e}")
-                return False
+            except Exception as e:
+                logger.debug(f"[brillo.py] Failed sysfs write: {e}")
 
         if success:
             self._cache = None
@@ -157,7 +157,7 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
         return success
 
     def _format_display(self, percent: int) -> str:
-        for threshold, icon, color in self.icons:
+        for threshold, icon, color in self._icon_map:
             if percent >= threshold:
                 return f'<span foreground="{color}">{icon}  {percent:3d}%</span>'
         return f'<span foreground="#888888">󰳲 {percent:3d}%</span>'
@@ -193,4 +193,3 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
     def get_info(self) -> str:
         name = self.device.name if self.device else "None"
         return f"Backend: {self.backend} | Device: {name} | Max: {self.max_brightness}"
-

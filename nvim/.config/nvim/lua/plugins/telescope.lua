@@ -79,7 +79,6 @@ return {
         },
       })
 
-      -- Load UI-Select extension
       telescope.load_extension("ui-select")
 
       -- Keymaps for Telescope pickers

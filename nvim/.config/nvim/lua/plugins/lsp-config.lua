@@ -3,22 +3,16 @@ return {
   {
     "williamboman/mason.nvim",
     version = "*",
-    lazy = true,
-    event = "BufRead", -- Lazy load on BufRead
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
       require("mason").setup({
-        ui = {
-          border = "rounded",          -- Optional border styling for Mason UI
-        },
-        automatic_installation = true, -- Automatically install missing servers
+        ui = { border = "rounded" },
       })
 
-      -- Ensure fidget is installed properly
-      local fidget_ok, fidget = pcall(require, "fidget")
-      if fidget_ok then
-        fidget.setup({})
+      if pcall(require, "fidget") then
+        require("fidget").setup({})
       else
-        vim.notify("Fidget plugin not found. Some features may be missing.")
+        vim.notify("Fidget plugin not found.")
       end
     end,
   },
@@ -27,8 +21,7 @@ return {
   {
     "williamboman/mason-lspconfig.nvim",
     version = "*",
-    lazy = true,
-    event = "BufRead", -- Lazy load on BufRead
+    event = { "BufReadPre", "BufNewFile" },
     opts = {
       automatic_installation = true,
     },
@@ -38,18 +31,17 @@ return {
   {
     "neovim/nvim-lspconfig",
     version = "*",
-    lazy = true,
-    event = "BufRead", -- Lazy load on BufRead
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
       local lspconfig = require("lspconfig")
       local mason_lspconfig = require("mason-lspconfig")
 
-      -- Capabilities (with fallback if cmp_nvim_lsp is missing)
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
       local has_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-      local capabilities = has_cmp and cmp_nvim_lsp.default_capabilities()
-          or vim.lsp.protocol.make_client_capabilities()
+      if has_cmp then
+        capabilities = cmp_nvim_lsp.default_capabilities()
+      end
 
-      -- Keybindings + navic attach
       local function on_attach(client, bufnr)
         local opts = { noremap = true, silent = true, buffer = bufnr }
         local keymap = vim.keymap.set
@@ -63,39 +55,35 @@ return {
           vim.lsp.buf.format({ async = true })
         end, opts)
 
-        -- Attach nvim-navic if available and supported
-        local navic_ok, navic = pcall(require, "nvim-navic")
-        if navic_ok and client.server_capabilities.documentSymbolProvider then
-          navic.attach(client, bufnr)
+        if client.server_capabilities.documentSymbolProvider then
+          local ok, navic = pcall(require, "nvim-navic")
+          if ok then
+            navic.attach(client, bufnr)
+          end
         end
       end
 
-      -- Diagnostic config (no deprecated sign_define)
+      -- Define diagnostic signs
+      local signs = { Error = "", Warn = "", Hint = "", Info = "" }
+      for type, icon in pairs(signs) do
+        local hl = "DiagnosticSign" .. type
+        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+      end
+
       vim.diagnostic.config({
         virtual_text = true,
-        signs = {
-          text = {
-            [vim.diagnostic.severity.ERROR] = "",
-            [vim.diagnostic.severity.WARN] = "",
-            [vim.diagnostic.severity.HINT] = "",
-            [vim.diagnostic.severity.INFO] = "",
-          },
-        },
         underline = true,
         update_in_insert = false,
         severity_sort = true,
       })
 
-      -- Base config shared across servers
       local default_config = {
         on_attach = on_attach,
         capabilities = capabilities,
       }
 
-      -- Setup LSP servers individually via mason-lspconfig
-      local servers = mason_lspconfig.get_installed_servers()
-      for _, server_name in ipairs(servers) do
-        lspconfig[server_name].setup(default_config)
+      for _, server in ipairs(mason_lspconfig.get_installed_servers()) do
+        lspconfig[server].setup(default_config)
       end
     end,
   },

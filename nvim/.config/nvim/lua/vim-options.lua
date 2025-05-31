@@ -1,11 +1,13 @@
 local opt = vim.opt
+local g = vim.g
 
 -- Leader key
-vim.g.mapleader = " "
+g.mapleader = " "
 
 -- General settings
-vim.g.have_nerd_font = true
+g.have_nerd_font = true
 vim.scriptencoding = "utf-8"
+
 opt.background = "dark"
 opt.termguicolors = true
 opt.mouse = "a"
@@ -20,8 +22,8 @@ opt.updatetime = 250
 -- Persistent undo
 opt.undofile = true
 local undodir = vim.fn.stdpath("cache") .. "/undo"
-opt.undodir = undodir
 vim.fn.mkdir(undodir, "p")
+opt.undodir = undodir
 
 -- Indentation
 opt.tabstop = 2
@@ -63,19 +65,19 @@ opt.completeopt = { "menuone", "noselect" }
 opt.wildmenu = true
 opt.wildmode = { "longest", "list", "full" }
 
--- Window/Buffer
+-- Window/Buffer behavior
 opt.splitright = true
 opt.splitbelow = true
 opt.selection = "exclusive"
 opt.modifiable = true
 
--- Key Mappings
+-- Key mappings
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlighting" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 
--- Recall cursor position
+-- Recall last cursor position on reopen
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
     local mark = vim.api.nvim_buf_get_mark(0, '"')
@@ -85,4 +87,3 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     end
   end,
 })
-
