@@ -7,17 +7,17 @@ from typing import Any, Dict, Final, List, NamedTuple, Optional, Tuple, TypedDic
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
-# Check for wpctl only once (fail fast if missing)
+# Fail-fast check for wpctl binary
 if not shutil.which("wpctl"):
     raise RuntimeError("wpctl not found in PATH")
 
-# Setup logger (disabled unless manually enabled)
+# Logger setup (disabled unless set to DEBUG/INFO externally)
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
     logger.addHandler(handler)
-    logger.setLevel(logging.WARNING)  # Change to DEBUG for verbose logs
+    logger.setLevel(logging.WARNING)  # Adjust externally as needed
 
 # Constants
 DEFAULT_VOLUME_STEP: Final[int] = 5
@@ -25,8 +25,9 @@ CACHE_TIMEOUT: Final[float] = 0.5
 CMD_TIMEOUT: Final[float] = 1.0
 
 
-# Volume config schema
 class VolumeSettings(TypedDict):
+    """Configuration schema for audio devices."""
+
     device: str
     thresholds: List[int]
     colors: List[str]
@@ -34,61 +35,67 @@ class VolumeSettings(TypedDict):
     muted_icon: str
 
 
-# Color/Icon/Threshold settings (can be made externally configurable later)
 VOLUME_CONFIG: Dict[str, VolumeSettings] = {
     "output": {
         "device": "@DEFAULT_AUDIO_SINK@",
         "thresholds": [70, 40, 0],
-        "colors": ["#ff5555", "#bd93f9", "#50fa7b"],  # Red, Purple, Green
-        "icons": ["󰕾", "󰖀", "󰕿"],  # High, Medium, Low
+        "colors": ["#ff5555", "#bd93f9", "#50fa7b"],
+        "icons": ["󰕾", "󰖀", "󰕿"],
         "muted_icon": "󰝟",
     },
     "input": {
         "device": "@DEFAULT_AUDIO_SOURCE@",
         "thresholds": [70, 40, 0],
         "colors": ["#ff5555", "#bd93f9", "#50fa7b"],
-        "icons": ["󰍬", "󰍬", "󰍬"],  # Same mic icon
+        "icons": ["󰍬", "󰍬", "󰍬"],
         "muted_icon": "󰍭",
     },
 }
 
 
-# Internal volume cache
 class VolumeCache(NamedTuple):
+    """Internal cache for volume status."""
+
     volume: int
     muted: bool
     timestamp: float
 
 
-# Minimal shell runner
 def run_cmd(cmd: List[str]) -> str:
+    """Run a shell command safely and return output or empty string if it fails."""
     try:
         return subprocess.check_output(
             cmd, text=True, stderr=subprocess.PIPE, timeout=CMD_TIMEOUT
         ).strip()
+    except subprocess.CalledProcessError as e:
+        logger.warning(f"[audio.py] Command failed: {cmd} - {e}")
+    except subprocess.TimeoutExpired:
+        logger.warning(f"[audio.py] Command timed out: {cmd}")
     except Exception as e:
-        logger.debug(f"[audio.py] Failed cmd {cmd}: {e}")
-        return ""
+        logger.error(f"[audio.py] Unexpected error: {cmd} - {e}")
+    return ""
 
 
-# Parse output from wpctl
 def parse_wpctl_output(output: str) -> Tuple[int, bool]:
+    """Parse wpctl command output to extract volume and mute status."""
     try:
         parts = output.split()
         volume = round(float(parts[1]) * 100)
         muted = "[MUTED]" in output
         return volume, muted
     except (IndexError, ValueError):
+        logger.error(f"Failed to parse wpctl output: {output}")
         return 0, True
 
 
-# Colorized span
 def format_span(icon: str, color: str, volume: int) -> str:
+    """Format a Pango markup span for display."""
     return f'<span foreground="{color}">{icon} {volume:3d}%</span>'
 
 
-# Base audio widget
 class AudioWidget(GenPollText):  # type: ignore[misc]
+    """Base audio widget for system output/input using wpctl."""
+
     def __init__(
         self,
         kind: str = "output",
@@ -103,7 +110,6 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
         self.volume_step = volume_step
         self._cache: Optional[VolumeCache] = None
 
-        # Precompute icons and colors mapping
         thresholds = self.config["thresholds"]
         icons = self.config["icons"]
         colors = self.config["colors"]
@@ -145,32 +151,38 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 
     @expose_command()
     def volume_up(self) -> None:
+        """Increase volume by configured step."""
         volume, _ = self._get_volume_info(force_refresh=True)
         new_volume = f"{min(100, volume + self.volume_step)}%"
         self._execute_volume_cmd(["wpctl", "set-volume", self.device, new_volume])
 
     @expose_command()
     def volume_down(self) -> None:
+        """Decrease volume by configured step."""
         volume, _ = self._get_volume_info(force_refresh=True)
         new_volume = f"{max(0, volume - self.volume_step)}%"
         self._execute_volume_cmd(["wpctl", "set-volume", self.device, new_volume])
 
     @expose_command()
     def toggle_mute(self) -> None:
+        """Toggle mute state."""
         self._execute_volume_cmd(["wpctl", "set-mute", self.device, "toggle"])
 
     @expose_command()
     def get_state(self) -> Dict[str, Any]:
+        """Get current volume and mute state."""
         volume, muted = self._get_volume_info(force_refresh=True)
         return {"volume": volume, "muted": muted}
 
     @expose_command()
     def refresh(self) -> None:
+        """Manually refresh widget display."""
         self._cache = None
         self.poll()
 
 
-# Separate mic widget inheriting from base
 class MicWidget(AudioWidget):
+    """Microphone widget inheriting from AudioWidget."""
+
     def __init__(self, **config: Any) -> None:
         super().__init__(kind="input", **config)

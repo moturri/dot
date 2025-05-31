@@ -8,15 +8,15 @@ from typing import Any, Final, List, Optional, Tuple
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
-# Setup logger (disabled unless manually enabled)
+# Setup logger
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
     logger.addHandler(handler)
-    logger.setLevel(logging.WARNING)  # Change to DEBUG if needed
+    logger.setLevel(logging.WARNING)  # Set to DEBUG for verbose output
 
-# --- Constants ---
+# Constants
 BRIGHTNESS_STEP: Final[int] = 5
 CACHE_TIMEOUT: Final[float] = 0.5
 CMD_TIMEOUT: Final[float] = 1.0
@@ -32,18 +32,23 @@ DEFAULT_ICONS: Final[List[Tuple[int, str, str]]] = [
 DEVICE_PRIORITY: Final[List[str]] = ["intel_backlight", "amdgpu_bl0", "acpi_video0"]
 
 
-# --- Helpers ---
 def run_cmd(cmd: List[str]) -> str:
+    """
+    Execute a shell command and return its output.
+    """
     try:
         return subprocess.check_output(
             cmd, text=True, stderr=subprocess.DEVNULL, timeout=CMD_TIMEOUT
         ).strip()
     except Exception as e:
-        logger.debug(f"[brillo.py] Failed cmd {cmd}: {e}")
+        logger.debug(f"[brillo.py] Failed to execute command {cmd}: {e}")
         return ""
 
 
 def find_backlight_device(device_name: Optional[str] = None) -> Optional[Path]:
+    """
+    Locate the backlight device path.
+    """
     base = Path("/sys/class/backlight")
     if not base.exists():
         return None
@@ -59,12 +64,15 @@ def find_backlight_device(device_name: Optional[str] = None) -> Optional[Path]:
                 return found
         return devices[0]
     except Exception as e:
-        logger.debug(f"[brillo.py] Error finding device: {e}")
+        logger.debug(f"[brillo.py] Error finding backlight device: {e}")
         return None
 
 
-# --- Widget ---
 class BrilloWidget(GenPollText):  # type: ignore[misc]
+    """
+    A Qtile widget to control and display screen brightness.
+    """
+
     def __init__(
         self,
         update_interval: float = 0.5,
@@ -88,8 +96,12 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _get_max_brightness(self) -> int:
+        """
+        Retrieve the maximum brightness value from the device.
+        """
         if self.device is None:
-            raise RuntimeError("[brillo.py] Device is None in _get_max_brightness")
+            logger.debug("[brillo.py] No backlight device found.")
+            return 0
         try:
             return int((self.device / "max_brightness").read_text().strip())
         except Exception as e:
@@ -97,6 +109,9 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
             return 0
 
     def _select_backend(self, prefer_brillo: bool) -> str:
+        """
+        Determine the backend to use for brightness control.
+        """
         if prefer_brillo and self.has_brillo:
             return "brillo"
         if self.device and self.max_brightness > 0:
@@ -106,6 +121,9 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
         return "none"
 
     def _get_brightness_percent(self, force_refresh: bool = False) -> Optional[int]:
+        """
+        Get the current brightness percentage.
+        """
         now = time.time()
         if not force_refresh and self._cache:
             cached, timestamp = self._cache
@@ -127,7 +145,7 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
                 if self.max_brightness > 0:
                     percent = current * 100 // self.max_brightness
             except Exception as e:
-                logger.debug(f"[brillo.py] Failed sysfs read: {e}")
+                logger.debug(f"[brillo.py] Failed to read brightness from sysfs: {e}")
                 return None
 
         if percent is not None:
@@ -136,6 +154,9 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
         return percent
 
     def _set_brightness_percent(self, percent: int) -> bool:
+        """
+        Set the brightness to a specific percentage.
+        """
         percent = max(0, min(100, percent))
         success = False
 
@@ -149,7 +170,7 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
                 (self.device / "brightness").write_text(str(value))
                 success = True
             except Exception as e:
-                logger.debug(f"[brillo.py] Failed sysfs write: {e}")
+                logger.debug(f"[brillo.py] Failed to write brightness to sysfs: {e}")
 
         if success:
             self._cache = None
@@ -157,12 +178,18 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
         return success
 
     def _format_display(self, percent: int) -> str:
+        """
+        Format the display string with appropriate icon and color.
+        """
         for threshold, icon, color in self._icon_map:
             if percent >= threshold:
                 return f'<span foreground="{color}">{icon}  {percent:3d}%</span>'
         return f'<span foreground="#888888">󰳲 {percent:3d}%</span>'
 
     def _poll(self) -> str:
+        """
+        Poll the current brightness and return the formatted display string.
+        """
         if self.backend == "none":
             return '<span foreground="dimgrey">󰳲 N/A</span>'
 
@@ -172,24 +199,36 @@ class BrilloWidget(GenPollText):  # type: ignore[misc]
 
         return self._format_display(percent)
 
-    # --- Commands exposed to Qtile ---
     @expose_command()
     def increase(self) -> None:
+        """
+        Increase the brightness by the defined step.
+        """
         current = self._get_brightness_percent(force_refresh=True)
         if current is not None:
             self._set_brightness_percent(current + self.step)
 
     @expose_command()
     def decrease(self) -> None:
+        """
+        Decrease the brightness by the defined step.
+        """
         current = self._get_brightness_percent(force_refresh=True)
         if current is not None:
             self._set_brightness_percent(current - self.step)
 
     @expose_command()
     def set_percent(self, percent: int) -> None:
+        """
+        Set the brightness to a specific percentage.
+        """
         self._set_brightness_percent(percent)
 
     @expose_command()
     def get_info(self) -> str:
+        """
+        Retrieve information about the brightness backend and device.
+        """
         name = self.device.name if self.device else "None"
         return f"Backend: {self.backend} | Device: {name} | Max: {self.max_brightness}"
+

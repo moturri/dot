@@ -70,6 +70,12 @@ keys = [
     Key([mod], "Return", lazy.spawn(terminal)),
     Key([mod], "r", lazy.spawn("rofi -show drun")),
     Key([mod], "z", lazy.spawn("rofi -show window")),
+    Key(
+        [mod, "shift"],
+        "c",
+        lazy.spawn("rofi -show calc -modi calc -no-show-match -no-sort"),
+    ),
+    Key([mod, "shift"], "e", lazy.spawn("rofi -modi emoji -show emoji")),
     Key([mod], "t", lazy.spawn(os.path.join(rofi_scripts_path, "rofi-websearch.sh"))),
     Key(
         [mod], "v", lazy.spawn("rofi -modi 'clipboard:greenclip print' -show clipboard")
@@ -91,7 +97,7 @@ keys = [
     Key([mod], "comma", lazy.prev_screen()),
     # System control
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
-    Key([], "Print", lazy.spawn("screengrab")),
+    Key([mod], "Print", lazy.spawn("screengrab")),
     # Brightness keys
     Key([], "XF86MonBrightnessUp", lazy.function(brillo_up)),
     Key([], "XF86MonBrightnessDown", lazy.function(brillo_down)),

@@ -17,7 +17,7 @@ shopt -s autocd cdspell cmdhist dotglob histappend expand_aliases checkwinsize
 eval "$(starship init bash)"
 
 function cht() {
-    curl -s "https://cht.sh/$1"
+	curl -s "https://cht.sh/$1"
 }
 
 eval "$(zoxide init bash)"

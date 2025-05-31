@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+lock_cmd="${LOCK_CMD:-i3lock -c 000000}"
 
 lock="󰌾  Lock"
 sleep="󰒲  Sleep"
@@ -9,38 +12,30 @@ cancel="󰜺  Cancel"
 
 options=("$lock" "$sleep" "$logout" "$reboot" "$shutdown" "$cancel")
 
-choice=$(printf '%s\n' "${options[@]}" | rofi -dmenu -i -p "󰟀 " -lines ${#options[@]})
+choice=$(printf '%s\n' "${options[@]}" | rofi -dmenu -i -p "󰟀 " -lines "${#options[@]}")
 
 confirm_action() {
-	local prompt="$1"
-	echo -e "Yes\nNo" | rofi -dmenu -i -p "$prompt" -lines 2
+  local prompt="$1"
+  rofi -dmenu -i -p "$prompt" -lines 2 <<<$'Yes\nNo'
 }
 
 case "$choice" in
 "$lock")
-	i3lock -c 000000
-	;;
+  $lock_cmd
+  ;;
 "$sleep")
-	if [[ "$(confirm_action "Suspend system?")" == "Yes" ]]; then
-		systemctl suspend
-	fi
-	;;
+  [[ "$(confirm_action 'Suspend system?')" == "Yes" ]] && systemctl suspend
+  ;;
 "$logout")
-	if [[ "$(confirm_action "Logout from Qtile?")" == "Yes" ]]; then
-		qtile cmd-obj -o cmd -f shutdown || pkill -TERM qtile
-	fi
-	;;
+  [[ "$(confirm_action 'Logout from Qtile?')" == "Yes" ]] && qtile cmd-obj -o cmd -f shutdown
+  ;;
 "$reboot")
-	if [[ "$(confirm_action "Reboot system?")" == "Yes" ]]; then
-		systemctl reboot || reboot
-	fi
-	;;
+  [[ "$(confirm_action 'Reboot system?')" == "Yes" ]] && systemctl reboot
+  ;;
 "$shutdown")
-	if [[ "$(confirm_action "Shutdown system?")" == "Yes" ]]; then
-		systemctl poweroff || poweroff
-	fi
-	;;
+  [[ "$(confirm_action 'Shutdown system?')" == "Yes" ]] && systemctl poweroff
+  ;;
 *)
-	exit 0
-	;;
+  exit 0
+  ;;
 esac
