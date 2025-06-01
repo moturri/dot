@@ -1,7 +1,7 @@
 import subprocess
 from typing import Any, List, Optional, Tuple
 
-from libqtile.widget.base import expose_command
+from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
 CMD_TIMEOUT = 1.0
@@ -41,7 +41,7 @@ def parse_volume(output: str) -> Tuple[int, bool]:
     return 0, True
 
 
-def format_icon(kind: str, volume: int, muted: bool) -> str:
+def format_icon(kind: str, volume: int, muted: bool) -> Tuple[str, str]:
     if muted:
         return VOLUME_ICONS[kind][-1], MUTED_COLOR
     for i, threshold in enumerate(VOLUME_THRESHOLDS):
@@ -50,7 +50,7 @@ def format_icon(kind: str, volume: int, muted: bool) -> str:
     return VOLUME_ICONS[kind][-1], VOLUME_COLORS[-1]
 
 
-class AudioWidget(GenPollText):
+class AudioWidget(GenPollText):  # type: ignore
     def __init__(
         self, kind: str = "output", device: str = "@DEFAULT_AUDIO_SINK@", **config: Any
     ) -> None:
@@ -94,3 +94,4 @@ class AudioWidget(GenPollText):
 class MicWidget(AudioWidget):
     def __init__(self, **config: Any) -> None:
         super().__init__(kind="input", device="@DEFAULT_AUDIO_SOURCE@", **config)
+

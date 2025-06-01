@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from pydbus import SystemBus  # type: ignore
 from qtile_extras.widget import GenPollText
@@ -16,7 +16,7 @@ FULL_ICON = "󰂄"
 CRITICAL_ICON = "󰂃"
 EMPTY_ICON = "󰁺"
 
-BATTERY_ICONS = [
+BATTERY_ICONS: List[Tuple[int, str, str]] = [
     (95, "󰂂", "limegreen"),
     (80, "󰂁", "palegreen"),
     (60, "󰂀", "lightgoldenrodyellow"),
@@ -26,7 +26,7 @@ BATTERY_ICONS = [
     (0, EMPTY_ICON, "darkred"),
 ]
 
-BATTERY_STATES = {
+BATTERY_STATES: Dict[int, str] = {
     1: "charging",
     2: "discharging",
     3: "empty",
@@ -43,13 +43,13 @@ def find_battery_path() -> Optional[str]:
         for dev in upower.EnumerateDevices():
             if "battery" in dev.lower():
                 logger.info(f"Battery device found: {dev}")
-                return dev
+                return cast(str, dev)
     except Exception as e:
         logger.warning(f"Battery path detection failed: {e}")
     return None
 
 
-def query_battery(path: str) -> Optional[dict]:
+def query_battery(path: str) -> Optional[Dict[str, Any]]:
     try:
         bus = SystemBus()
         battery = bus.get(UPOWER_SERVICE, path)
@@ -68,21 +68,21 @@ def query_battery(path: str) -> Optional[dict]:
         return None
 
 
-class UpowerWidget(GenPollText):
+class UpowerWidget(GenPollText):  # type: ignore
     def __init__(
         self,
-        update_interval=10.0,
+        update_interval: float = 10.0,
         battery_path: Optional[str] = None,
-        icons=None,
-        **config,
-    ):
+        icons: Optional[List[Tuple[int, str, str]]] = None,
+        **config: Any,
+    ) -> None:
         super().__init__(func=self.poll, update_interval=update_interval, **config)
         self.battery_path = battery_path or find_battery_path()
         if not self.battery_path:
             logger.warning("No battery device found; widget will fallback.")
         self.icons = icons if icons else BATTERY_ICONS
 
-    def _icon_color(self, info: dict) -> Tuple[str, str]:
+    def _icon_color(self, info: Dict[str, Any]) -> Tuple[str, str]:
         pct = info["percentage"]
         if info["full"]:
             return FULL_ICON, "lime"

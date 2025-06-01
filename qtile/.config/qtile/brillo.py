@@ -1,9 +1,9 @@
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
-from libqtile.widget.base import expose_command
+from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
 DEVICE_PRIORITY = ["intel_backlight", "amdgpu_bl0", "acpi_video0"]
@@ -31,10 +31,10 @@ def find_device() -> Optional[Path]:
     return devices[0] if devices else None
 
 
-class BrilloWidget(GenPollText):
+class BrilloWidget(GenPollText):  # type: ignore
     def __init__(
-        self, update_interval: float = 0.5, step: int = BRIGHTNESS_STEP, **config
-    ):
+        self, update_interval: float = 0.5, step: int = BRIGHTNESS_STEP, **config: Any
+    ) -> None:
         super().__init__(**config)
         self.step = step
         self.device = find_device()
@@ -99,3 +99,4 @@ class BrilloWidget(GenPollText):
     @expose_command()
     def decrease(self) -> None:
         self.set_percent(self.get_percent() - self.step)
+
