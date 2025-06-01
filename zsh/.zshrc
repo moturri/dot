@@ -149,29 +149,30 @@ cht() {
 }
 
 
-# Fuzzy search with fzf and tldr integration
 tldrr() {
-  local cmd=$(tldr --list | awk '/^\S/ {print $1}' | fzf \
-    --height=80% \
-    --reverse \
-    --border \
-    --preview="tldr --color always {}" \
-    --preview-window=right:80%:wrap)
+  local cmd=$(tldr --list |
+    awk 'NF && $1 !~ /^-/' |
+    fzf --height=80% \
+        --reverse \
+        --border \
+        --no-clear \
+        --preview='tldr --color always {}' \
+        --preview-window=right:80%:wrap)
+
   if [[ -n $cmd ]]; then
+    clear
     tldr "$cmd"
+    echo -e "\n[Press Enter to return to prompt]"
+    read -r
   fi
 }
 
-# Zsh widget to run tldrr
-function tldrr-widget() {
-  zle -I                     # Clears any pending input (resets the line editor)
-  tldrr                      # Call the fzf-based function to search tldr pages
-  zle reset-prompt           # Refresh the prompt after running tldr
+
+
+tldrr-widget() {
+  zle -I
+  tldrr
+  zle reset-prompt
 }
-
-# Register the widget
 zle -N tldrr-widget
-
-# Bind to Ctrl+F
 bindkey '^F' tldrr-widget
-
