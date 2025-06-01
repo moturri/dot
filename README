@@ -1,3 +1,9 @@
+# 🌿 Arch Linux + Qtile Setup
+
+Welcome to my personal Arch Linux + Qtile configuration — a minimalist, modular, and efficient setup aligned with the **suckless philosophy** and **Arch KISS principles**.  
+If you love lightweight, keyboard-driven workflows and full control over your environment, you’ll feel right at home here.
+
+
 # Custom Qtile Widgets
 
 This repository contains highly efficient, modular, and suckless-inspired custom widgets for [Qtile](https://qtile.org).  
@@ -72,4 +78,3 @@ widgets = [
     Spacer(length=10),
     WpctlWidget(),
 ]
-
