@@ -1,0 +1,75 @@
+# Custom Qtile Widgets
+
+This repository contains highly efficient, modular, and suckless-inspired custom widgets for [Qtile](https://qtile.org).  
+They are built with simplicity, maintainability, and performance in mind — no bloated abstractions, no unnecessary dependencies.
+
+## 📂 Modules
+
+### 1️⃣ `brillo.py` — Backlight/Brightness Widget
+
+- Uses either:
+  - `brillo` (if available)  
+  - or directly accesses `/sys/class/backlight` (for systems without brillo)
+- Displays current brightness percentage with configurable step increments.
+- Colored and iconized display based on brightness level.
+- Exposed Qtile commands:
+  - `increase()` — increase brightness by configured step.
+  - `decrease()` — decrease brightness by configured step.
+  - `set_percent(percent)` — set brightness to a specific percentage.
+  - `get_info()` — debug information about backend, device, max values.
+
+**Dependencies**:
+- Optional: `brillo` CLI (`sudo pacman -S brillo`)
+
+---
+
+### 2️⃣ `upower.py` — Battery Status Widget
+
+- Connects to system power information via D-Bus using `pydbus`.
+- Supports multiple battery devices (auto-detection or manual path).
+- Displays battery percentage, charging/discharging state, and critical warnings.
+- Icon and color change dynamically based on charge and state.
+- Caches results for performance (default cache timeout: 5 seconds).
+
+**Dependencies**:
+- `pydbus` (`pip install pydbus`)
+- D-Bus service: `org.freedesktop.UPower`
+
+---
+
+### 3️⃣ `wpctl.py` — Audio Volume Widget
+
+- Interfaces with PipeWire via `wpctl` CLI.
+- Displays current audio volume percentage.
+- Dynamically changes icon and color based on mute state or volume level.
+- Exposed Qtile commands:
+  - `increase()` — increase volume by configured step.
+  - `decrease()` — decrease volume by configured step.
+  - `toggle_mute()` — toggle mute.
+  - `set_volume(percent)` — set volume to a specific percentage.
+  - `get_info()` — debug information on device, volume, and mute state.
+
+**Dependencies**:
+- PipeWire
+- `wpctl` CLI (`provided by wireplumber`)
+
+---
+
+## ⚙ Usage
+
+In your `bars.py` or equivalent Qtile bar configuration, import and instantiate the widgets:
+
+```python
+from qtile_extras.widget import Spacer
+from .scripts.brillo import BrilloWidget
+from .scripts.upower import UpowerWidget
+from .scripts.wpctl import WpctlWidget
+
+widgets = [
+    BrilloWidget(),
+    Spacer(length=10),
+    UpowerWidget(),
+    Spacer(length=10),
+    WpctlWidget(),
+]
+
