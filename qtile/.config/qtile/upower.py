@@ -104,21 +104,37 @@ class UpowerWidget(GenPollText):  # type: ignore
 
     def _icon_color(self, info: Dict[str, Any]) -> Tuple[str, str]:
         pct = info["percentage"]
+
         if info["full"]:
-            return FULL_ICON, "lime"
-        if info["critical"]:
-            return (CRITICAL_ICON if info["charging"] else EMPTY_ICON), "dimgrey"
-        for threshold, icon, color in self.icons:
-            if pct >= threshold:
-                return (f"{CHARGING_ICON} {icon}" if info["charging"] else icon), color
-        return FALLBACK_ICON, FALLBACK_COLOR
+            icon = FULL_ICON
+            color = "lime"
+        elif info["critical"]:
+            icon = EMPTY_ICON
+            color = "dimgrey"
+        else:
+            for threshold, base_icon, base_color in self.icons:
+                if pct >= threshold:
+                    icon = base_icon
+                    color = base_color
+                    break
+            else:
+                icon = FALLBACK_ICON
+                color = FALLBACK_COLOR
+
+        # Prepend lightning bolt if charging
+        if info["charging"]:
+            icon = f"{CHARGING_ICON} {icon}"
+
+        return icon, color
 
     def poll(self) -> str:
         if not self.battery_path:
             return f'<span foreground="{FALLBACK_COLOR}">{FALLBACK_ICON} N/A</span>'
+
         info = query_battery(self.battery_path)
         if not info:
             return f'<span foreground="{FALLBACK_COLOR}">{FALLBACK_ICON} N/A</span>'
+
         icon, color = self._icon_color(info)
         pct = info["percentage"]
         return f'<span foreground="{color}">{icon} {pct:3d}%</span>'

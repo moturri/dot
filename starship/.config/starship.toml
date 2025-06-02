@@ -1,4 +1,3 @@
-# Starship Prompt Format
 format = """
 $directory\
 $git_branch\
@@ -32,13 +31,12 @@ format = '[ $symbol $branch ]($style)'
 # Git Status Styling
 [git_status]
 ignore_submodules = true
-disabled = false
 style = "fg:dracula_fg"
 format = '[$all_status$_ahead_behind]($style)'
 ahead = '⇡${count}'
 behind = '⇣${count}'
 
-# Disable all other modules
+# Disable all unused modules
 [aws]
 disabled = true
 
@@ -85,4 +83,91 @@ disabled = true
 disabled = true
 
 [terraform]
+disabled = true
+
+[azure]
+disabled = true
+
+[buf]
+disabled = true
+
+[c]
+disabled = true
+
+[cmake]
+disabled = true
+
+[conda]
+disabled = true
+
+[crystal]
+disabled = true
+
+[elixir]
+disabled = true
+
+[elm]
+disabled = true
+
+[erlang]
+disabled = true
+
+[fennel]
+disabled = true
+
+[gradle]
+disabled = true
+
+[hg_branch]
+disabled = true
+
+[java]
+disabled = true
+
+[julia]
+disabled = true
+
+[kotlin]
+disabled = true
+
+[memory_usage]
+disabled = true
+
+[meson]
+disabled = true
+
+[nim]
+disabled = true
+
+[nix_shell]
+disabled = true
+
+[ocaml]
+disabled = true
+
+[php]
+disabled = true
+
+[pijul_channel]
+disabled = true
+
+[pulumi]
+disabled = true
+
+[ruby]
+disabled = true
+
+[scala]
+disabled = true
+
+[spack]
+disabled = true
+
+[sudo]
+disabled = true
+
+[swift]
+disabled = true
+
+[zig]
 disabled = true

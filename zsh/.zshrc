@@ -168,7 +168,6 @@ tldrr() {
 }
 
 
-
 tldrr-widget() {
   zle -I
   tldrr

@@ -13,4 +13,3 @@ display_raw = false
 # Set the theme for syntax highlighting
 # Available themes: base16, ansi, auto, etc.
 theme = "ansi"
-

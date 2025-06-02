@@ -139,11 +139,11 @@ args = ["-l"]
 [window]
 startup_mode = "Windowed"
 title = "Alacritty"
-dynamic_title = true 
+dynamic_title = true
 decorations_theme_variant = "Dark"
 decorations = "Full"
 opacity = 0.9
-blur = true 
+blur = true
 
 
 # SCROLLING
@@ -202,7 +202,7 @@ multiplier = 3
 [font]
 normal = { family = "JetBrainsMono Nerd Font", style = "Medium" }
 size = 8
-builtin_box_drawing = true 
+builtin_box_drawing = true
 
 # COLORS
 # This section documents the [colors] table of the configuration file.
@@ -307,25 +307,25 @@ foreground = '#FFFFFF'
 
 
 [colors.normal]
-black   = '#000000'
-red     = '#cd0000'
-green   = '#00cd00'
-yellow  = '#cdcd00'
-blue    = '#0000ee'
+black = '#000000'
+red = '#cd0000'
+green = '#00cd00'
+yellow = '#cdcd00'
+blue = '#0000ee'
 magenta = '#cd00cd'
-cyan    = '#00cdcd'
-white   = '#e5e5e5'
+cyan = '#00cdcd'
+white = '#e5e5e5'
 
 
 [colors.bright]
-black   = '#7f7f7f'
-red     = '#ff0000'
-green   = '#00ff00'
-yellow  = '#ffff00'
-blue    = '#5c5cff'
+black = '#7f7f7f'
+red = '#ff0000'
+green = '#00ff00'
+yellow = '#ffff00'
+blue = '#5c5cff'
 magenta = '#ff00ff'
-cyan    = '#00ffff'
-white   = '#ffffff'
+cyan = '#00ffff'
+white = '#ffffff'
 
 
 # BELL
@@ -559,8 +559,8 @@ import = []
 
 # The regular keys like "A", "0", and "Я" can be mapped directly without any special syntax. Full list of named keys like "F1" and the syntax for dead keys can be found here:
 
-    # https://docs.rs/winit/latest/winit/keyboard/enum.NamedKey.html
-    # https://docs.rs/winit/latest/winit/keyboard/enum.Key.html#variant.Dead
+# https://docs.rs/winit/latest/winit/keyboard/enum.NamedKey.html
+# https://docs.rs/winit/latest/winit/keyboard/enum.Key.html#variant.Dead
 
 # Numpad keys are prefixed by Numpad: "NumpadEnter" | "NumpadAdd" | "NumpadComma" | "NumpadDivide" | "NumpadEquals" | "NumpadSubtract" | "NumpadMultiply" | "Numpad[0-9]".
 # The key field also supports using scancodes, which are specified as a decimal number.
@@ -584,280 +584,280 @@ import = []
 
 # Expandable List:
 
-    # None
-    # No action.
+# None
+# No action.
 
-    # Paste
-    # Paste contents of system clipboard.
+# Paste
+# Paste contents of system clipboard.
 
-    # Copy
-    # Store current selection into clipboard.
+# Copy
+# Store current selection into clipboard.
 
-    # ReceiveChar
-    # Allow receiving char input.
+# ReceiveChar
+# Allow receiving char input.
 
-    # IncreaseFontSize
-    # Increase font size.
+# IncreaseFontSize
+# Increase font size.
 
-    # DecreaseFontSize
-    # Decrease font size.
+# DecreaseFontSize
+# Decrease font size.
 
-    # ResetFontSize
-    # Reset font size to the config value.
+# ResetFontSize
+# Reset font size to the config value.
 
-    # ScrollPageUp
-    # Scroll exactly one page up.
+# ScrollPageUp
+# Scroll exactly one page up.
 
-    # ScrollPageDown
-    # Scroll exactly one page down.
+# ScrollPageDown
+# Scroll exactly one page down.
 
-    # ScrollHalfPageUp
-    # Scroll half a page up.
+# ScrollHalfPageUp
+# Scroll half a page up.
 
-    # ScrollHalfPageDown
-    # Scroll half a page down.
+# ScrollHalfPageDown
+# Scroll half a page down.
 
-    # ScrollLineUp
-    # Scroll one line up.
+# ScrollLineUp
+# Scroll one line up.
 
-    # ScrollLineDown
-    # Scroll one line down.
+# ScrollLineDown
+# Scroll one line down.
 
-    # ScrollToTop
-    # Scroll all the way to the top.
+# ScrollToTop
+# Scroll all the way to the top.
 
-    # ScrollToBottom
-    # Scroll all the way to the bottom.
+# ScrollToBottom
+# Scroll all the way to the bottom.
 
-    # ClearHistory
-    # Clear the display buffer(s) to remove history.
+# ClearHistory
+# Clear the display buffer(s) to remove history.
 
-    # Hide
-    # Hide the Alacritty window.
+# Hide
+# Hide the Alacritty window.
 
-    # Minimize
-    # Minimize the Alacritty window.
+# Minimize
+# Minimize the Alacritty window.
 
-    # Quit
-    # Quit Alacritty.
+# Quit
+# Quit Alacritty.
 
-    # ClearLogNotice
-    # Clear warning and error notices.
+# ClearLogNotice
+# Clear warning and error notices.
 
-    # SpawnNewInstance
-    # Spawn a new instance of Alacritty.
+# SpawnNewInstance
+# Spawn a new instance of Alacritty.
 
-    # CreateNewWindow
-    # Create a new Alacritty window.
+# CreateNewWindow
+# Create a new Alacritty window.
 
-    # ToggleFullscreen
-    # Toggle fullscreen.
+# ToggleFullscreen
+# Toggle fullscreen.
 
-    # ToggleMaximized
-    # Toggle maximized.
+# ToggleMaximized
+# Toggle maximized.
 
-    # ClearSelection
-    # Clear active selection.
+# ClearSelection
+# Clear active selection.
 
-    # ToggleViMode
-    # Toggle vi mode.
+# ToggleViMode
+# Toggle vi mode.
 
-    # SearchForward
-    # Start a forward buffer search.
+# SearchForward
+# Start a forward buffer search.
 
-    # SearchBackward
-    # Start a backward buffer search.
+# SearchBackward
+# Start a backward buffer search.
 
 #
 
 # Vi mode actions
 # Expandable List:
 
-    # Up
-    # Move up.
+# Up
+# Move up.
 
-    # Down
-    # Move down.
+# Down
+# Move down.
 
-    # Left
-    # Move left.
+# Left
+# Move left.
 
-    # Right
-    # Move right.
+# Right
+# Move right.
 
-    # First
-    # First column, or beginning of the line when already at the first column.
+# First
+# First column, or beginning of the line when already at the first column.
 
-    # Last
-    # Last column, or beginning of the line when already at the last column.
+# Last
+# Last column, or beginning of the line when already at the last column.
 
-    # FirstOccupied
-    # First non-empty cell in this terminal row, or first non-empty cell of the line when already at the first cell of the row.
+# FirstOccupied
+# First non-empty cell in this terminal row, or first non-empty cell of the line when already at the first cell of the row.
 
-    # High
-    # Move to top of screen.
+# High
+# Move to top of screen.
 
-    # Middle
-    # Move to center of screen.
+# Middle
+# Move to center of screen.
 
-    # Low
-    # Move to bottom of screen.
+# Low
+# Move to bottom of screen.
 
-    # SemanticLeft
-    # Move to start of semantically separated word.
+# SemanticLeft
+# Move to start of semantically separated word.
 
-    # SemanticRight
-    # Move to start of next semantically separated word.
+# SemanticRight
+# Move to start of next semantically separated word.
 
-    # SemanticLeftEnd
-    # Move to end of previous semantically separated word.
+# SemanticLeftEnd
+# Move to end of previous semantically separated word.
 
-    # SemanticRightEnd
-    # Move to end of semantically separated word.
+# SemanticRightEnd
+# Move to end of semantically separated word.
 
-    # WordLeft
-    # Move to start of whitespace separated word.
+# WordLeft
+# Move to start of whitespace separated word.
 
-    # WordRight
-    # Move to start of next whitespace separated word.
+# WordRight
+# Move to start of next whitespace separated word.
 
-    # WordLeftEnd
-    # Move to end of previous whitespace separated word.
+# WordLeftEnd
+# Move to end of previous whitespace separated word.
 
-    # WordRightEnd
-    # Move to end of whitespace separated word.
+# WordRightEnd
+# Move to end of whitespace separated word.
 
-    # Bracket
-    # Move to opposing bracket.
+# Bracket
+# Move to opposing bracket.
 
-    # ToggleNormalSelection
-    # Toggle normal vi selection.
+# ToggleNormalSelection
+# Toggle normal vi selection.
 
-    # ToggleLineSelection
-    # Toggle line vi selection.
+# ToggleLineSelection
+# Toggle line vi selection.
 
-    # ToggleBlockSelection
-    # Toggle block vi selection.
+# ToggleBlockSelection
+# Toggle block vi selection.
 
-    # ToggleSemanticSelection
-    # Toggle semantic vi selection.
+# ToggleSemanticSelection
+# Toggle semantic vi selection.
 
-    # SearchNext
-    # Jump to the beginning of the next match.
+# SearchNext
+# Jump to the beginning of the next match.
 
-    # SearchPrevious
-    # Jump to the beginning of the previous match.
+# SearchPrevious
+# Jump to the beginning of the previous match.
 
-    # SearchStart
-    # Jump to the next start of a match to the left of the origin.
+# SearchStart
+# Jump to the next start of a match to the left of the origin.
 
-    # SearchEnd
-    # Jump to the next end of a match to the right of the origin.
+# SearchEnd
+# Jump to the next end of a match to the right of the origin.
 
-    # Open
-    # Launch the URL below the vi mode cursor.
+# Open
+# Launch the URL below the vi mode cursor.
 
-    # CenterAroundViCursor
-    # Centers the screen around the vi mode cursor.
+# CenterAroundViCursor
+# Centers the screen around the vi mode cursor.
 
-    # InlineSearchForward
-    # Search forward within the current line.
+# InlineSearchForward
+# Search forward within the current line.
 
-    # InlineSearchBcakward
-    # Search backward within the current line.
+# InlineSearchBcakward
+# Search backward within the current line.
 
-    # InlineSearchForwardShort
-    # Search forward within the current line, stopping just short of the character.
+# InlineSearchForwardShort
+# Search forward within the current line, stopping just short of the character.
 
-    # InlineSearchBackwardShort
-    # Search backward within the current line, stopping just short of the character.
+# InlineSearchBackwardShort
+# Search backward within the current line, stopping just short of the character.
 
-    # InlineSearchNext
-    # Jump to the next inline search match.
+# InlineSearchNext
+# Jump to the next inline search match.
 
-    # InlineSearchPrevious
-    # Jump to the previous inline search match.
+# InlineSearchPrevious
+# Jump to the previous inline search match.
 
-    # Search actions:
-    # SearchFocusNext
+# Search actions:
+# SearchFocusNext
 
-    # Move the focus to the next search match.
-    # SearchFocusPrevious
+# Move the focus to the next search match.
+# SearchFocusPrevious
 
-    # Move the focus to the previous search match.
-    # SearchConfirm
+# Move the focus to the previous search match.
+# SearchConfirm
 
-    # Confirm the active search.
-    # SearchCancel
+# Confirm the active search.
+# SearchCancel
 
-    # Cancel the active search.
-    # SearchClear
+# Cancel the active search.
+# SearchClear
 
-    # Reset the search regex.
-    # SearchDeleteWord
+# Reset the search regex.
+# SearchDeleteWord
 
-    # Delete the last word in the search regex.
-    # SearchHistoryPrevious
+# Delete the last word in the search regex.
+# SearchHistoryPrevious
 
-    # Go to the previous regex in the search history.
-    # SearchHistoryNext
+# Go to the previous regex in the search history.
+# SearchHistoryNext
 
-    # Go to the next regex in the search history.
-    # macOS exclusive:
+# Go to the next regex in the search history.
+# macOS exclusive:
 
-    # ToggleSimpleFullscreen
-    # Enter fullscreen without occupying another space.
+# ToggleSimpleFullscreen
+# Enter fullscreen without occupying another space.
 
-    # HideOtherApplications
-    # Hide all windows other than Alacritty.
+# HideOtherApplications
+# Hide all windows other than Alacritty.
 
-    # CreateNewTab
-    # Create new window in a tab.
+# CreateNewTab
+# Create new window in a tab.
 
-    # SelectNextTab
-    # Select next tab.
+# SelectNextTab
+# Select next tab.
 
-    # SelectPreviousTab
-    # Select previous tab.
+# SelectPreviousTab
+# Select previous tab.
 
-    # SelectTab1
-    # Select the first tab.
+# SelectTab1
+# Select the first tab.
 
-    # SelectTab2
-    # Select the second tab.
+# SelectTab2
+# Select the second tab.
 
-    # SelectTab3
-    # Select the third tab.
+# SelectTab3
+# Select the third tab.
 
-    # SelectTab4
-    # Select the fourth tab.
+# SelectTab4
+# Select the fourth tab.
 
-    # SelectTab5
-    # Select the fifth tab.
+# SelectTab5
+# Select the fifth tab.
 
-    # SelectTab6
-    # Select the sixth tab.
+# SelectTab6
+# Select the sixth tab.
 
-    # SelectTab7
-    # Select the seventh tab.
+# SelectTab7
+# Select the seventh tab.
 
-    # SelectTab8
-    # Select the eighth tab.
+# SelectTab8
+# Select the eighth tab.
 
-    # SelectTab9
-    # Select the ninth tab.
+# SelectTab9
+# Select the ninth tab.
 
-    # SelectLastTab
-    # Select the last tab.
+# SelectLastTab
+# Select the last tab.
 
-    # Linux/BSD exclusive:
-    # CopySelection
+# Linux/BSD exclusive:
+# CopySelection
 
-    # Copy from the selection buffer.
-    # PasteSelection
+# Copy from the selection buffer.
+# PasteSelection
 
-    # Paste from the selection buffer.
-    # Default: See alacritty-bindings(5)
+# Paste from the selection buffer.
+# Default: See alacritty-bindings(5)
 
 
 #
