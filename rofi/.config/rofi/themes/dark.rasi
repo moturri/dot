@@ -1,13 +1,9 @@
 * {
-    bg0:    #000000;
-    bg1:    #1A1A1A;
-    bg2:    #3D3D3D;
-    bg3:    #1A1A1A;
-    fg0:    #E6E6E6;
-    fg1:    #FFFFFF;
-    fg2:    #A0A0A0;
-    fg3:    #5A5A5A;
-    purple: #9A40FF;
+    bg0:    #000000;       // Pure black for all backgrounds
+    fg0:    #E6E6E6;       // Light grey text
+    fg1:    #FFFFFF;       // White text (selected)
+    fg2:    #A0A0A0;       // Dim text (prompts)
+    purple: #9A40FF;       // Dracula accent purple
 }
 
 * {
@@ -78,6 +74,7 @@ element {
     spacing: 8px;
     border-radius: 16px;
     background-color: @bg0;
+    text-color: @fg0;
 }
 
 element selected {

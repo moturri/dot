@@ -1,13 +1,9 @@
 * {
-    bg0:    #FFFFFF;
-    bg1:    #F5F5F5;
-    bg2:    #E0E0E0;
-    bg3:    #CCCCCC;
-    fg0:    #1A1A1A;
-    fg1:    #000000;
-    fg2:    #4D4D4D;
-    fg3:    #7A7A7A;
-    purple: #9A40FF;
+    bg0:    #FFFFFF;       // Pure white background
+    fg0:    #2A2A2A;       // Default dark text
+    fg1:    #000000;       // Selected text (true black)
+    fg2:    #5A5A5A;       // Dimmed (prompt)
+    purple: #9A40FF;       // Dracula accent
 }
 
 * {
@@ -78,9 +74,11 @@ element {
     spacing: 8px;
     border-radius: 16px;
     background-color: @bg0;
+    text-color: @fg0;
 }
 
 element selected {
     background-color: @purple;
-    text-color: @fg1; 
+    text-color: @fg1;
 }
+

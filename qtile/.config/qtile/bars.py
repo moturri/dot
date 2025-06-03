@@ -153,4 +153,3 @@ def main() -> List[Any]:
 # Secondary screen bar (no systray)
 def misc() -> List[Any]:
     return timeWidget + groupWidgets() + systemWidgets()
-
