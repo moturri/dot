@@ -1,11 +1,9 @@
 return {
   {
     "nvim-telescope/telescope-ui-select.nvim",
-    version = "*",
   },
   {
     "nvim-telescope/telescope.nvim",
-    version = "*",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons",
@@ -13,10 +11,8 @@ return {
     config = function()
       local telescope = require("telescope")
       local actions = require("telescope.actions")
-      local themes = require("telescope.themes")
       local builtin = require("telescope.builtin")
 
-      -- Setup Telescope
       telescope.setup({
         defaults = {
           prompt_prefix = "󰡦 ",
@@ -34,7 +30,9 @@ return {
             },
           },
           path_display = { "truncate" },
-          file_ignore_patterns = { "node_modules", ".git/", ".cache" },
+          file_ignore_patterns = {
+            "node_modules", "%.git/", "%.cache", "venv", "target", "%.class", "%.o", "%.out",
+          },
           mappings = {
             i = {
               ["<C-n>"] = actions.move_selection_next,
@@ -73,35 +71,33 @@ return {
           },
         },
         extensions = {
-          ["ui-select"] = {
-            themes.get_dropdown(),
-          },
+          ["ui-select"] = require("telescope.themes").get_dropdown({}),
         },
       })
 
       telescope.load_extension("ui-select")
 
-      -- Keymaps for Telescope pickers
-      vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find Files" })
-      -- vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live Grep" })
-      vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Buffers" })
-      vim.keymap.set("n", "<leader>fl", builtin.oldfiles, { desc = "Recent Files" })
-      vim.keymap.set("n", "<leader>f/", builtin.current_buffer_fuzzy_find, { desc = "Search in Current Buffer" })
+      -- Core Keymaps
+      local keymap = vim.keymap.set
 
-      -- Reference & documentation
-      vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help Tags" })
-      vim.keymap.set("n", "<leader>fc", builtin.commands, { desc = "Commands" })
+      keymap("n", "<leader>ff", builtin.find_files, { desc = "Find Files" })
+      keymap("n", "<leader>fb", builtin.buffers, { desc = "Buffers" })
+      keymap("n", "<leader>fl", builtin.oldfiles, { desc = "Recent Files" })
+      keymap("n", "<leader>f/", builtin.current_buffer_fuzzy_find, { desc = "Search in Current Buffer" })
 
-      -- Vim resources
-      vim.keymap.set("n", "<leader>fr", builtin.registers, { desc = "Registers" })
-      vim.keymap.set("n", "<leader>fw", builtin.search_history, { desc = "Search History" })
+      -- Reference
+      keymap("n", "<leader>fh", builtin.help_tags, { desc = "Help Tags" })
+      keymap("n", "<leader>fc", builtin.commands, { desc = "Commands" })
+      keymap("n", "<leader>fr", builtin.registers, { desc = "Registers" })
+      keymap("n", "<leader>fw", builtin.search_history, { desc = "Search History" })
 
-      -- Git integration
-      vim.keymap.set("n", "<leader>gb", builtin.git_branches, { desc = "Git Branches" })
-      vim.keymap.set("n", "<leader>gc", builtin.git_commits, { desc = "Git Commits" })
+      -- Git
+      keymap("n", "<leader>gb", builtin.git_branches, { desc = "Git Branches" })
+      keymap("n", "<leader>gc", builtin.git_commits, { desc = "Git Commits" })
 
-      -- Development tools
-      vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "Diagnostics" })
+      -- Dev tools
+      keymap("n", "<leader>fd", builtin.diagnostics, { desc = "Diagnostics" })
+      keymap("n", "<leader>fg", builtin.grep_string, { desc = "Grep Word Under Cursor" })
     end,
   },
 }
