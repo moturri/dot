@@ -8,18 +8,11 @@ return {
     "JoosepAlviste/nvim-ts-context-commentstring",
   },
   config = function()
-    require("nvim-treesitter.configs").setup({
+    local configs = require("nvim-treesitter.configs")
+    configs.setup({
       ensure_installed = {
-        "bash",
-        "css",
-        "html",
-        "javascript",
-        "json",
-        "lua",
-        "markdown",
-        "python",
-        "typescript",
-        "yaml",
+        "bash", "css", "html", "javascript", "json", "lua",
+        "markdown", "python", "typescript", "yaml",
       },
       sync_install = false,
       highlight = {
@@ -87,8 +80,8 @@ return {
       },
     })
 
-    -- For integration with Comment.nvim
+    -- ts-context-commentstring setup with global skip flag
     vim.g.skip_ts_context_commentstring_module = true
-    require("ts_context_commentstring").setup({})
+    require("ts_context_commentstring").setup()
   end,
 }

@@ -1,14 +1,24 @@
 return {
   {
     "stevearc/oil.nvim",
-    version = "*",
+    cmd = { "Oil" }, -- Lazy load on Oil command
+    keys = {
+      { "-",         function() require("oil").toggle_float() end, desc = "Toggle Oil Floating Explorer" },
+      { "<leader>e", function() require("oil").toggle_float() end, desc = "Toggle Oil Floating Explorer" },
+    },
     config = function()
-      local oil = require("oil")
+      local ok, oil = pcall(require, "oil")
+      if not ok then
+        vim.notify("Oil.nvim not found!", vim.log.levels.ERROR)
+        return
+      end
 
       oil.setup({
         default_file_explorer = true,
         columns = { "icon", "permissions", "size", "mtime" },
-        view_options = { show_hidden = true },
+        view_options = {
+          show_hidden = true,
+        },
         float = {
           border = "rounded",
           max_width = 0.8,
@@ -21,11 +31,7 @@ return {
         },
       })
 
-      -- Keybindings to toggle the Oil explorer in float
-      vim.keymap.set("n", "-", oil.toggle_float, { desc = "Toggle Oil Float" })
-      vim.keymap.set("n", "<leader>e", oil.toggle_float, { desc = "Toggle Oil Float" })
-
-      -- Optional: Disable line numbers in Oil buffers for a cleaner look
+      -- Disable line numbers in Oil buffers
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "oil",
         callback = function()

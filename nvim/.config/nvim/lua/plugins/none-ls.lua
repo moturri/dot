@@ -1,33 +1,33 @@
 return {
   "nvimtools/none-ls.nvim",
-  version = "*",
+  event = { "BufReadPre", "BufNewFile" },
   config = function()
-    local null_ls = require("null-ls")
+    local ok, null_ls = pcall(require, "null-ls")
+    if not ok then
+      vim.notify("none-ls failed to load", vim.log.levels.ERROR)
+      return
+    end
 
-    -- Define formatting + diagnostic sources
-    local sources = {
-      -- Formatting tools
-      -- null_ls.builtins.formatting.stylua,       -- Lua
-      null_ls.builtins.formatting.isort,        -- Python import sorter
-      null_ls.builtins.formatting.prettier,     -- JS, TS, CSS, JSON, etc.
-      null_ls.builtins.formatting.clang_format, -- C/C++/Java
-      null_ls.builtins.formatting.shfmt,        -- Shell scripts
-
-      -- Diagnostics tools
-      null_ls.builtins.diagnostics.codespell, -- Spell checking
-    }
+    local formatting = null_ls.builtins.formatting
+    local diagnostics = null_ls.builtins.diagnostics
 
     null_ls.setup({
-      sources = sources,
-      -- You can add on_attach here if you want buffer-specific setups later
-      -- on_attach = function(client, bufnr)
-      --   -- e.g., custom keymaps or capabilities per buffer
-      -- end,
+      sources = {
+        -- Formatters
+        formatting.isort,        -- Python
+        formatting.prettier,     -- JS, TS, HTML, CSS, JSON, etc.
+        formatting.clang_format, -- C/C++/Java
+        formatting.shfmt,        -- Shell scripts
+
+        -- Diagnostics
+        diagnostics.codespell, -- Spell checking
+      },
+      root_dir = require("null-ls.utils").root_pattern(".git", "pyproject.toml"),
     })
 
-    -- Global keymap for formatting
+    -- Format current buffer via none-ls
     vim.keymap.set("n", "<leader>gf", function()
       vim.lsp.buf.format({ async = true })
-    end, { desc = "Format with LSP (null-ls)" })
+    end, { desc = "Format file with LSP (none-ls)" })
   end,
 }
