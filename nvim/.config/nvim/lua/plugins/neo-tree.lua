@@ -1,32 +1,22 @@
 return {
   "nvim-neo-tree/neo-tree.nvim",
-  version = "*",
   dependencies = {
     "nvim-lua/plenary.nvim",
     "nvim-tree/nvim-web-devicons",
-    {
-      "MunifTanjim/nui.nvim",
-      version = "*",
-    },
+    "MunifTanjim/nui.nvim",
+  },
+  cmd = { "Neotree" },
+  keys = {
+    { "<C-n>",      "<cmd>Neotree reveal toggle<CR>",        desc = "Toggle NeoTree" },
+    { "<leader>bf", "<cmd>Neotree buffers reveal float<CR>", desc = "NeoTree Buffers (Float)" },
+    { "<leader>fs", "<cmd>Neotree float<CR>",                desc = "NeoTree Files (Float)" },
   },
   opts = {
     close_if_last_window = true,
+    enable_git_status = true,
     enable_diagnostics = true,
-    window = {
-      position = "left",
-      width = 40,
-    },
-    filesystem = {
-      filtered_items = {
-        visible = true,
-        hide_dotfiles = false,
-        -- hide_gitignored = false,
-      },
-      follow_current_file = {
-        enabled = true,
-      },
-      hijack_netrw_behavior = "open_default",
-    },
+    popup_border_style = "rounded",
+
     default_component_configs = {
       name = {
         trailing_slash = true,
@@ -34,28 +24,53 @@ return {
       },
       git_status = {
         symbols = {
-          added = " ",
-          modified = " ",
-          deleted = " ",
-          renamed = "󰁕 ",
+          added     = " ",
+          modified  = " ",
+          deleted   = " ",
+          renamed   = "󰁕 ",
           untracked = " ",
-          ignored = " ",
-          unstaged = "󰄱 ",
-          staged = " ",
-          conflict = " ",
+          ignored   = " ",
         },
       },
     },
+
+    window = {
+      position = "left",
+      width = 40,
+      mappings = {
+        ["<space>"] = "none", -- Prevent accidental expansion
+      },
+    },
+
+    filesystem = {
+      follow_current_file = {
+        enabled = true,
+        leave_dirs_open = false,
+      },
+      filtered_items = {
+        visible = true,
+        hide_dotfiles = false,
+        hide_gitignored = false,
+      },
+      hijack_netrw_behavior = "open_default",
+      use_libuv_file_watcher = true,
+    },
+
+    buffers = {
+      follow_current_file = {
+        enabled = true,
+      },
+      group_empty_dirs = true,
+    },
+
+    git_status = {
+      window = {
+        position = "float",
+      },
+    },
   },
+
   config = function(_, opts)
     require("neo-tree").setup(opts)
-
-    -- Keybindings
-    local keymap = vim.keymap.set
-    local opts_map = { noremap = true, silent = true }
-
-    keymap("n", "<C-n>", "<cmd>Neotree reveal toggle<CR>", opts_map)
-    keymap("n", "<leader>bf", "<cmd>Neotree buffers reveal float<CR>", opts_map)
-    keymap("n", "<leader>fs", "<cmd>Neotree float<CR>", opts_map)
   end,
 }
