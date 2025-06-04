@@ -151,22 +151,18 @@ cht() {
 
 tldrr() {
   local cmd=$(tldr --list |
-    awk 'NF && $1 !~ /^-/' |
     fzf --height=80% \
         --reverse \
         --border \
-        --no-clear \
         --preview='tldr --color always {}' \
         --preview-window=right:80%:wrap)
 
   if [[ -n $cmd ]]; then
-    clear
     tldr "$cmd"
     echo -e "\n[Press Enter to return to prompt]"
     read -r
   fi
 }
-
 
 tldrr-widget() {
   zle -I
