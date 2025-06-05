@@ -28,7 +28,23 @@ from qtile_extras.widget import GenPollText
 
 
 class BrilloWidget(GenPollText):  # type: ignore
-    """Minimal brightness control widget."""
+    """Minimal brightness control widget using brillo or /sys/class/backlight."""
+
+    COLORS = {
+        "very_high": "gold",
+        "high": "orange",
+        "medium": "tan",
+        "low": "palegreen",
+        "very_low": "grey",
+    }
+
+    ICONS = {
+        "very_high": "󰃠",
+        "high": "󰃝",
+        "medium": "󰃟",
+        "low": "󰃞",
+        "very_low": "󰃜",
+    }
 
     def __init__(self, step: int = 5, **config: Any) -> None:
         self.step = step
@@ -36,30 +52,28 @@ class BrilloWidget(GenPollText):  # type: ignore
         self.has_brillo = bool(shutil.which("brillo"))
 
         if self.device and not self.has_brillo:
-            self.max_brightness = int((self.device / "max_brightness").read_text())
+            try:
+                self.max_brightness = int((self.device / "max_brightness").read_text())
+            except (FileNotFoundError, ValueError):
+                self.max_brightness = 100  # fallback default
 
         super().__init__(func=self._poll, update_interval=0.5, **config)
 
     def _find_device(self) -> Path | None:
-        """Find backlight device, prioritizing common ones."""
+        """Find available backlight device."""
         base = Path("/sys/class/backlight")
         if not base.exists():
             return None
 
-        devices = list(base.iterdir())
-        if not devices:
-            return None
-
-        # Check priority devices first
-        for priority in ["intel_backlight", "amdgpu_bl0", "acpi_video0"]:
-            for device in devices:
-                if priority in device.name:
-                    return device
-
-        return devices[0]
+        devices = sorted(base.iterdir(), key=lambda d: d.name)
+        for preferred in ["intel_backlight", "amdgpu_bl0", "acpi_video0"]:
+            for dev in devices:
+                if preferred in dev.name:
+                    return dev
+        return devices[0] if devices else None
 
     def _run_cmd(self, cmd: list[str]) -> str:
-        """Execute command and return output."""
+        """Safely execute a shell command and return its output."""
         try:
             return subprocess.check_output(
                 cmd, text=True, stderr=subprocess.DEVNULL
@@ -68,62 +82,58 @@ class BrilloWidget(GenPollText):  # type: ignore
             return ""
 
     def _get_brightness(self) -> int:
-        """Get current brightness percentage."""
+        """Get brightness as a percentage."""
         if self.has_brillo:
-            output = self._run_cmd(["brillo", "-G"])
             try:
-                return int(float(output))
+                return int(float(self._run_cmd(["brillo", "-G"])))
             except ValueError:
                 return 0
 
         if self.device:
             try:
                 current = int((self.device / "brightness").read_text())
-                return current * 100 // self.max_brightness
+                return (current * 100) // self.max_brightness
             except (OSError, ValueError):
                 return 0
 
         return 0
 
     def _set_brightness(self, percent: int) -> None:
-        """Set brightness to percentage."""
-        percent = max(1, min(100, percent))  # Keep minimum at 1% to avoid black screen
+        """Set brightness to a clamped percentage."""
+        percent = max(1, min(100, percent))  # Avoid 0% black screen
 
         if self.has_brillo:
             self._run_cmd(["brillo", "-S", str(percent)])
         elif self.device:
             try:
-                raw_value = percent * self.max_brightness // 100
-                (self.device / "brightness").write_text(str(raw_value))
+                raw = (percent * self.max_brightness) // 100
+                (self.device / "brightness").write_text(str(raw))
             except OSError:
                 pass
 
     def _poll(self) -> str:
-        """Poll brightness and format display."""
+        """Format brightness value with color and icon."""
         brightness = self._get_brightness()
 
-        # Simple icon/color mapping
         if brightness > 80:
-            icon, color = "󰃠", "gold"
+            color, icon = self.COLORS["very_high"], self.ICONS["very_high"]
         elif brightness > 60:
-            icon, color = "󰃝", "orange"
+            color, icon = self.COLORS["high"], self.ICONS["high"]
         elif brightness > 40:
-            icon, color = "󰃟", "tan"
+            color, icon = self.COLORS["medium"], self.ICONS["medium"]
         elif brightness > 20:
-            icon, color = "󰃞", "lime"
+            color, icon = self.COLORS["low"], self.ICONS["low"]
         else:
-            icon, color = "󰃜", "grey"
+            color, icon = self.COLORS["very_low"], self.ICONS["very_low"]
 
         return f'<span foreground="{color}">{icon}  {brightness}%</span>'
 
     @expose_command()
     def increase(self) -> None:
         """Increase brightness."""
-        current = self._get_brightness()
-        self._set_brightness(current + self.step)
+        self._set_brightness(self._get_brightness() + self.step)
 
     @expose_command()
     def decrease(self) -> None:
         """Decrease brightness."""
-        current = self._get_brightness()
-        self._set_brightness(current - self.step)
+        self._set_brightness(self._get_brightness() - self.step)

@@ -2,85 +2,47 @@ from keys import keys, mod
 from libqtile.config import DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
-groups = [
-    Group(
-        "1",
-        label="󰣇",
-        matches=[Match(wm_class="pcmanfm-qt"), Match(wm_class="discord")],
-    ),
-    Group(
-        "2",
-        label="󰞷",
-        matches=[Match(wm_class="alacritty"), Match(wm_class="org.wezfurlong.wezterm")],
-    ),
-    Group(
-        "3",
-        label="󰆋",
-        matches=[
-            Match(wm_class="firefox"),
-            Match(wm_class="brave-browser"),
-            Match(wm_class="zen"),
-        ],
-    ),
-    Group("4", label="󰊠", matches=[Match(wm_class="octopi")]),
-    Group(
+group_definitions = [
+    ("1", "󰣇", ["pcmanfm-qt", "discord"]),
+    ("2", "󰞷", ["alacritty", "org.wezfurlong.wezterm", "code-oss"]),
+    ("3", "󰆋", ["firefox", "zen"]),
+    ("4", "󰊠", ["octopi", "qbittorrent"]),
+    (
         "5",
-        label="󱚣",
-        matches=[
-            Match(wm_class="VirtualBox Manager"),
-            Match(wm_class="virt-manager"),
-            Match(wm_class="vscodium"),
-        ],
+        "󱚣",
+        ["VirtualBox Manager", "virt-manager", "brave-browser", "Brave-browser"],
     ),
-    Group(
+    (
         "6",
-        label="󱉟",
-        matches=[
-            Match(wm_class="soffice.bin"),
-            Match(wm_class="calibre"),
-            Match(wm_class="calibre-gui"),
-            Match(wm_class="org.pwmt.zathura"),
-            Match(wm_class="obsidian"),
-        ],
+        "󱉟",
+        ["soffice.bin", "calibre", "calibre-gui", "org.pwmt.zathura", "obsidian"],
     ),
-    Group("7", label="󰟴", matches=[Match(wm_class="stremio"), Match(wm_class="mpv")]),
-    Group(
+    ("7", "󰟴", ["stremio", "mpv"]),
+    (
         "8",
-        label="󰒃",
-        matches=[
-            Match(wm_class="bitwarden"),
-            Match(wm_class="firewall-config"),
-            Match(wm_class="gnome-disks"),
-            Match(wm_class="timeshift-gtk"),
-            Match(wm_class="KeePassXC"),
-            Match(wm_class="GParted"),
-            Match(wm_class="stacer"),
+        "󰒃",
+        [
+            "bitwarden",
+            "firewall-config",
+            "gnome-disks",
+            "timeshift-gtk",
+            "KeePassXC",
+            "GParted",
+            "stacer",
         ],
     ),
-    Group(
-        "9",
-        label="󰎆",
-        matches=[
-            Match(wm_class="cider"),
-            Match(wm_class="easyeffects"),
-            Match(wm_class="galaxybudsclient"),
-            Match(wm_class="spotify"),
-            Match(wm_class="strawberry"),
-        ],
-    ),
-    Group(
-        "0",
-        label="󰶍",
-        matches=[
-            Match(wm_class="Mail"),
-        ],
-    ),
+    ("9", "󰎆", ["cider", "easyeffects", "galaxybudsclient", "spotify", "strawberry"]),
+    ("0", "󰶍", ["Mail"]),
 ]
 
+groups = [
+    Group(name, label=label, matches=[Match(wm_class=cls) for cls in classes])
+    for name, label, classes in group_definitions
+]
 
-group_keys = []
+# Generate group keys
 for group in groups:
-    group_keys.extend(
+    keys.extend(
         [
             Key([mod], group.name, lazy.group[group.name].toscreen()),
             Key(
@@ -92,22 +54,12 @@ for group in groups:
         ]
     )
 
-keys.extend(group_keys)
 
-
-groups.append(
-    ScratchPad(
+# Add ScratchPad
+def scratches() -> ScratchPad:
+    return ScratchPad(
         "scratchpad",
         [
-            DropDown(
-                "calcurse",
-                "kitty -e calcurse",
-                width=0.7,
-                height=0.7,
-                x=0.15,
-                y=0.1,
-                opacity=1,
-            ),
             DropDown(
                 "iwgtk", "iwgtk", width=0.4, height=0.6, x=0.3, y=0.1, opacity=0.9
             ),
@@ -142,33 +94,23 @@ groups.append(
                 y=0.1,
                 opacity=1,
             ),
-            DropDown(
-                "pcmanfm-qt",
-                "pcmanfm-qt",
-                width=0.7,
-                height=0.7,
-                x=0.15,
-                y=0.1,
-                opacity=1,
-                on_focus_lost_hide=True,
-            ),
         ],
     )
-)
 
-scratches = {
-    "calcurse": "c",
+
+groups.append(scratches())
+
+scratch_keys = {
     "iwgtk": "i",
     "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
     "pavucontrol-qt": "v",
-    "pcmanfm-qt": "p",
 }
 
-scratchKeys = [
-    Key([mod, "control"], key, lazy.group["scratchpad"].dropdown_toggle(name))
-    for name, key in scratches.items()
-]
-
-keys.extend(scratchKeys)
+keys.extend(
+    [
+        Key([mod, "control"], key, lazy.group["scratchpad"].dropdown_toggle(name))
+        for name, key in scratch_keys.items()
+    ]
+)

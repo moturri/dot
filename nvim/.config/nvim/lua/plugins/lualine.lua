@@ -41,6 +41,7 @@ return {
         local handle = io.popen("node -v 2>/dev/null")
         if not handle then return "" end
         local version = handle:read("*a") or ""
+
         handle:close()
         return version:gsub("\n", "")
       end
@@ -64,7 +65,7 @@ return {
             { "branch", icon = "" },
             {
               "diff",
-              symbols = { added = " ", modified = " ", removed = " " },
+              symbols = { added = "󰐗 ", modified = "󰛿 ", removed = "󰍶 " },
               colored = true,
             },
             {
@@ -84,7 +85,7 @@ return {
               file_status = true,
               path = 1,
               symbols = {
-                modified = " [+]",
+                modified = " 󰐗",
                 readonly = " ",
                 unnamed = "[No Name]",
               },
@@ -124,7 +125,7 @@ return {
               },
               show_filename_only = true,
               symbols = {
-                modified = " [+]",
+                modified = " 󰐗",
                 readonly = " ",
               },
             },

@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, List, Optional, Tuple, TypedDict, cast
 
 from pydbus import SystemBus  # type: ignore
 from qtile_extras.widget import GenPollText
@@ -33,20 +33,19 @@ FALLBACK_ICON = "󰂑"
 FALLBACK_COLOR = "#666666"
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
-CRITICAL_ICON = "󰂃"
 EMPTY_ICON = "󰁺"
 
-BATTERY_ICONS: List[Tuple[int, str, str]] = [
-    (95, "󰂂", "limegreen"),
-    (80, "󰂁", "palegreen"),
-    (60, "󰂀", "lightgoldenrodyellow"),
-    (40, "󰁿", "tan"),
-    (20, "󰁻", "lightsalmon"),
-    (5, "󰁻", "red"),
-    (0, EMPTY_ICON, "darkred"),
-]
 
-BATTERY_STATES: Dict[int, str] = {
+class BatteryInfo(TypedDict):
+    percentage: int
+    state: str
+    charging: bool
+    discharging: bool
+    full: bool
+    critical: bool
+
+
+BATTERY_STATES = {
     1: "charging",
     2: "discharging",
     3: "empty",
@@ -57,6 +56,7 @@ BATTERY_STATES: Dict[int, str] = {
 
 
 def find_battery_path() -> Optional[str]:
+    """Detect UPower battery device path."""
     try:
         bus = SystemBus()
         upower = bus.get(UPOWER_SERVICE, "/org/freedesktop/UPower")
@@ -69,26 +69,39 @@ def find_battery_path() -> Optional[str]:
     return None
 
 
-def query_battery(path: str) -> Optional[Dict[str, Any]]:
+def query_battery(path: str) -> Optional[BatteryInfo]:
+    """Query UPower battery device for relevant fields."""
     try:
         bus = SystemBus()
         battery = bus.get(UPOWER_SERVICE, path)
         percent = int(max(0, min(100, battery.Percentage)))
         state = int(battery.State)
-        return {
-            "percentage": percent,
-            "state": BATTERY_STATES.get(state, "unknown"),
-            "charging": state == 1,
-            "discharging": state == 2,
-            "full": state == 4,
-            "critical": percent <= 5,
-        }
+        return BatteryInfo(
+            percentage=percent,
+            state=BATTERY_STATES.get(state, "unknown"),
+            charging=state == 1,
+            discharging=state == 2,
+            full=state == 4,
+            critical=percent <= 5,
+        )
     except Exception as e:
         logger.warning(f"Failed to query battery info: {e}")
         return None
 
 
 class UpowerWidget(GenPollText):  # type: ignore
+    """Minimal and beautiful battery status widget using UPower and nerd fonts."""
+
+    ICONS: List[Tuple[int, str, str]] = [
+        (95, "󰂂", "limegreen"),
+        (80, "󰂁", "palegreen"),
+        (60, "󰂀", "lightgoldenrodyellow"),
+        (40, "󰁿", "tan"),
+        (20, "󰁻", "lightsalmon"),
+        (5, "󰁻", "red"),
+        (0, EMPTY_ICON, "darkred"),
+    ]
+
     def __init__(
         self,
         update_interval: float = 10.0,
@@ -96,38 +109,36 @@ class UpowerWidget(GenPollText):  # type: ignore
         icons: Optional[List[Tuple[int, str, str]]] = None,
         **config: Any,
     ) -> None:
-        super().__init__(func=self.poll, update_interval=update_interval, **config)
         self.battery_path = battery_path or find_battery_path()
         if not self.battery_path:
-            logger.warning("No battery device found; widget will fallback.")
-        self.icons = icons if icons else BATTERY_ICONS
+            logger.warning("No battery device found; using fallback display.")
 
-    def _icon_color(self, info: Dict[str, Any]) -> Tuple[str, str]:
+        self.icons = icons or self.ICONS
+        super().__init__(func=self.poll, update_interval=update_interval, **config)
+
+    def _icon_color(self, info: BatteryInfo) -> Tuple[str, str]:
+        """Determine which icon and color to use for given battery info."""
         pct = info["percentage"]
 
         if info["full"]:
-            icon = FULL_ICON
-            color = "lime"
+            icon, color = FULL_ICON, "lime"
         elif info["critical"]:
-            icon = EMPTY_ICON
-            color = "dimgrey"
+            icon, color = EMPTY_ICON, "dimgrey"
         else:
-            for threshold, base_icon, base_color in self.icons:
+            for threshold, icon_base, color_base in self.icons:
                 if pct >= threshold:
-                    icon = base_icon
-                    color = base_color
+                    icon, color = icon_base, color_base
                     break
             else:
-                icon = FALLBACK_ICON
-                color = FALLBACK_COLOR
+                icon, color = FALLBACK_ICON, FALLBACK_COLOR
 
-        # Prepend lightning bolt if charging
         if info["charging"]:
             icon = f"{CHARGING_ICON} {icon}"
 
         return icon, color
 
     def poll(self) -> str:
+        """Poll current battery data and render widget string."""
         if not self.battery_path:
             return f'<span foreground="{FALLBACK_COLOR}">{FALLBACK_ICON} N/A</span>'
 
@@ -136,10 +147,10 @@ class UpowerWidget(GenPollText):  # type: ignore
             return f'<span foreground="{FALLBACK_COLOR}">{FALLBACK_ICON} N/A</span>'
 
         icon, color = self._icon_color(info)
-        pct = info["percentage"]
-        return f'<span foreground="{color}">{icon} {pct:3d}%</span>'
+        return f'<span foreground="{color}">{icon} {info["percentage"]:3d}%</span>'
 
     def get_info(self) -> str:
+        """Expose detailed battery information."""
         if not self.battery_path:
             return "Battery: N/A"
         info = query_battery(self.battery_path)

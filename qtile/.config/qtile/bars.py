@@ -7,7 +7,7 @@ from qtile_extras.widget.decorations import RectDecoration
 from upower import UpowerWidget
 from wpctl import AudioWidget, MicWidget
 
-# Theme configuration
+# Theme
 theme: Dict[str, Any] = {
     "accent": "#6f3aea",
     "alert": "#ff5555",
@@ -16,13 +16,13 @@ theme: Dict[str, Any] = {
     "padding": 6,
 }
 
-# Icon constants
+# Icons
 ICON_NOTIFICATION = "󰂚"
 ICON_PLAYER = "󰀰 "
 ICON_NO_METADATA = "󱆵 "
 ICON_PAUSED = "󱆵 "
 
-# Widget decoration base
+# Decoration template
 wdecor: Dict[str, Any] = {
     "background": theme["bg"],
     "foreground": theme["fg"],
@@ -33,19 +33,19 @@ wdecor: Dict[str, Any] = {
 }
 
 
-# Spacer utility
+# Reusable Spacer
 def spacer(length: int = 10) -> Any:
     return widget.Spacer(length=length)
 
 
-# Time widget group
+# Clock
 timeWidget: List[Any] = [
     widget.Clock(format="   %e %b    %H:%M  ", **wdecor),
     spacer(),
 ]
 
 
-# Group and Task widgets
+# Group + Task
 def groupWidgets() -> List[Any]:
     return [
         widget.GroupBox(
@@ -73,17 +73,14 @@ def groupWidgets() -> List[Any]:
     ]
 
 
-# System tray widget
+# Tray
 def systemTrayWidget() -> List[Any]:
-    return [
-        widget.Systray(padding=10),
-        spacer(),
-    ]
+    return [widget.Systray(padding=10), spacer()]
 
 
-# System widgets group
+# Audio/Brightness/Battery group
 def systemWidgets(show_brightness: bool = True, show_battery: bool = True) -> List[Any]:
-    widgets = [
+    widgets: List[Any] = [
         widget.TextBox(
             text=f" {ICON_NOTIFICATION} ",
             mouse_callbacks={
@@ -125,19 +122,17 @@ def systemWidgets(show_brightness: bool = True, show_battery: bool = True) -> Li
     ]
 
     if show_brightness:
-        widgets.extend(
-            [
-                BrilloWidget(
-                    name="brillo",
-                    mouse_callbacks={
-                        "Button4": lazy.widget["brillo"].increase(),
-                        "Button5": lazy.widget["brillo"].decrease(),
-                    },
-                    **wdecor,
-                ),
-                spacer(),
-            ]
-        )
+        widgets += [
+            BrilloWidget(
+                name="brillo",
+                mouse_callbacks={
+                    "Button4": lazy.widget["brillo"].increase(),
+                    "Button5": lazy.widget["brillo"].decrease(),
+                },
+                **wdecor,
+            ),
+            spacer(),
+        ]
 
     if show_battery:
         widgets.append(UpowerWidget(**wdecor))
@@ -145,11 +140,10 @@ def systemWidgets(show_brightness: bool = True, show_battery: bool = True) -> Li
     return widgets
 
 
-# Full widget bar (primary)
+# Entrypoints
 def main() -> List[Any]:
     return timeWidget + groupWidgets() + systemTrayWidget() + systemWidgets()
 
 
-# Secondary screen bar (no systray)
 def misc() -> List[Any]:
     return timeWidget + groupWidgets() + systemWidgets()

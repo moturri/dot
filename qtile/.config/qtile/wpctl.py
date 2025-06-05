@@ -26,16 +26,30 @@ from qtile_extras.widget import GenPollText
 
 
 class AudioWidget(GenPollText):  # type: ignore
-    """Minimal PipeWire audio control widget."""
+    """Minimal PipeWire audio control widget using wpctl."""
+
+    COLORS = {
+        "muted": "grey",
+        "high": "salmon",
+        "medium": "mediumpurple",
+        "low": "palegreen",
+    }
+
+    ICONS = {
+        "muted": "󰝟",
+        "high": "󰕾",
+        "medium": "󰖀",
+        "low": "󰕿",
+    }
 
     def __init__(self, device: str = "@DEFAULT_AUDIO_SINK@", **config: Any) -> None:
         self.device = device
         super().__init__(func=self._poll, update_interval=0.5, **config)
 
     def _run_cmd(self, cmd: list[str]) -> str:
-        """Execute wpctl command and return output."""
+        """Execute a command and return stdout or empty string."""
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=1.0)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=0.5)
             return result.stdout.strip() if result.returncode == 0 else ""
         except subprocess.TimeoutExpired:
             return ""
@@ -47,32 +61,29 @@ class AudioWidget(GenPollText):  # type: ignore
             return 0, True
 
         parts = output.split()
-        if len(parts) < 2:
-            return 0, True
-
         try:
             volume = round(float(parts[1]) * 100)
             muted = "[MUTED]" in output
             return volume, muted
-        except ValueError:
+        except (IndexError, ValueError):
             return 0, True
 
     def _poll(self) -> str:
-        """Poll volume and format display."""
+        """Poll volume and return formatted string with Nerd Font icon."""
         volume, muted = self._get_volume()
 
         if muted:
-            color = "#666666"
-            icon = "󰝟"
+            color = self.COLORS["muted"]
+            icon = self.ICONS["muted"]
         elif volume >= 70:
-            color = "#ff5555"
-            icon = "󰕾"
+            color = self.COLORS["high"]
+            icon = self.ICONS["high"]
         elif volume >= 40:
-            color = "#bd93f9"
-            icon = "󰖀"
+            color = self.COLORS["medium"]
+            icon = self.ICONS["medium"]
         else:
-            color = "#50fa7b"
-            icon = "󰕿"
+            color = self.COLORS["low"]
+            icon = self.ICONS["low"]
 
         return f'<span foreground="{color}">{icon}  {volume}%</span>'
 
@@ -80,37 +91,30 @@ class AudioWidget(GenPollText):  # type: ignore
     def volume_up(self) -> None:
         """Increase volume by 5%."""
         volume, _ = self._get_volume()
-        new_vol = min(100, volume + 5)
-        self._run_cmd(["wpctl", "set-volume", self.device, f"{new_vol}%"])
+        self._run_cmd(["wpctl", "set-volume", self.device, f"{min(100, volume + 5)}%"])
 
     @expose_command()
     def volume_down(self) -> None:
         """Decrease volume by 5%."""
         volume, _ = self._get_volume()
-        new_vol = max(0, volume - 5)
-        self._run_cmd(["wpctl", "set-volume", self.device, f"{new_vol}%"])
+        self._run_cmd(["wpctl", "set-volume", self.device, f"{max(0, volume - 5)}%"])
 
     @expose_command()
     def toggle_mute(self) -> None:
-        """Toggle mute status."""
+        """Toggle mute."""
         self._run_cmd(["wpctl", "set-mute", self.device, "toggle"])
 
 
 class MicWidget(AudioWidget):
-    """Microphone input widget."""
+    """Microphone input widget using PipeWire."""
 
     def __init__(self, **config: Any) -> None:
         super().__init__(device="@DEFAULT_AUDIO_SOURCE@", **config)
 
     def _poll(self) -> str:
-        """Poll microphone volume with input-specific icons."""
         volume, muted = self._get_volume()
 
-        if muted:
-            color = "dimgrey"
-            icon = "󰍭"
-        else:
-            color = "#50fa7b"
-            icon = "󰍬"
+        color = "grey" if muted else "green"
+        icon = "󰍭" if muted else "󰍬"
 
         return f'<span foreground="{color}">{icon}  {volume}%</span>'

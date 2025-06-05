@@ -79,4 +79,3 @@ XTerm*translations: #override \
 ! ────── Cursor Theme ──────
 Xcursor.theme: material_cursors
 Xcursor.size: 21
-

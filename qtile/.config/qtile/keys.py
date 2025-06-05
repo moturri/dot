@@ -16,28 +16,28 @@ brillo = BrilloWidget()
 
 
 # Brightness control helpers
-def brillo_up(qtile: Qtile) -> None:
+def brillo_up(_: Qtile) -> None:
     brillo.increase()
 
 
-def brillo_down(qtile: Qtile) -> None:
+def brillo_down(_: Qtile) -> None:
     brillo.decrease()
 
 
 # Audio control helpers
-def volume_up(qtile: Qtile) -> None:
+def volume_up(_: Qtile) -> None:
     audio.volume_up()
 
 
-def volume_down(qtile: Qtile) -> None:
+def volume_down(_: Qtile) -> None:
     audio.volume_down()
 
 
-def toggle_mute(qtile: Qtile) -> None:
+def toggle_mute(_: Qtile) -> None:
     audio.toggle_mute()
 
 
-def toggle_mic_mute(qtile: Qtile) -> None:
+def toggle_mic_mute(_: Qtile) -> None:
     mic.toggle_mute()
 
 
@@ -95,6 +95,8 @@ keys = [
     Key([mod, "control"], "q", lazy.shutdown()),
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
+    # Toggle bar visibility
+    Key([mod], "F3", lazy.hide_show_bar("top")),
     # System control
     Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
     Key([mod], "Print", lazy.spawn("screengrab")),
@@ -113,8 +115,13 @@ keys = [
         [mod],
         "b",
         [
+            Key([], "o", lazy.spawn("/usr/bin/octopi")),
+            Key([], "l", lazy.spawn("libreoffice")),
+            Key([], "k", lazy.spawn("kitty")),
             Key([], "p", lazy.spawn("pcmanfm-qt")),
-            Key([], "x", lazy.spawn("kitty")),
+            Key([], "z", lazy.spawn("zen-browser")),
+            Key([], "c", lazy.spawn("cider")),
+            Key([], "s", lazy.spawn("stremio")),
         ],
     )
 ]

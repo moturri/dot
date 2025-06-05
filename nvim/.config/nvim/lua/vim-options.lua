@@ -4,20 +4,20 @@ local g = vim.g
 -- Leader key
 g.mapleader = " "
 
--- General settings
+-- General
 g.have_nerd_font = true
 vim.scriptencoding = "utf-8"
 
 opt.background = "dark"
 opt.termguicolors = true
 opt.mouse = "a"
-opt.timeoutlen = 500
-opt.scrolloff = 20
+opt.timeoutlen = 300
+opt.scrolloff = 8
 opt.showmode = false
-opt.signcolumn = "yes:1"
+opt.signcolumn = "yes"
 opt.clipboard = "unnamedplus"
 opt.cursorline = true
-opt.updatetime = 250
+opt.updatetime = 200
 
 -- Persistent undo
 opt.undofile = true
@@ -33,7 +33,7 @@ opt.expandtab = true
 opt.smartindent = true
 opt.autoindent = true
 
--- Folding
+-- Folding (Treesitter-based)
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldenable = true
@@ -46,13 +46,13 @@ opt.hlsearch = true
 opt.incsearch = true
 opt.ignorecase = true
 opt.smartcase = true
-opt.inccommand = "split"
+opt.inccommand = "nosplit"
 
--- Display
+-- UI Display
 opt.number = true
 opt.relativenumber = true
 opt.colorcolumn = "100"
-opt.cmdheight = 2
+opt.cmdheight = 1
 opt.showtabline = 2
 opt.showmatch = true
 opt.list = true
@@ -61,14 +61,14 @@ opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 -- Completion
 opt.completeopt = { "menuone", "noselect" }
 
--- Wildmenu
+-- Wildmenu (command line completion)
 opt.wildmenu = true
-opt.wildmode = { "longest", "list", "full" }
+opt.wildmode = { "longest:full", "full" }
 
 -- Window/Buffer behavior
 opt.splitright = true
 opt.splitbelow = true
-opt.selection = "exclusive"
+opt.selection = "inclusive"
 opt.modifiable = true
 
 -- Key mappings
@@ -77,7 +77,7 @@ vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highl
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 
--- Recall last cursor position on reopen
+-- Restore cursor position on reopen
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
     local mark = vim.api.nvim_buf_get_mark(0, '"')
