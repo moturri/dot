@@ -38,14 +38,14 @@ def spacer(length: int = 10) -> Any:
     return widget.Spacer(length=length)
 
 
-# Clock
+# Clock widget
 timeWidget: List[Any] = [
     widget.Clock(format="   %e %b    %H:%M  ", **wdecor),
     spacer(),
 ]
 
 
-# Group + Task
+# Group + Tasklist widgets
 def groupWidgets() -> List[Any]:
     return [
         widget.GroupBox(
@@ -73,12 +73,12 @@ def groupWidgets() -> List[Any]:
     ]
 
 
-# Tray
+# SystemTray
 def systemTrayWidget() -> List[Any]:
     return [widget.Systray(padding=10), spacer()]
 
 
-# Audio/Brightness/Battery group
+# Notification/Mpris2/Audio/Brightness/Battery widgets
 def systemWidgets(show_brightness: bool = True, show_battery: bool = True) -> List[Any]:
     widgets: List[Any] = [
         widget.TextBox(

@@ -23,10 +23,10 @@ return {
       [[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
     }
 
-    dashboard.section.footer.val = {
-      dashboard.button("f", "󰈞  Find File", ":Telescope find_files<CR>"),
-      dashboard.button("r", "  Recent", ":Telescope oldfiles<CR>"),
-    }
+    -- dashboard.section.footer.val = {
+    --   dashboard.button("f", "󰈞  Find File", ":Telescope find_files<CR>"),
+    --   dashboard.button("r", "  Recent", ":Telescope oldfiles<CR>"),
+    -- }
 
     alpha.setup(dashboard.opts)
   end,
