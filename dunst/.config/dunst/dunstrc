@@ -1,0 +1,85 @@
+[global]
+# Font and formatting
+font = InterVariable SemiBold 11
+format = "<b>%s</b>\n%b"
+word_wrap = yes
+ignore_newline = no
+
+# Notification display
+alignment = left
+show_age_threshold = 60
+show_indicators = no
+history_length = 10
+sticky_history = yes
+hide_duplicate_count = true
+sort = yes
+shrink = no
+markup = full
+ignore_dbusclose = false
+
+# Appearance
+corner_radius = 14
+padding = 16
+horizontal_padding = 24
+separator_height = 2
+separator_color = frame
+frame_width = 0
+frame_color = "#000000"
+transparency = 10
+width = (0, 400)
+height = (0, 400)
+scale = 0
+
+# Placement
+origin = top-right
+offset = (10, 35)
+follow = mouse
+
+# Icon settings
+icon_position = left
+min_icon_size = 32
+max_icon_size = 64
+icon_theme = BeautySolar
+enable_recursive_icon_lookup = true
+
+# Mouse actions
+mouse_left_click = close_current
+mouse_right_click = close_all
+mouse_middle_click = do_action
+
+# Idle timeout
+idle_threshold = 120
+
+# X11 properties
+title = "Dunst"
+class = "Dunst"
+
+[urgency_low]
+background = "#000000"
+foreground = "#888888"
+timeout = 10
+default_icon = dialog-information
+
+[urgency_normal]
+background = "#000000"
+foreground = "#dddddd"
+timeout = 10
+default_icon = dialog-information
+
+[urgency_critical]
+background = "#000000"
+foreground = "#ff5555"
+timeout = 30
+default_icon = dialog-warning
+
+[rule-spotify]
+    appname = "Spotify"
+    history_ignore = yes
+
+[rule-strawberry]
+    appname = "Strawberry"
+    history_ignore = yes
+
+[rule-cider]
+    appname = "Cider"
+    history_ignore = yes

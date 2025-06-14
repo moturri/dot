@@ -1,0 +1,10 @@
+#!/bin/bash
+
+xset b off
+# xset s noblank
+# xset -dpms
+
+# xrandr --newmode "1800x1012_60.00" 150.50 1800 1912 2096 2392 1012 1015 1025 1050 -hsync +vsync
+# xrandr --addmode eDP-1 "1800x1012_60.00"
+# xrandr --output eDP-1 --mode "1800x1012_60.00"
+

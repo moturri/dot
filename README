@@ -1,0 +1,8 @@
+This repository contains highly efficient, modular, and suckless-inspired custom widgets for https://qtile.org. They are built with simplicity, maintainability, and performance in mind — no bloated abstractions, no unnecessary dependencies.
+
+📦 Dependencies
+- brightnessctl  https://github.com/Hummer12007/brightnessctl — for screen brightness control
+- acpi  https://sourceforge.net/projects/acpiclient/ — for battery and temperature readings
+- pipewire  https://pipewire.org — for low-latency audio/video
+- wireplumber  https://gitlab.freedesktop.org/pipewire/wireplumber — wpctl
+- stow   https://www.gnu.org/software/stow/ — for managing symlinks and maintaining clean dotfile deployment

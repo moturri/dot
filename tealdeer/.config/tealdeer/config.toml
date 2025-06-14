@@ -1,0 +1,15 @@
+platform = "linux"
+
+[updates]
+auto_update = true
+
+# Use a pager like 'less' if output is long
+# Set to false if you prefer to scroll with your terminal
+use_pager = false
+
+# Display the raw markdown (not recommended)
+display_raw = false
+
+# Set the theme for syntax highlighting
+# Available themes: base16, ansi, auto, etc.
+theme = "auto"
