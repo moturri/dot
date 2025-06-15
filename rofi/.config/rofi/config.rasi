@@ -1,0 +1,6 @@
+configuration {
+    modi: "window,drun,calc,emoji";
+    show-icons: true;
+}
+
+@theme "/home/m/.config/rofi/themes/dark.rasi"

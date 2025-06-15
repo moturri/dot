@@ -1,0 +1,174 @@
+format = """
+$directory\
+$git_branch\
+$git_status\
+"""
+
+palette = "dracula"
+
+# Dracula Palette (Essential Colors Only)
+[palettes.dracula]
+text = "#f8f8f2"
+dracula_bg = "#000000"
+dracula_fg = "#44475a"
+dracula_purple = "#bd93f9"
+
+# Directory Module
+[directory.substitutions]
+"Documents" = "󰈙"
+"Downloads" = ""
+"Music" = "󰝚"
+"Pictures" = ""
+"Developer" = "󰲋"
+".dot"  = "󰢻"
+".config"  = "󰢻"
+
+# Git Branch Styling
+[git_branch]
+symbol = ""
+style = "fg:dracula_purple"
+format = '[ $symbol $branch ]($style)'
+
+# Git Status Styling
+[git_status]
+ignore_submodules = true
+style = "fg:dracula_fg"
+format = '[$all_status$_ahead_behind]($style)'
+ahead = '⇡${count}'
+behind = '⇣${count}'
+
+# Disable all unused modules
+[aws]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[package]
+disabled = true
+
+[username]
+disabled = true
+
+[hostname]
+disabled = true
+
+[time]
+disabled = true
+
+[battery]
+disabled = true
+
+[cmd_duration]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[python]
+disabled = true
+
+[dotnet]
+disabled = true
+
+[perl]
+disabled = true
+
+[golang]
+disabled = true
+
+[nodejs]
+disabled = true
+
+[rust]
+disabled = true
+
+[terraform]
+disabled = true
+
+[azure]
+disabled = true
+
+[buf]
+disabled = true
+
+[c]
+disabled = true
+
+[cmake]
+disabled = true
+
+[conda]
+disabled = true
+
+[crystal]
+disabled = true
+
+[elixir]
+disabled = true
+
+[elm]
+disabled = true
+
+[erlang]
+disabled = true
+
+[fennel]
+disabled = true
+
+[gradle]
+disabled = true
+
+[hg_branch]
+disabled = true
+
+[java]
+disabled = true
+
+[julia]
+disabled = true
+
+[kotlin]
+disabled = true
+
+[memory_usage]
+disabled = true
+
+[meson]
+disabled = true
+
+[nim]
+disabled = true
+
+[nix_shell]
+disabled = true
+
+[ocaml]
+disabled = true
+
+[php]
+disabled = true
+
+[pijul_channel]
+disabled = true
+
+[pulumi]
+disabled = true
+
+[ruby]
+disabled = true
+
+[scala]
+disabled = true
+
+[spack]
+disabled = true
+
+[sudo]
+disabled = true
+
+[swift]
+disabled = true
+
+[zig]
+disabled = true

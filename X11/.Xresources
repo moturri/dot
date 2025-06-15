@@ -1,0 +1,82 @@
+! ────── Font Settings ──────
+XTerm*faceName: JetBrainsMonoNL Nerd Font
+XTerm*faceSize: 12
+XTerm*faceAntialias: true
+
+! ────── True Color Support ──────
+XTerm*termName: xterm-256color
+XTerm*allowColorOps: true
+XTerm*dynamicColors: true
+
+! ────── Dracula OLED Theme ──────
+XTerm*foreground:  #f8f8f2
+XTerm*background:  #000000
+XTerm*cursorColor: #ff79c6
+XTerm*pointerColor: #f8f8f2
+
+! Base Colors
+XTerm*color0:  #000000
+XTerm*color1:  #ff5555
+XTerm*color2:  #50fa7b
+XTerm*color3:  #f1fa8c
+XTerm*color4:  #bd93f9
+XTerm*color5:  #ff79c6
+XTerm*color6:  #8be9fd
+XTerm*color7:  #bfbfbf
+XTerm*color8:  #4d4d4d
+XTerm*color9:  #ff6e67
+XTerm*color10: #5af78e
+XTerm*color11: #f4f99d
+XTerm*color12: #caa9fa
+XTerm*color13: #ff92d0
+XTerm*color14: #9aedfe
+XTerm*color15: #ffffff
+
+! ────── Cursor Settings ──────
+XTerm*cursorBlink: true
+XTerm*cursorShape: block
+
+! ────── Scrollback & Mouse ──────
+XTerm*saveLines: 10000
+XTerm*scrollBar: true
+XTerm*rightScrollBar: true
+XTerm*scrollTtyOutput: false
+XTerm*scrollKey: true
+
+! ────── Input & Keyboard ──────
+XTerm*boldMode: true
+XTerm*allowBoldFonts: true
+XTerm*metaSendsEscape: true
+XTerm*modifyCursorKeys: 2
+
+! ────── Clipboard / Selection ──────
+XTerm*selectToClipboard: true
+XTerm*trimSelection: true
+XTerm*highlightSelection: true
+
+! ────── Bell Behavior ──────
+XTerm*visualBell: false
+XTerm*bellIsUrgent: false
+
+! ────── Window Aesthetics ──────
+XTerm*borderWidth: 0
+XTerm*internalBorder: 0
+XTerm*title: XTerm
+XTerm*iconName: terminal
+XTerm*allowTitleOps: true
+XTerm*allowWindowOps: true
+XTerm*disallowedWindowOps: 20,21,SetXprop
+
+! ────── Keyboard Shortcuts ──────
+XTerm*translations: #override \
+    Shift Ctrl <Key>C: copy-selection(CLIPBOARD) \n\
+    Shift Ctrl <Key>V: insert-selection(CLIPBOARD) \n\
+    Shift Ctrl <Key>plus: larger-vt-font() \n\
+    Shift Ctrl <Key>minus: smaller-vt-font() \n\
+    Shift Ctrl <Key>0: set-vt-font(d) \n\
+    Shift Ctrl <Key>N: spawn-new-terminal()
+
+! ────── Cursor Theme ──────
+
+Xcursor.theme: material_cursors
+Xcursor.size: 21
