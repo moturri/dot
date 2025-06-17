@@ -10,8 +10,8 @@ from wpctl import AudioWidget, MicWidget
 theme: Dict[str, Any] = {
     "accent": "#6f3aea",
     "alert": "#ff5555",
-    "fg": "#ffffff",
-    "bg": "#110000",
+    # "fg": "#ffffff",
+    # "bg": "#000000",
     "padding": 6,
 }
 
@@ -21,11 +21,11 @@ ICON_NO_METADATA = "󱆵 "
 ICON_PAUSED = "󱆵 "
 
 wdecor: Dict[str, Any] = {
-    "background": theme["bg"],
-    "foreground": theme["fg"],
+    # "background": theme["bg"],
+    # "foreground": theme["fg"],
     "decorations": [
         RectDecoration(
-            use_widget_background=True,
+            use_widget_background=False,
             radius=12,
             filled=True,
             group=True,
@@ -128,7 +128,6 @@ def systemWidgets(
                 },
                 **wdecor,
             ),
-            spacer(),
         ]
 
     if show_battery:
