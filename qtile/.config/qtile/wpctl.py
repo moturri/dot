@@ -1,16 +1,14 @@
 import os
 import re
 import subprocess
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Tuple
 
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
-_ENV = {"LC_ALL": "C.UTF-8", **os.environ}
 
-
-class AudioWidget(GenPollText):
-    """Suckless PipeWire audio widget using wpctl."""
+class AudioWidget(GenPollText):  # type: ignore
+    """Minimal PipeWire audio widget using wpctl."""
 
     _LEVELS: Tuple[Tuple[int, str, str], ...] = (
         (70, "salmon", "󰕾"),
@@ -18,6 +16,7 @@ class AudioWidget(GenPollText):
         (0, "palegreen", "󰕿"),
     )
     _MUTED: Tuple[str, str] = ("grey", "󰝟")
+
     _REGEX_VOLUME = re.compile(r"\d+(\.\d+)?")
     _REGEX_MUTED = re.compile(r"\[MUTED\]")
 
@@ -26,12 +25,13 @@ class AudioWidget(GenPollText):
         device: str = "@DEFAULT_AUDIO_SINK@",
         step: int = 5,
         max_volume: int = 100,
-        update_interval: float = 5.0,
+        update_interval: float = 30.0,
         **config: Any,
     ) -> None:
         self.device = device
         self.step = max(1, min(step, 25))
         self.max_volume = max(50, min(max_volume, 150))
+        self._env = {"LC_ALL": "C.UTF-8", **os.environ}
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _run(self, args: List[str]) -> str:
@@ -42,15 +42,15 @@ class AudioWidget(GenPollText):
                 text=True,
                 timeout=0.5,
                 check=True,
-                env=_ENV,
+                env=self._env,
             ).stdout.strip()
         except Exception:
             return ""
 
     def _get_state(self) -> Tuple[int, bool]:
         output = self._run(["wpctl", "get-volume", self.device])
-        vol_match = self._REGEX_VOLUME.search(output)
-        vol = round(float(vol_match.group()) * 100) if vol_match else 0
+        match = self._REGEX_VOLUME.search(output)
+        vol = round(float(match.group()) * 100) if match else 0
         muted = bool(self._REGEX_MUTED.search(output))
         return vol, muted
 
@@ -68,12 +68,12 @@ class AudioWidget(GenPollText):
         vol_str = f"{vol}%!" if vol > 100 else f"{vol}%"
         return f'<span foreground="{color}">{icon}  {vol_str}</span>'
 
-    def _set_volume(self, percent: int) -> None:
-        val = max(0, min(percent, self.max_volume))
+    def _set_volume(self, target: int) -> None:
+        val = max(0, min(target, self.max_volume))
         self._run(["wpctl", "set-volume", self.device, f"{val}%"])
         self.force_update()
 
-    # Exposed commands
+    # Exposed commands for keybindings
     @expose_command()
     def volume_up(self) -> None:
         vol, _ = self._get_state()
@@ -83,10 +83,6 @@ class AudioWidget(GenPollText):
     def volume_down(self) -> None:
         vol, _ = self._get_state()
         self._set_volume(vol - self.step)
-
-    @expose_command()
-    def set_volume(self, percent: int) -> None:
-        self._set_volume(percent)
 
     @expose_command()
     def toggle_mute(self) -> None:
@@ -109,7 +105,7 @@ class AudioWidget(GenPollText):
 
 
 class MicWidget(AudioWidget):
-    """Suckless PipeWire microphone widget using wpctl."""
+    """Minimal PipeWire microphone widget using wpctl."""
 
     _LEVELS = (
         (90, "red", "󰍬"),
