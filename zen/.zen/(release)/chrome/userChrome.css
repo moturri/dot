@@ -1,0 +1,12 @@
+/* Remove border from context menus */
+#contentAreaContextMenu,
+#main-popup {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove border from the application menu */
+#appmenu-popup {
+  border: none !important;
+  box-shadow: none !important;
+}
