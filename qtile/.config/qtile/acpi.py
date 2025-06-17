@@ -1,15 +1,19 @@
+import logging
 import os
 import subprocess
+from pathlib import Path
 from typing import Any, Optional, Tuple
 
 from qtile_extras.widget import GenPollText
+
+logger = logging.getLogger(__name__)
 
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
 EMPTY_ICON = "󰁺"
 FALLBACK_ICON = "󰂑"
 
-BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
+BATTERY_ICONS = (
     (95, "󰂂", "limegreen"),
     (80, "󰂁", "palegreen"),
     (60, "󰂀", "khaki"),
@@ -22,48 +26,92 @@ BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
 
 
 class AcpiWidget(GenPollText):  # type: ignore
-    """Minimal battery widget using the `acpi` command."""
-
-    _env: dict[str, str]
+    _ENV = {"LC_ALL": "C.UTF-8", **os.environ}
 
     def __init__(
         self,
         update_interval: float = 15.0,
         show_time: bool = False,
         critical_threshold: int = 10,
+        power_supply_path: str = "/sys/class/power_supply",
         **config: Any,
     ) -> None:
         self.show_time = show_time
         self.critical_threshold = max(5, min(25, critical_threshold))
-        self._env = {"LC_ALL": "C.UTF-8", **os.environ}
+        self.sys_path = Path(power_supply_path)
+        self._has_acpi_cmd: Optional[bool] = None
+        self._battery_path: Optional[Path] = None
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _poll(self) -> str:
         data = self._get_acpi_data()
         if not data:
             return f"{FALLBACK_ICON} N/A"
-
         pct, state, minutes = data
         icon, color = self._get_icon_color(pct, state)
         time_str = self._format_time(minutes) if self.show_time and minutes else ""
         return f'<span foreground="{color}">{icon} {pct}%{time_str}</span>'
 
+    def _has_acpi_command(self) -> bool:
+        if self._has_acpi_cmd is None:
+            try:
+                subprocess.run(
+                    ["acpi", "--version"],
+                    check=True,
+                    env=self._ENV,
+                    timeout=1.0,
+                    capture_output=True,
+                )
+                self._has_acpi_cmd = True
+            except Exception:
+                logger.debug("acpi command not available")
+                self._has_acpi_cmd = False
+        return self._has_acpi_cmd
+
     def _get_acpi_data(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        if self._has_acpi_command():
+            try:
+                output = subprocess.check_output(
+                    ["acpi", "-b"], env=self._ENV, timeout=1.5
+                ).decode()
+                parts = output.split(":")[1].split(",")
+                state = parts[0].strip().lower()
+                pct = int(parts[1].strip().rstrip("%"))
+                minutes = None
+                if len(parts) > 2 and ":" in parts[2]:
+                    h, m = map(int, parts[2].strip().split(":")[:2])
+                    minutes = h * 60 + m
+                return pct, state, minutes
+            except Exception as e:
+                logger.warning("acpi parsing failed: %s", e)
+        return self._read_sysfs()
+
+    def _read_sysfs(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        if not self._battery_path:
+            for entry in self.sys_path.iterdir():
+                if entry.name.startswith("BAT") and (entry / "status").exists():
+                    self._battery_path = entry
+                    break
+        bat = self._battery_path
+        if not bat:
+            logger.warning("No battery device found in sysfs.")
+            return None
         try:
-            output = subprocess.check_output(
-                ["acpi", "-b"], env=self._env, timeout=1.5
-            ).decode()
-            parts = output.split(":")[1].split(",")
-            state = parts[0].strip().lower()
-            pct = int(parts[1].strip().rstrip("%"))
-
-            minutes: Optional[int] = None
-            if len(parts) > 2 and ":" in parts[2]:
-                h, m = map(int, parts[2].strip().split(":")[:2])
-                minutes = h * 60 + m
-
+            state = (bat / "status").read_text().strip().lower()
+            pct = int((bat / "capacity").read_text().strip())
+            time_file = bat / (
+                "time_to_full_now" if state == "charging" else "time_to_empty_now"
+            )
+            seconds = None
+            if time_file.exists():
+                try:
+                    seconds = int(time_file.read_text().strip())
+                except ValueError:
+                    logger.debug("Could not parse battery time")
+            minutes = seconds // 60 if seconds else None
             return pct, state, minutes
-        except Exception:
+        except Exception as e:
+            logger.warning("Error reading sysfs battery info: %s", e)
             return None
 
     def _get_icon_color(self, pct: int, state: str) -> Tuple[str, str]:
@@ -71,12 +119,13 @@ class AcpiWidget(GenPollText):  # type: ignore
             return FULL_ICON, "lime"
         if pct <= self.critical_threshold:
             return EMPTY_ICON, "red" if pct <= 5 else "orange"
-
         for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
-                icon = f"{CHARGING_ICON} {icon}" if state == "charging" else icon
-                return icon, color
-
+                return (
+                    (f"{CHARGING_ICON} {icon}", color)
+                    if state == "charging"
+                    else (icon, color)
+                )
         return FALLBACK_ICON, "#666666"
 
     def _format_time(self, minutes: int) -> str:
