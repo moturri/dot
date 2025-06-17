@@ -108,7 +108,7 @@ def scratches() -> ScratchPad:
                 "pcmanfm-qt",
                 width=0.7,
                 height=0.7,
-                x=0.2,
+                x=0.15,
                 y=0.1,
                 opacity=1,
             ),
