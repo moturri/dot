@@ -98,6 +98,7 @@ def systemWidgets(
         AudioWidget(
             name="audio",
             mouse_callbacks={
+                "Button2": lazy.widget["audio"].refresh(),
                 "Button3": lazy.widget["audio"].toggle_mute(),
                 "Button4": lazy.widget["audio"].volume_up(),
                 "Button5": lazy.widget["audio"].volume_down(),
@@ -107,6 +108,7 @@ def systemWidgets(
         MicWidget(
             name="mic",
             mouse_callbacks={
+                "Button2": lazy.widget["mic"].refresh(),
                 "Button3": lazy.widget["mic"].toggle_mute(),
                 "Button4": lazy.widget["mic"].volume_up(),
                 "Button5": lazy.widget["mic"].volume_down(),
