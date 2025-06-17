@@ -22,7 +22,7 @@ class BrightctlWidget(GenPollText):  # type: ignore
         self,
         step: int = 5,
         min_brightness: int = 1,
-        update_interval: float = 30.0,
+        update_interval: float = 60.0,
         **config: Any,
     ) -> None:
         if not shutil.which("brightnessctl"):

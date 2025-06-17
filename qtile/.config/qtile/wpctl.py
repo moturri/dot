@@ -25,7 +25,7 @@ class AudioWidget(GenPollText):  # type: ignore
         device: str = "@DEFAULT_AUDIO_SINK@",
         step: int = 5,
         max_volume: int = 100,
-        update_interval: float = 30.0,
+        update_interval: float = 60.0,
         **config: Any,
     ) -> None:
         self.device = device
