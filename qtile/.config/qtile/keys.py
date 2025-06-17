@@ -27,9 +27,11 @@ keys = [
     # Window resizing
     Key([mod], "i", lazy.layout.grow()),
     Key([mod], "m", lazy.layout.shrink()),
-    Key([mod], "n", lazy.layout.normalize()),
+    Key([mod], "n", lazy.layout.reset()),
+    Key([mod, "shift"], "n", lazy.layout.normalize()),
     # Layout control
     Key([mod], "o", lazy.layout.maximize()),
+    Key([mod, "shift"], "s", lazy.layout.toggle_auto_maximize()),
     Key([mod, "shift"], "space", lazy.layout.flip()),
     Key([mod, "shift"], "Return", lazy.layout.toggle_split()),
     Key([mod], "Tab", lazy.next_layout()),
