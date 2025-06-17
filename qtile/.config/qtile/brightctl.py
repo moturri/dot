@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -5,6 +6,8 @@ from typing import Any, List, Tuple
 
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
+
+logger = logging.getLogger(__name__)
 
 BRIGHTNESS_ICONS = (
     (80, "gold", "󰃠"),
@@ -35,7 +38,7 @@ class BrightctlWidget(GenPollText):  # type: ignore
 
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
-    def _run(self, args: List[str]) -> str:
+    def _safe_run(self, args: List[str]) -> str:
         try:
             return subprocess.run(
                 args,
@@ -45,26 +48,29 @@ class BrightctlWidget(GenPollText):  # type: ignore
                 timeout=0.5,
                 check=True,
             ).stdout.strip()
-        except Exception:
+        except Exception as e:
+            logger.debug("Command failed: %s", e)
             return ""
 
     def _get_max_brightness(self) -> int:
-        val = self._run(["brightnessctl", "max"])
+        val = self._safe_run(["brightnessctl", "max"])
         try:
             return max(1, int(val))
         except ValueError:
+            logger.warning("Could not read max brightness. Defaulting to 100.")
             return 100
 
     def _get_brightness(self) -> int:
-        val = self._run(["brightnessctl", "get"])
+        val = self._safe_run(["brightnessctl", "get"])
         try:
             return (int(val) * 100) // self._max_brightness
         except (ValueError, ZeroDivisionError):
+            logger.warning("Could not read brightness.")
             return 0
 
     def _set_brightness(self, percent: int) -> None:
         percent = max(self.min_brightness, min(100, percent))
-        self._run(["brightnessctl", "set", f"{percent}%"])
+        self._safe_run(["brightnessctl", "set", f"{percent}%"])
         self.force_update()
 
     def _get_level(self, brightness: int) -> Tuple[str, str]:
