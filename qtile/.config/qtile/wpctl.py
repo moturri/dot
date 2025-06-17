@@ -14,8 +14,9 @@ class AudioWidget(GenPollText):  # type: ignore
     """Minimal PipeWire audio widget using wpctl."""
 
     _LEVELS: Tuple[Tuple[int, str, str], ...] = (
-        (70, "salmon", "󰕾"),
-        (40, "mediumpurple", "󰖀"),
+        (75, "salmon", "󰕾"),
+        (50, "mediumpurple", "󰖀"),
+        (25, "lightblue", "󰕿"),
         (0, "palegreen", "󰕿"),
     )
     _MUTED: Tuple[str, str] = ("grey", "󰝟")
@@ -61,7 +62,7 @@ class AudioWidget(GenPollText):  # type: ignore
     def _icon_color(self, vol: int, muted: bool) -> Tuple[str, str]:
         if muted:
             return self._MUTED
-        for threshold, color, icon in reversed(self._LEVELS):
+        for threshold, color, icon in self._LEVELS:
             if vol >= threshold:
                 return color, icon
         return self._LEVELS[-1][1], self._LEVELS[-1][2]
@@ -121,7 +122,9 @@ class MicWidget(AudioWidget):
     """Minimal PipeWire microphone widget using wpctl."""
 
     _LEVELS: Tuple[Tuple[int, str, str], ...] = (
-        (90, "red", "󰍬"),
+        (75, "salmon", "󰍬"),
+        (50, "mediumpurple", "󰍬"),
+        (25, "lightblue", "󰍬"),
         (0, "palegreen", "󰍬"),
     )
     _MUTED: Tuple[str, str] = ("grey", "󰍭")
