@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import subprocess
@@ -5,6 +6,8 @@ from typing import Any, List, Tuple
 
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
+
+logger = logging.getLogger(__name__)
 
 
 class AudioWidget(GenPollText):  # type: ignore
@@ -44,7 +47,8 @@ class AudioWidget(GenPollText):  # type: ignore
                 check=True,
                 env=self._env,
             ).stdout.strip()
-        except Exception:
+        except subprocess.SubprocessError as e:
+            logger.warning("wpctl command failed: %s", e)
             return ""
 
     def _get_state(self) -> Tuple[int, bool]:
@@ -57,13 +61,17 @@ class AudioWidget(GenPollText):  # type: ignore
     def _icon_color(self, vol: int, muted: bool) -> Tuple[str, str]:
         if muted:
             return self._MUTED
-        for threshold, color, icon in self._LEVELS:
+        for threshold, color, icon in reversed(self._LEVELS):
             if vol >= threshold:
                 return color, icon
         return self._LEVELS[-1][1], self._LEVELS[-1][2]
 
     def _poll(self) -> str:
-        vol, muted = self._get_state()
+        try:
+            vol, muted = self._get_state()
+        except Exception as e:
+            logger.error("Audio state error: %s", e)
+            return '<span foreground="grey">󰖁  N/A</span>'
         color, icon = self._icon_color(vol, muted)
         vol_str = f"{vol}%!" if vol > 100 else f"{vol}%"
         return f'<span foreground="{color}">{icon}  {vol_str}</span>'
@@ -73,7 +81,6 @@ class AudioWidget(GenPollText):  # type: ignore
         self._run(["wpctl", "set-volume", self.device, f"{val}%"])
         self.force_update()
 
-    # Exposed commands for keybindings
     @expose_command()
     def volume_up(self) -> None:
         vol, _ = self._get_state()
@@ -103,15 +110,21 @@ class AudioWidget(GenPollText):  # type: ignore
     def refresh(self) -> None:
         self.force_update()
 
+    @expose_command()
+    def refresh_device(self) -> None:
+        """Force-refresh the device state in case default device changes."""
+        if "@DEFAULT_AUDIO" in self.device:
+            self.force_update()
+
 
 class MicWidget(AudioWidget):
     """Minimal PipeWire microphone widget using wpctl."""
 
-    _LEVELS = (
+    _LEVELS: Tuple[Tuple[int, str, str], ...] = (
         (90, "red", "󰍬"),
         (0, "palegreen", "󰍬"),
     )
-    _MUTED = ("grey", "󰍭")
+    _MUTED: Tuple[str, str] = ("grey", "󰍭")
 
     def __init__(self, **config: Any) -> None:
         config.setdefault("device", "@DEFAULT_AUDIO_SOURCE@")
