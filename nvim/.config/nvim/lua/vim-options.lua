@@ -1,13 +1,12 @@
 local opt = vim.opt
 local g = vim.g
 
--- Leader key
+-- Leader Key
 g.mapleader = " "
 
 -- General
 g.have_nerd_font = true
-vim.scriptencoding = "utf-16"
-
+vim.scriptencoding = "utf-8"
 opt.clipboard = "unnamedplus"
 opt.background = "dark"
 opt.termguicolors = true
@@ -19,11 +18,11 @@ opt.signcolumn = "yes"
 opt.cursorline = true
 opt.updatetime = 200
 
--- Persistent undo
-opt.undofile = true
+-- Persistent Undo (fixed E731)
 local undodir = vim.fn.stdpath("cache") .. "/undo"
 vim.fn.mkdir(undodir, "p")
 opt.undodir = undodir
+opt.undofile = true
 
 -- Indentation
 opt.tabstop = 2
@@ -33,12 +32,12 @@ opt.expandtab = true
 opt.smartindent = true
 opt.autoindent = true
 
--- Folding (Treesitter-based)
+-- Folding (Treesitter)
 opt.foldmethod = "expr"
-opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+opt.foldexpr = "nvim_treesitter#foldexpr()" -- correct expression
 opt.foldenable = true
-opt.foldlevelstart = 4
 opt.foldlevel = 99
+opt.foldlevelstart = 4
 opt.foldcolumn = "1"
 
 -- Search
@@ -61,7 +60,7 @@ opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 -- Completion
 opt.completeopt = { "menuone", "noselect" }
 
--- Wildmenu (command line completion)
+-- Command-line completion
 opt.wildmenu = true
 opt.wildmode = { "longest:full", "full" }
 
@@ -72,12 +71,12 @@ opt.selection = "inclusive"
 opt.modifiable = true
 
 -- Key mappings
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
-vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlighting" })
+vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostics quickfix list" })
+vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlights" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 
--- Restore cursor position on reopen
+-- Restore last cursor position
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
     local mark = vim.api.nvim_buf_get_mark(0, '"')
