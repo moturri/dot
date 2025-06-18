@@ -128,7 +128,7 @@ class AcpiWidget(GenPollText):  # type: ignore
                     if state == "charging"
                     else (icon, color)
                 )
-        return FALLBACK_ICON, "#666666"
+        return FALLBACK_ICON, "darkgrey"
 
     def _format_time(self, minutes: int) -> str:
         h, m = divmod(minutes, 60)

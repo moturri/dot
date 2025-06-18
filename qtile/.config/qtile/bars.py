@@ -49,6 +49,13 @@ def clockWidget() -> List[Any]:
     ]
 
 
+def systemTray() -> List[Any]:
+    return [
+        widget.Systray(padding=10),
+        # widget.StatusNotifier(padding=10), # Wayland
+    ]
+
+
 def groupWidgets() -> List[Any]:
     return [
         widget.GroupBox(
@@ -73,13 +80,6 @@ def groupWidgets() -> List[Any]:
             urgent_border=theme["alert"],
             padding=5,
         ),
-    ]
-
-
-def systemTray() -> List[Any]:
-    return [
-        widget.Systray(padding=10),
-        # widget.StatusNotifier(padding=10), # Wayland
     ]
 
 
