@@ -22,6 +22,17 @@ user_pref("gfx.webrender.all", true);
 user_pref("gfx.webrender.compositor", true);
 user_pref("dom.webgpu.enabled", true);
 user_pref("dom.webgpu.wgpu-backend", "vulkan");
+user_pref("gfx.webrender.software", false); // Let GPU handle fully if stable
+user_pref("gfx.webrender.precache-shaders", true);
+
+// Disable prefetching (privacy and bandwidth)
+user_pref("network.prefetch-next", false);
+user_pref("network.dns.disablePrefetch", true);
+user_pref("network.dns.disablePrefetchFromHTTPS", true);
+
+// Reduce memory footprint
+user_pref("browser.sessionstore.max_tabs_undo", 5);
+user_pref("browser.sessionstore.interval", 30000);
 
 // SVG and Web Standards
 user_pref("svg.context-properties.content.enabled", true);
