@@ -39,10 +39,18 @@ def spacer(length: int = 10) -> widget.Spacer:
     return widget.Spacer(length=length)
 
 
+def clockWidget() -> List[Any]:
+    return [
+        widget.Clock(
+            format="   %e %b    %H:%M  ",
+            **wdecor,
+        ),
+        spacer(),
+    ]
+
+
 def groupWidgets() -> List[Any]:
     return [
-        widget.Clock(format="   %e %b    %H:%M  ", **wdecor),
-        spacer(),
         widget.GroupBox(
             hide_unused=True,
             highlight_method="text",
@@ -68,14 +76,18 @@ def groupWidgets() -> List[Any]:
     ]
 
 
+def systemTray() -> List[Any]:
+    return [
+        widget.Systray(padding=10),
+        # widget.StatusNotifier(padding=10), # Wayland
+    ]
+
+
 def systemWidgets(
     show_brightness: bool = True,
     show_battery: bool = True,
 ) -> List[Any]:
     widgets: List[Any] = [
-        widget.Systray(padding=10),
-        # widget.StatusNotifier(padding=10),
-        spacer(),
         widget.TextBox(
             text=f" {ICON_NOTIFICATION} ",
             mouse_callbacks={
@@ -128,6 +140,7 @@ def systemWidgets(
                 },
                 **wdecor,
             ),
+            spacer(),
         ]
 
     if show_battery:
@@ -137,8 +150,8 @@ def systemWidgets(
 
 
 def main() -> List[Any]:
-    return groupWidgets() + systemWidgets()
+    return clockWidget() + groupWidgets() + systemWidgets() + systemTray()
 
 
 def misc() -> List[Any]:
-    return groupWidgets()
+    return clockWidget() + groupWidgets()
