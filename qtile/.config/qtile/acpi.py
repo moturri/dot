@@ -26,6 +26,8 @@ BATTERY_ICONS = (
 
 
 class AcpiWidget(GenPollText):  # type: ignore
+    """Minimal ACPI battery widget using acpi or sysfs fallback."""
+
     _ENV = {"LC_ALL": "C.UTF-8", **os.environ}
 
     def __init__(
@@ -48,7 +50,7 @@ class AcpiWidget(GenPollText):  # type: ignore
         if not data:
             return f"{FALLBACK_ICON} N/A"
         pct, state, minutes = data
-        icon, color = self._get_icon_color(pct, state)
+        icon, color = self._icon_color(pct, state)
         time_str = self._format_time(minutes) if self.show_time and minutes else ""
         return f'<span foreground="{color}">{icon} {pct}%{time_str}</span>'
 
@@ -57,10 +59,10 @@ class AcpiWidget(GenPollText):  # type: ignore
             try:
                 subprocess.run(
                     ["acpi", "--version"],
-                    check=True,
                     env=self._ENV,
                     timeout=1.0,
                     capture_output=True,
+                    check=True,
                 )
                 self._has_acpi_cmd = True
             except Exception:
@@ -92,29 +94,29 @@ class AcpiWidget(GenPollText):  # type: ignore
                 if entry.name.startswith("BAT") and (entry / "status").exists():
                     self._battery_path = entry
                     break
-        bat = self._battery_path
-        if not bat:
+        if not self._battery_path:
             logger.warning("No battery device found in sysfs.")
             return None
+        bat = self._battery_path
         try:
             state = (bat / "status").read_text().strip().lower()
             pct = int((bat / "capacity").read_text().strip())
             time_file = bat / (
                 "time_to_full_now" if state == "charging" else "time_to_empty_now"
             )
-            seconds = None
+            minutes = None
             if time_file.exists():
                 try:
                     seconds = int(time_file.read_text().strip())
+                    minutes = seconds // 60
                 except ValueError:
                     logger.debug("Could not parse battery time")
-            minutes = seconds // 60 if seconds else None
             return pct, state, minutes
         except Exception as e:
             logger.warning("Error reading sysfs battery info: %s", e)
             return None
 
-    def _get_icon_color(self, pct: int, state: str) -> Tuple[str, str]:
+    def _icon_color(self, pct: int, state: str) -> Tuple[str, str]:
         if state == "full":
             return FULL_ICON, "lime"
         if pct <= self.critical_threshold:
