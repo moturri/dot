@@ -22,7 +22,7 @@ return {
         -- Diagnostics
         diagnostics.codespell, -- Spell checking
       },
-      -- root_dir = require("null-ls.utils").root_pattern(".git", "pyproject.toml"),
+      root_dir = require("null-ls.utils").root_pattern(".git", "pyproject.toml"),
     })
 
     -- Format current buffer via none-ls
