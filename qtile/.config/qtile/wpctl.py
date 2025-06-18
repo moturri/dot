@@ -14,10 +14,10 @@ class AudioWidget(GenPollText):  # type: ignore
     """Minimal PipeWire audio widget using wpctl."""
 
     _LEVELS: Tuple[Tuple[int, str, str], ...] = (
-        (75, "salmon", "󰕾"),
-        (50, "mediumpurple", "󰖀"),
-        (25, "lightblue", "󰕿"),
         (0, "palegreen", "󰕿"),
+        (25, "lightblue", "󰕿"),
+        (50, "mediumpurple", "󰖀"),
+        (75, "salmon", "󰕾"),
     )
     _MUTED: Tuple[str, str] = ("grey", "󰝟")
 
@@ -29,12 +29,14 @@ class AudioWidget(GenPollText):  # type: ignore
         device: str = "@DEFAULT_AUDIO_SINK@",
         step: int = 5,
         max_volume: int = 100,
-        update_interval: float = 60.0,
+        update_interval: float = 9999.0,
+        show_icon: bool = True,
         **config: Any,
     ) -> None:
         self.device = device
         self.step = max(1, min(step, 25))
         self.max_volume = max(50, min(max_volume, 150))
+        self.show_icon = show_icon
         self._env = {"LC_ALL": "C.UTF-8", **os.environ}
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
@@ -55,17 +57,21 @@ class AudioWidget(GenPollText):  # type: ignore
     def _get_state(self) -> Tuple[int, bool]:
         output = self._run(["wpctl", "get-volume", self.device])
         match = self._REGEX_VOLUME.search(output)
-        vol = round(float(match.group()) * 100) if match else 0
+        try:
+            vol = round(float(match.group()) * 100) if match else 0
+        except (ValueError, AttributeError):
+            logger.error("Failed to parse volume from: %s", output)
+            vol = 0
         muted = bool(self._REGEX_MUTED.search(output))
         return vol, muted
 
     def _icon_color(self, vol: int, muted: bool) -> Tuple[str, str]:
         if muted:
             return self._MUTED
-        for threshold, color, icon in self._LEVELS:
+        for threshold, color, icon in reversed(self._LEVELS):
             if vol >= threshold:
                 return color, icon
-        return self._LEVELS[-1][1], self._LEVELS[-1][2]
+        return self._LEVELS[0][1], self._LEVELS[0][2]
 
     def _poll(self) -> str:
         try:
@@ -74,8 +80,9 @@ class AudioWidget(GenPollText):  # type: ignore
             logger.error("Audio state error: %s", e)
             return '<span foreground="grey">󰖁  N/A</span>'
         color, icon = self._icon_color(vol, muted)
-        vol_str = f"{vol}%!" if vol > 100 else f"{vol}%"
-        return f'<span foreground="{color}">{icon}  {vol_str}</span>'
+        vol_str = f"{vol}%" + ("!" if vol > 100 else "")
+        icon_part = f"{icon}  " if self.show_icon else ""
+        return f'<span foreground="{color}">{icon_part}{vol_str}</span>'
 
     def _set_volume(self, target: int) -> None:
         val = max(0, min(target, self.max_volume))
@@ -113,7 +120,6 @@ class AudioWidget(GenPollText):  # type: ignore
 
     @expose_command()
     def refresh_device(self) -> None:
-        """Force-refresh the device state in case default device changes."""
         if "@DEFAULT_AUDIO" in self.device:
             self.force_update()
 
@@ -122,10 +128,10 @@ class MicWidget(AudioWidget):
     """Minimal PipeWire microphone widget using wpctl."""
 
     _LEVELS: Tuple[Tuple[int, str, str], ...] = (
-        (75, "salmon", "󰍬"),
-        (50, "mediumpurple", "󰍬"),
-        (25, "lightblue", "󰍬"),
         (0, "palegreen", "󰍬"),
+        (25, "lightblue", "󰍬"),
+        (50, "mediumpurple", "󰍬"),
+        (75, "salmon", "󰍬"),
     )
     _MUTED: Tuple[str, str] = ("grey", "󰍭")
 
