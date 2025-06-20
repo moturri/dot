@@ -153,7 +153,6 @@ tldrr() {
   local cmd=$(tldr --list |
     fzf --height=80% \
         --reverse \
-        --border \
         --preview='tldr --color always {}' \
         --preview-window=right:80%:wrap)
 
@@ -179,7 +178,6 @@ yayfz() {
     yay -Slq 2>/dev/null |
       fzf --height=80% \
           --reverse \
-          --exact \
           --preview='yay -Si {} 2>/dev/null || yay -Qi {} 2>/dev/null' \
           --preview-window=right:80%:wrap
   )
@@ -194,7 +192,6 @@ yayfz() {
 
 yayfz-widget() {
   zle -I
-  BUFFER=""
   yayfz
   zle reset-prompt
 }
