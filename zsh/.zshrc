@@ -171,3 +171,32 @@ tldrr-widget() {
 }
 zle -N tldrr-widget
 bindkey '^F' tldrr-widget
+
+
+yayfz() {
+  local selected_pkg
+  selected_pkg=$(
+    yay -Slq 2>/dev/null |
+      fzf --height=80% \
+          --reverse \
+          --exact \
+          --preview='yay -Si {} 2>/dev/null || yay -Qi {} 2>/dev/null' \
+          --preview-window=right:80%:wrap
+  )
+
+  if [[ -n $selected_pkg ]]; then
+    yay -Si "$selected_pkg" 2>/dev/null || yay -Qi "$selected_pkg" 2>/dev/null
+    echo "\n[Press Enter to return to prompt]"
+    read -r
+  fi
+}
+
+
+yayfz-widget() {
+  zle -I
+  BUFFER=""
+  yayfz
+  zle reset-prompt
+}
+zle -N yayfz-widget
+bindkey '^Y' yayfz-widget
