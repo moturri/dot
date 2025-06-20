@@ -70,7 +70,22 @@ def scratches() -> ScratchPad:
                 opacity=0.9,
             ),
             DropDown(
-                "impala", "kitty -e impala", width=0.6, height=0.7, x=0.2, y=0.1, opacity=1
+                "bluetui",
+                "kitty -e bluetui",
+                width=0.4,
+                height=0.5,
+                x=0.3,
+                y=0.1,
+                opacity=1,
+            ),
+            DropDown(
+                "impala",
+                "kitty -e impala",
+                width=0.6,
+                height=0.7,
+                x=0.2,
+                y=0.1,
+                opacity=1,
             ),
             DropDown(
                 "kitty",
@@ -120,6 +135,7 @@ groups.append(scratches())
 
 scratch_keys = {
     "arandr": "a",
+    "bluetui": "b",
     "impala": "i",
     "kitty": "x",
     "localsend": "l",

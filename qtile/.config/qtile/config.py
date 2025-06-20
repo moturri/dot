@@ -52,19 +52,19 @@ layouts = [
 ]
 
 transparent = "#00000000"
-wallpaper_path = "/home/m/.config/qtile/wallpaper/arc.jpg"
-if not os.path.exists(wallpaper_path):
-    wallpaper_path = "/usr/share/backgrounds/default.jpg"
+# wallpaper_path = "/home/m/.config/qtile/wallpaper/arc.jpg"
+# if not os.path.exists(wallpaper_path):
+#     wallpaper_path = "/usr/share/backgrounds/default.jpg"
 
 screens = [
     Screen(
-        wallpaper=wallpaper_path,
-        wallpaper_mode="stretch",
+        # wallpaper=wallpaper_path,
+        # wallpaper_mode="stretch",
         top=bar.Bar(main(), 28, background=transparent, margin=[0, 8, 0, 8]),
     ),
     Screen(
-        wallpaper=wallpaper_path,
-        wallpaper_mode="stretch",
+        # wallpaper=wallpaper_path,
+        # wallpaper_mode="stretch",
         top=bar.Bar(misc(), 28, background=transparent, margin=[0, 8, 0, 8]),
     ),
 ]
