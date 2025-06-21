@@ -15,10 +15,6 @@ theme: Dict[str, Any] = {
     "padding": 6,
 }
 
-ICON_NOTIFICATION = "󰂚"
-ICON_PLAYER = "󰀰 "
-ICON_NO_METADATA = "󱆵 "
-ICON_PAUSED = "󱆵 "
 
 wdecor: Dict[str, Any] = {
     "background": theme["bg"],
@@ -89,7 +85,7 @@ def systemWidgets(
 ) -> List[Any]:
     widgets: List[Any] = [
         widget.TextBox(
-            text=f" {ICON_NOTIFICATION} ",
+            text=" 󰂚 ",
             mouse_callbacks={
                 "Button1": lazy.spawn("dunstctl history-pop"),
                 "Button3": lazy.spawn("dunstctl history-clear"),
@@ -98,9 +94,9 @@ def systemWidgets(
         ),
         widget.Mpris2(
             name="mpris",
-            format=ICON_PLAYER,
-            no_metadata_text=ICON_NO_METADATA,
-            paused_text=ICON_PAUSED,
+            format="󰀰 ",
+            no_metadata_text="󱆵 ",
+            paused_text="󱆵 ",
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
