@@ -51,7 +51,7 @@ layouts = [
     layout.Max(**ldecor),  # type: ignore
 ]
 
-transparent = "#00000000"
+# transparent = "#00000000"
 # wallpaper_path = "/home/m/.config/qtile/wallpaper/arc.jpg"
 # if not os.path.exists(wallpaper_path):
 #     wallpaper_path = "/usr/share/backgrounds/default.jpg"
@@ -60,12 +60,22 @@ screens = [
     Screen(
         # wallpaper=wallpaper_path,
         # wallpaper_mode="stretch",
-        top=bar.Bar(main(), 28, background=transparent, margin=[0, 8, 0, 8]),
+        top=bar.Bar(
+            main(),
+            28,
+            # background=transparent,
+            margin=[0, 8, 0, 8],
+        ),
     ),
     Screen(
         # wallpaper=wallpaper_path,
         # wallpaper_mode="stretch",
-        top=bar.Bar(misc(), 28, background=transparent, margin=[0, 8, 0, 8]),
+        top=bar.Bar(
+            misc(),
+            28,
+            # background=transparent,
+            margin=[0, 8, 0, 8],
+        ),
     ),
 ]
 
@@ -84,6 +94,8 @@ floating_layout = layout.Floating(
         Match(wm_class="iwgtk"),
         Match(wm_class="crx_nngceckbapebfimnlniiiahkandclblb"),
         Match(wm_class="remote-viewer"),
+        Match(wm_class="nm-connection-editor"),
+        Match(wm_class="wihotspot"),
     ],
 )
 

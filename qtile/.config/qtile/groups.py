@@ -6,7 +6,7 @@ group_definitions = [
     ("1", "󰣇", ["discord"]),
     ("2", "󰞷", ["alacritty", "org.wezfurlong.wezterm", "code-oss"]),
     ("3", "󰆋", ["firefox", "zen"]),
-    ("4", "󰊠", ["octopi", "qbittorrent"]),
+    ("4", "󰊠", ["octopi", "qbittorrent", "wireshark"]),
     (
         "5",
         "󱚣",
@@ -78,15 +78,15 @@ def scratches() -> ScratchPad:
                 y=0.1,
                 opacity=1,
             ),
-            DropDown(
-                "impala",
-                "kitty -e impala",
-                width=0.6,
-                height=0.7,
-                x=0.2,
-                y=0.1,
-                opacity=1,
-            ),
+            # DropDown(
+            #     "impala",
+            #     "kitty -e impala",
+            #     width=0.6,
+            #     height=0.7,
+            #     x=0.2,
+            #     y=0.1,
+            #     opacity=1,
+            # ),
             DropDown(
                 "kitty",
                 "kitty",
@@ -136,7 +136,7 @@ groups.append(scratches())
 scratch_keys = {
     "arandr": "a",
     "bluetui": "b",
-    "impala": "i",
+    # "impala": "i",
     "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
