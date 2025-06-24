@@ -7,18 +7,18 @@ g.mapleader = " "
 -- General
 g.have_nerd_font = true
 vim.scriptencoding = "utf-8"
-opt.clipboard = "unnamedplus"
 opt.background = "dark"
 opt.termguicolors = true
 opt.mouse = "a"
+opt.clipboard = "unnamedplus"
 opt.timeoutlen = 300
+opt.updatetime = 200
 opt.scrolloff = 8
 opt.showmode = false
 opt.signcolumn = "yes"
 opt.cursorline = true
-opt.updatetime = 200
 
--- Persistent Undo (fixed E731)
+-- Persistent Undo
 local undodir = vim.fn.stdpath("cache") .. "/undo"
 vim.fn.mkdir(undodir, "p")
 opt.undodir = undodir
@@ -32,9 +32,9 @@ opt.expandtab = true
 opt.smartindent = true
 opt.autoindent = true
 
--- Folding (Treesitter)
+-- Folding with Treesitter
 opt.foldmethod = "expr"
-opt.foldexpr = "nvim_treesitter#foldexpr()" -- correct expression
+opt.foldexpr = "nvim_treesitter#foldexpr()"
 opt.foldenable = true
 opt.foldlevel = 99
 opt.foldlevelstart = 4
@@ -47,7 +47,7 @@ opt.ignorecase = true
 opt.smartcase = true
 opt.inccommand = "nosplit"
 
--- UI Display
+-- UI
 opt.number = true
 opt.relativenumber = true
 opt.colorcolumn = "100"
@@ -60,21 +60,21 @@ opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 -- Completion
 opt.completeopt = { "menuone", "noselect" }
 
--- Command-line completion
+-- Wildmenu
 opt.wildmenu = true
 opt.wildmode = { "longest:full", "full" }
 
--- Window/Buffer behavior
+-- Windows
 opt.splitright = true
 opt.splitbelow = true
 opt.selection = "inclusive"
 opt.modifiable = true
 
--- Key mappings
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostics quickfix list" })
+-- Keymaps
+vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostics list" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlights" })
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
 
 -- Restore last cursor position
 vim.api.nvim_create_autocmd("BufReadPost", {

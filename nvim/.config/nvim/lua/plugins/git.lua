@@ -1,11 +1,11 @@
 return {
-	-- Git CLI Wrapper: Fugitive
+	-- Git CLI wrapper
 	{
 		"tpope/vim-fugitive",
-		cmd = { "Git", "G" }, -- Lazy-load on Git command usage
+		cmd = { "Git", "G" }, -- Lazy load
 	},
 
-	-- Git Signs: visual indicators + hunk actions
+	-- Git signs & inline actions
 	{
 		"lewis6991/gitsigns.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -38,7 +38,7 @@ return {
 
 			on_attach = function(bufnr)
 				local gs = package.loaded.gitsigns
-				local function map(mode, lhs, rhs, desc)
+				local map = function(mode, lhs, rhs, desc)
 					vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
 				end
 
@@ -57,28 +57,30 @@ return {
 					end
 					vim.schedule(gs.prev_hunk)
 					return "<Ignore>"
-				end, "Previous hunk")
+				end, "Prev hunk")
 
-				-- Git actions
+				-- Hunk actions
 				map("n", "<leader>gp", gs.preview_hunk, "Preview hunk")
 				map("n", "<leader>ga", gs.stage_hunk, "Stage hunk")
-				map("n", "<leader>gR", gs.reset_hunk, "Reset hunk")
-				map("n", "<leader>gs", gs.undo_stage_hunk, "Undo stage")
-				map("n", "<leader>gq", gs.diffthis, "Diff buffer")
-				map("n", "<leader>gB", gs.toggle_deleted, "Toggle deleted")
-				map("n", "<leader>gt", gs.toggle_current_line_blame, "Toggle blame")
+				map("n", "<leader>gr", gs.reset_hunk, "Reset hunk")
+				map("n", "<leader>gu", gs.undo_stage_hunk, "Undo stage")
+				map("n", "<leader>gd", gs.diffthis, "Diff buffer")
+				map("n", "<leader>gD", gs.toggle_deleted, "Toggle deleted")
+				map("n", "<leader>gb", gs.toggle_current_line_blame, "Toggle blame")
 
-				-- Visual mode hunk actions
+				-- Visual mode hunk
 				map("v", "<leader>ga", function()
 					gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
 				end, "Stage selection")
 
-				map("v", "<leader>gR", function()
+				map("v", "<leader>gr", function()
 					gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
 				end, "Reset selection")
 
-				-- Git log via Fugitive
-				map("n", "<leader>gl", "<cmd>Git log<CR>", "Git log (Fugitive)")
+				-- Git log (via Fugitive)
+				map("n", "<leader>gl", function()
+					vim.cmd("Git log")
+				end, "Git log")
 			end,
 		},
 	},

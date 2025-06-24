@@ -11,24 +11,35 @@ return {
 		local formatting = null_ls.builtins.formatting
 		local diagnostics = null_ls.builtins.diagnostics
 
+		local root_dir
+		local ok_utils, utils = pcall(require, "null-ls.utils")
+		if ok_utils then
+			root_dir = utils.root_pattern(".git", "pyproject.toml")
+		end
+
 		null_ls.setup({
+			root_dir = root_dir,
 			sources = {
 				-- Formatters
-				formatting.stylua, -- Lua
-				formatting.isort, -- Python
-				formatting.prettier, -- JS, TS, HTML, CSS, JSON, etc.
-				formatting.clang_format, -- C/C++/Java
-				formatting.shfmt, -- Shell scripts
+				formatting.stylua,
+				formatting.isort,
+				formatting.prettier,
+				formatting.clang_format,
+				formatting.shfmt,
 
 				-- Diagnostics
-				diagnostics.codespell, -- Spell checking
+				diagnostics.codespell,
 			},
-			root_dir = require("null-ls.utils").root_pattern(".git", "pyproject.toml"),
 		})
 
-		-- Format current buffer via none-ls
+		-- Format buffer using LSP (none-ls or others)
 		vim.keymap.set("n", "<leader>gf", function()
+			local clients = vim.lsp.get_clients({ bufnr = 0 })
+			if #clients == 0 then
+				vim.notify("No LSP client available for formatting", vim.log.levels.WARN)
+				return
+			end
 			vim.lsp.buf.format({ async = true })
-		end, { desc = "Format file with LSP (none-ls)" })
+		end, { desc = "Format buffer with LSP (none-ls)" })
 	end,
 }

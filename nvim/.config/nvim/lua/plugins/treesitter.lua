@@ -8,8 +8,7 @@ return {
 		"JoosepAlviste/nvim-ts-context-commentstring",
 	},
 	config = function()
-		local configs = require("nvim-treesitter.configs")
-		configs.setup({
+		require("nvim-treesitter.configs").setup({
 			ensure_installed = {
 				"bash",
 				"css",
@@ -23,11 +22,14 @@ return {
 				"yaml",
 			},
 			sync_install = false,
+			auto_install = true,
+
 			highlight = {
 				enable = true,
 				additional_vim_regex_highlighting = false,
 			},
 			indent = { enable = true },
+
 			incremental_selection = {
 				enable = true,
 				keymaps = {
@@ -37,7 +39,9 @@ return {
 					node_decremental = "<C-backspace>",
 				},
 			},
+
 			autotag = { enable = true },
+
 			textobjects = {
 				select = {
 					enable = true,
@@ -58,6 +62,7 @@ return {
 						["as"] = "@statement.outer",
 					},
 				},
+
 				move = {
 					enable = true,
 					set_jumps = true,
@@ -80,16 +85,23 @@ return {
 						["[s"] = "@statement.outer",
 					},
 				},
+
 				swap = {
 					enable = true,
-					swap_next = { ["<leader>sn"] = "@parameter.inner" },
-					swap_previous = { ["<leader>sp"] = "@parameter.inner" },
+					swap_next = {
+						["<leader>sn"] = "@parameter.inner",
+					},
+					swap_previous = {
+						["<leader>sp"] = "@parameter.inner",
+					},
 				},
 			},
 		})
 
-		-- ts-context-commentstring setup with global skip flag
+		-- Safe commentstring integration
 		vim.g.skip_ts_context_commentstring_module = true
-		require("ts_context_commentstring").setup()
+		pcall(function()
+			require("ts_context_commentstring").setup({})
+		end)
 	end,
 }

@@ -13,6 +13,7 @@ return {
 	config = function()
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
+
 		require("luasnip.loaders.from_vscode").lazy_load()
 
 		cmp.setup({
@@ -21,16 +22,8 @@ return {
 					luasnip.lsp_expand(args.body)
 				end,
 			},
-			completion = { keyword_length = 2, completeopt = "menu,menuone,noselect" },
-			performance = {
-				debounce = 60,
-				throttle = 30,
-				fetching_timeout = 500,
-				filtering_context_budget = 200,
-				max_view_entries = 10,
-			},
+			completion = { keyword_length = 2 },
 			formatting = {
-				fields = { "kind", "abbr", "menu" },
 				format = require("lspkind").cmp_format({
 					mode = "symbol_text",
 					maxwidth = 50,
@@ -73,24 +66,37 @@ return {
 				end, { "i", "s" }),
 			}),
 			sources = cmp.config.sources({
-				{ name = "nvim_lsp", priority = 1000 },
-				{ name = "luasnip", priority = 750 },
+				{ name = "nvim_lsp" },
+				{ name = "luasnip" },
 			}, {
-				{ name = "buffer", priority = 500 },
-				{ name = "path", priority = 250 },
+				{
+					name = "buffer",
+					option = {
+						get_bufnrs = function()
+							return vim.api.nvim_list_bufs()
+						end,
+					},
+				},
+				{ name = "path" },
 			}),
 		})
 
-		-- Cmdline setup
+		-- Cmdline: ':'
 		cmp.setup.cmdline(":", {
 			mapping = cmp.mapping.preset.cmdline(),
-			sources = { { name = "path" }, { name = "cmdline" } },
-			performance = { debounce = 60, max_view_entries = 10 },
+			sources = cmp.config.sources({
+				{ name = "path" },
+			}, {
+				{ name = "cmdline" },
+			}),
 		})
+
+		-- Cmdline: '/'
 		cmp.setup.cmdline("/", {
 			mapping = cmp.mapping.preset.cmdline(),
-			sources = { { name = "buffer" } },
-			performance = { debounce = 60, max_view_entries = 10 },
+			sources = {
+				{ name = "buffer" },
+			},
 		})
 	end,
 }

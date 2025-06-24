@@ -7,11 +7,98 @@ return {
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-tree/nvim-web-devicons",
+			"nvim-telescope/telescope-ui-select.nvim",
+		},
+		cmd = "Telescope",
+		keys = {
+			{
+				"<leader>ff",
+				function()
+					require("telescope.builtin").find_files()
+				end,
+				desc = "Find Files",
+			},
+			{
+				"<leader>fb",
+				function()
+					require("telescope.builtin").buffers()
+				end,
+				desc = "Buffers",
+			},
+			{
+				"<leader>fl",
+				function()
+					require("telescope.builtin").oldfiles()
+				end,
+				desc = "Recent Files",
+			},
+			{
+				"<leader>f/",
+				function()
+					require("telescope.builtin").current_buffer_fuzzy_find()
+				end,
+				desc = "Search in Current Buffer",
+			},
+			{
+				"<leader>fh",
+				function()
+					require("telescope.builtin").help_tags()
+				end,
+				desc = "Help Tags",
+			},
+			{
+				"<leader>fc",
+				function()
+					require("telescope.builtin").commands()
+				end,
+				desc = "Commands",
+			},
+			{
+				"<leader>fr",
+				function()
+					require("telescope.builtin").registers()
+				end,
+				desc = "Registers",
+			},
+			{
+				"<leader>fw",
+				function()
+					require("telescope.builtin").search_history()
+				end,
+				desc = "Search History",
+			},
+			{
+				"<leader>gb",
+				function()
+					require("telescope.builtin").git_branches()
+				end,
+				desc = "Git Branches",
+			},
+			{
+				"<leader>gc",
+				function()
+					require("telescope.builtin").git_commits()
+				end,
+				desc = "Git Commits",
+			},
+			{
+				"<leader>fd",
+				function()
+					require("telescope.builtin").diagnostics()
+				end,
+				desc = "Diagnostics",
+			},
+			{
+				"<leader>fg",
+				function()
+					require("telescope.builtin").grep_string()
+				end,
+				desc = "Grep Word Under Cursor",
+			},
 		},
 		config = function()
 			local telescope = require("telescope")
 			local actions = require("telescope.actions")
-			local builtin = require("telescope.builtin")
 
 			telescope.setup({
 				defaults = {
@@ -83,28 +170,6 @@ return {
 			})
 
 			telescope.load_extension("ui-select")
-
-			-- Core Keymaps
-			local keymap = vim.keymap.set
-
-			keymap("n", "<leader>ff", builtin.find_files, { desc = "Find Files" })
-			keymap("n", "<leader>fb", builtin.buffers, { desc = "Buffers" })
-			keymap("n", "<leader>fl", builtin.oldfiles, { desc = "Recent Files" })
-			keymap("n", "<leader>f/", builtin.current_buffer_fuzzy_find, { desc = "Search in Current Buffer" })
-
-			-- Reference
-			keymap("n", "<leader>fh", builtin.help_tags, { desc = "Help Tags" })
-			keymap("n", "<leader>fc", builtin.commands, { desc = "Commands" })
-			keymap("n", "<leader>fr", builtin.registers, { desc = "Registers" })
-			keymap("n", "<leader>fw", builtin.search_history, { desc = "Search History" })
-
-			-- Git
-			keymap("n", "<leader>gb", builtin.git_branches, { desc = "Git Branches" })
-			keymap("n", "<leader>gc", builtin.git_commits, { desc = "Git Commits" })
-
-			-- Dev tools
-			keymap("n", "<leader>fd", builtin.diagnostics, { desc = "Diagnostics" })
-			keymap("n", "<leader>fg", builtin.grep_string, { desc = "Grep Word Under Cursor" })
 		end,
 	},
 }

@@ -8,50 +8,43 @@ return {
 			"j-hui/fidget.nvim",
 		},
 		opts = function()
-			local fidget_utils
+			local progress_util
 			local has_fidget, fidget = pcall(require, "fidget")
 			if has_fidget then
 				fidget.setup({})
-				local ok, utils = pcall(require, "fidget.progress")
+				local ok, progress = pcall(require, "fidget.progress")
 				if ok then
-					fidget_utils = utils
+					progress_util = progress
 				end
 			end
 
 			local has_node = vim.fn.executable("node") == 1
 
-			-- LSP progress component
 			local function fidget_status()
-				if not fidget_utils then
-					return ""
+				if progress_util then
+					local msg = progress_util.get_progress_message()
+					return msg and msg.title or ""
 				end
-				local msg = fidget_utils.get_progress_message()
-				return msg and msg.title or ""
+				return ""
 			end
-
-			-- Python virtual environment
 			local function python_env()
-				if vim.bo.filetype ~= "python" then
-					return ""
-				end
-				local env = vim.fn.getenv("VIRTUAL_ENV")
-				return env ~= "" and "🐍 " .. env:match("^.+/(.+)$") or ""
+				return vim.bo.filetype == "python"
+						and vim.env.VIRTUAL_ENV ~= ""
+						and "🐍 " .. vim.env.VIRTUAL_ENV:match("^.+/(.+)$")
+					or ""
 			end
 
-			-- Node.js version
 			local function node_version()
 				local ft = vim.bo.filetype
-				if not (has_node and (ft == "javascript" or ft == "typescript" or ft:match("react$"))) then
-					return ""
+				if has_node and ft:match("javascript") or ft:match("typescript") or ft:match("react$") then
+					local handle = io.popen("node -v 2>/dev/null")
+					if handle then
+						local version = handle:read("*a")
+						handle:close()
+						return version and version:gsub("\n", "")
+					end
 				end
-				local handle = io.popen("node -v 2>/dev/null")
-				if not handle then
-					return ""
-				end
-				local version = handle:read("*a") or ""
-
-				handle:close()
-				return version:gsub("\n", "")
+				return ""
 			end
 
 			return {

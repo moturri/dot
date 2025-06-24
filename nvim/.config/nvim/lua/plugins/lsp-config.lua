@@ -1,5 +1,5 @@
 return {
-	-- Mason Setup
+	-- Mason: package manager for LSP/DAP/formatters
 	{
 		"williamboman/mason.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -10,7 +10,7 @@ return {
 		end,
 	},
 
-	-- Mason-LSPConfig Setup
+	-- Mason bridge for LSPConfig
 	{
 		"williamboman/mason-lspconfig.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -19,41 +19,44 @@ return {
 		},
 	},
 
-	-- LSPConfig Setup
+	-- Neovim's built-in LSP setup
 	{
 		"neovim/nvim-lspconfig",
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
 			local lspconfig = require("lspconfig")
 
-			-- Capabilities for completion (nvim-cmp)
+			-- Add nvim-cmp completion capabilities
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
-			local ok_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+			local ok_cmp, cmp_lsp = pcall(require, "cmp_nvim_lsp")
 			if ok_cmp then
-				capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
+				capabilities = cmp_lsp.default_capabilities(capabilities)
 			end
 
-			-- Diagnostic signs
+			-- Diagnostic signs (KISS + symbols)
+			local signs = {
+				Error = "",
+				Warn = "",
+				Hint = "",
+				Info = "",
+			}
+			for type, icon in pairs(signs) do
+				local hl = "DiagnosticSign" .. type
+				vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+			end
+
 			vim.diagnostic.config({
-				signs = {
-					text = {
-						[vim.diagnostic.severity.ERROR] = "",
-						[vim.diagnostic.severity.WARN] = "",
-						[vim.diagnostic.severity.HINT] = "",
-						[vim.diagnostic.severity.INFO] = "",
-					},
-				},
 				virtual_text = true,
 				underline = true,
-				update_in_insert = false,
 				severity_sort = true,
 				float = { border = "rounded" },
+				update_in_insert = false,
 			})
 
-			-- Common on_attach function
+			-- Common on_attach (buffer-local keymaps)
 			local function on_attach(client, bufnr)
 				local map = vim.keymap.set
-				local opts = { noremap = true, silent = true, buffer = bufnr }
+				local opts = { buffer = bufnr, silent = true, noremap = true }
 
 				map("n", "K", vim.lsp.buf.hover, opts)
 				map("n", "<leader>gd", vim.lsp.buf.definition, opts)
@@ -64,16 +67,20 @@ return {
 					vim.lsp.buf.format({ async = true })
 				end, opts)
 
-				-- Attach navic if available
+				-- Optional: navic integration
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then
 					navic.attach(client, bufnr)
 				end
 			end
 
-			-- Setup servers automatically via mason-lspconfig
-			local mason_lspconfig = require("mason-lspconfig")
-			for _, server in ipairs(mason_lspconfig.get_installed_servers()) do
+			-- Setup servers from Mason
+			local ok_mason, mason_lspconfig = pcall(require, "mason-lspconfig")
+			if not ok_mason then
+				return
+			end
+
+			for _, server in ipairs(mason_lspconfig.get_installed_servers() or {}) do
 				lspconfig[server].setup({
 					capabilities = capabilities,
 					on_attach = on_attach,
