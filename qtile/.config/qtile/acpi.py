@@ -36,6 +36,7 @@ FULL_ICON = "󰂄"
 EMPTY_ICON = "󰁺"
 FALLBACK_ICON = "󰂑"
 
+# Sorted descending for proper threshold matching
 BATTERY_ICONS = (
     (95, "󰂂", "limegreen"),
     (80, "󰂁", "palegreen"),
@@ -97,8 +98,8 @@ class AcpiWidget(GenPollText):  # type: ignore
         if self._has_acpi_command():
             try:
                 output = subprocess.check_output(
-                    ["acpi", "-b"], env=self._ENV, timeout=1.5
-                ).decode()
+                    ["acpi", "-b"], text=True, env=self._ENV, timeout=1.5
+                )
                 parts = output.split(":")[1].split(",")
                 state = parts[0].strip().lower()
                 pct = int(parts[1].strip().rstrip("%"))
@@ -146,11 +147,8 @@ class AcpiWidget(GenPollText):  # type: ignore
             return EMPTY_ICON, "red" if pct <= 5 else "orange"
         for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
-                return (
-                    (f"{CHARGING_ICON} {icon}", color)
-                    if state == "charging"
-                    else (icon, color)
-                )
+                final_icon = f"{CHARGING_ICON} {icon}" if state == "charging" else icon
+                return final_icon, color
         return FALLBACK_ICON, "darkgrey"
 
     def _format_time(self, minutes: int) -> str:

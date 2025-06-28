@@ -22,7 +22,6 @@
 
 
 import logging
-import os
 import shutil
 import subprocess
 from typing import Any, List, Tuple
@@ -56,21 +55,13 @@ class BrightctlWidget(GenPollText):  # type: ignore
 
         self.step = max(1, min(step, 100))
         self.min_brightness = max(1, min(min_brightness, 100))
-        self._env = {**os.environ, "LC_ALL": "C.UTF-8"}
         self._max_brightness = self._get_max_brightness()
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _run(self, args: List[str]) -> str:
         try:
-            return subprocess.run(
-                args,
-                env=self._env,
-                capture_output=True,
-                text=True,
-                timeout=0.5,
-                check=True,
-            ).stdout.strip()
-        except subprocess.SubprocessError as e:
+            return subprocess.check_output(args, text=True, timeout=0.5).strip()
+        except Exception as e:
             logger.warning("brightnessctl command failed: %s", e)
             return ""
 
@@ -79,15 +70,17 @@ class BrightctlWidget(GenPollText):  # type: ignore
         try:
             return max(1, int(val))
         except ValueError:
-            logger.warning("Could not determine max brightness. Defaulting to 100.")
+            logger.error("Invalid max brightness value: %r", val)
             return 100
 
     def _get_brightness(self) -> int:
         val = self._run(["brightnessctl", "get"])
         try:
-            return (int(val) * 100) // self._max_brightness
+            brightness = (int(val) * 100) // self._max_brightness
+            logger.debug("Current brightness: %d%%", brightness)
+            return brightness
         except (ValueError, ZeroDivisionError):
-            logger.warning("Could not read current brightness.")
+            logger.warning("Could not read current brightness: %r", val)
             return 0
 
     def _set_brightness(self, percent: int) -> None:
@@ -96,10 +89,11 @@ class BrightctlWidget(GenPollText):  # type: ignore
         self.force_update()
 
     def _icon_and_color(self, brightness: int) -> Tuple[str, str]:
-        for threshold, color, icon in BRIGHTNESS_ICONS:
-            if brightness >= threshold:
-                return color, icon
-        return "grey", "󰃜"
+        return next(
+            (color, icon)
+            for threshold, color, icon in BRIGHTNESS_ICONS
+            if brightness >= threshold
+        )
 
     def _poll(self) -> str:
         brightness = self._get_brightness()

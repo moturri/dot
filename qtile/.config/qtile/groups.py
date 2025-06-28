@@ -138,15 +138,6 @@ def scratches() -> ScratchPad:
                 y=0.1,
                 opacity=1,
             ),
-            DropDown(
-                "octopi",
-                "/usr/bin/octopi",
-                width=0.7,
-                height=0.7,
-                x=0.15,
-                y=0.1,
-                opacity=1,
-            ),
         ],
     )
 
@@ -159,10 +150,9 @@ scratch_keys = {
     # "impala": "i",
     "kitty": "x",
     "localsend": "l",
-    "obsidian": "n",
+    "obsidian": "o",
     "pavucontrol-qt": "v",
     "pcmanfm-qt": "p",
-    "octopi": "o",
 }
 
 keys.extend(

@@ -23,7 +23,6 @@
 
 import logging
 import os
-import re
 import subprocess
 from typing import Any, List, Tuple
 
@@ -44,9 +43,6 @@ class AudioWidget(GenPollText):  # type: ignore
     )
     _MUTED: Tuple[str, str] = ("grey", "󰝟")
 
-    _REGEX_VOLUME = re.compile(r"\d+(\.\d+)?")
-    _REGEX_MUTED = re.compile(r"\[MUTED\]")
-
     def __init__(
         self,
         device: str = "@DEFAULT_AUDIO_SINK@",
@@ -60,41 +56,37 @@ class AudioWidget(GenPollText):  # type: ignore
         self.step = max(1, min(step, 25))
         self.max_volume = max(50, min(max_volume, 150))
         self.show_icon = show_icon
-        self._env = {"LC_ALL": "C.UTF-8", **os.environ}
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _run(self, args: List[str]) -> str:
         try:
-            return subprocess.run(
-                args,
-                capture_output=True,
-                text=True,
-                timeout=0.5,
-                check=True,
-                env=self._env,
-            ).stdout.strip()
-        except subprocess.SubprocessError as e:
+            return subprocess.check_output(
+                args, text=True, timeout=0.5, env={"LC_ALL": "C.UTF-8", **os.environ}
+            ).strip()
+        except Exception as e:
             logger.warning("wpctl command failed: %s", e)
             return ""
 
     def _get_state(self) -> Tuple[int, bool]:
         output = self._run(["wpctl", "get-volume", self.device])
-        match = self._REGEX_VOLUME.search(output)
         try:
-            vol = round(float(match.group()) * 100) if match else 0
-        except (ValueError, AttributeError):
+            vol = round(float(output.split()[1]) * 100)
+        except (IndexError, ValueError):
             logger.error("Failed to parse volume from: %s", output)
             vol = 0
-        muted = bool(self._REGEX_MUTED.search(output))
+        muted = "[MUTED]" in output
         return vol, muted
 
     def _icon_color(self, vol: int, muted: bool) -> Tuple[str, str]:
-        if muted:
-            return self._MUTED
-        for threshold, color, icon in reversed(self._LEVELS):
-            if vol >= threshold:
-                return color, icon
-        return self._LEVELS[0][1], self._LEVELS[0][2]
+        return (
+            self._MUTED
+            if muted
+            else next(
+                (color, icon)
+                for threshold, color, icon in reversed(self._LEVELS)
+                if vol >= threshold
+            )
+        )
 
     def _poll(self) -> str:
         try:
