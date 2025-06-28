@@ -12,7 +12,7 @@ return {
 				return
 			end
 
-			-- Transparent background for relevant groups
+			-- Transparent background groups
 			local transparent_groups = {
 				"Normal",
 				"NormalNC",
@@ -34,7 +34,7 @@ return {
 				vim.api.nvim_set_hl(0, group, { bg = "none", ctermbg = "none" })
 			end
 
-			-- Reset any plugin-set blending (e.g. cmp/telescope)
+			-- Reset blend values for clarity plugins
 			vim.api.nvim_set_hl(0, "Pmenu", { blend = 0 })
 			vim.api.nvim_set_hl(0, "PmenuSel", { blend = 0 })
 		end,

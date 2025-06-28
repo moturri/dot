@@ -19,6 +19,7 @@ return {
 			end
 
 			local has_node = vim.fn.executable("node") == 1
+			local cached_node_version = nil
 
 			local function fidget_status()
 				if progress_util then
@@ -27,22 +28,26 @@ return {
 				end
 				return ""
 			end
+
 			local function python_env()
-				return vim.bo.filetype == "python"
-						and vim.env.VIRTUAL_ENV ~= ""
-						and "🐍 " .. vim.env.VIRTUAL_ENV:match("^.+/(.+)$")
-					or ""
+				if vim.bo.filetype == "python" and vim.env.VIRTUAL_ENV then
+					return "🐍 " .. vim.env.VIRTUAL_ENV:match("^.+/(.+)$")
+				end
+				return ""
 			end
 
 			local function node_version()
 				local ft = vim.bo.filetype
 				if has_node and ft:match("javascript") or ft:match("typescript") or ft:match("react$") then
-					local handle = io.popen("node -v 2>/dev/null")
-					if handle then
-						local version = handle:read("*a")
-						handle:close()
-						return version and version:gsub("\n", "")
+					if not cached_node_version then
+						local handle = io.popen("node -v 2>/dev/null")
+						if handle then
+							local version = handle:read("*a")
+							handle:close()
+							cached_node_version = version and version:gsub("\n", "") or ""
+						end
 					end
+					return cached_node_version
 				end
 				return ""
 			end

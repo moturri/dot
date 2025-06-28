@@ -16,6 +16,7 @@ return {
 		if ok_utils then
 			root_dir = utils.root_pattern(".git", "pyproject.toml")
 		end
+		root_dir = root_dir or vim.fn.getcwd()
 
 		null_ls.setup({
 			root_dir = root_dir,
@@ -32,7 +33,6 @@ return {
 			},
 		})
 
-		-- Format buffer using LSP (none-ls or others)
 		vim.keymap.set("n", "<leader>gf", function()
 			local clients = vim.lsp.get_clients({ bufnr = 0 })
 			if #clients == 0 then

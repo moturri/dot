@@ -1,5 +1,6 @@
 return {
 	"goolord/alpha-nvim",
+	event = "VimEnter", -- Optional: defer slightly for performance
 	config = function()
 		local ok, alpha = pcall(require, "alpha")
 		if not ok then

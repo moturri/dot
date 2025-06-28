@@ -39,7 +39,7 @@ return {
 				position = "left",
 				width = 40,
 				mappings = {
-					["<space>"] = "none", -- Prevent accidental expansion
+					["<space>"] = "none", -- prevent accidental expansion
 				},
 			},
 

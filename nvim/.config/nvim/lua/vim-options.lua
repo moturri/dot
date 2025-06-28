@@ -6,7 +6,6 @@ g.mapleader = " "
 
 -- General
 g.have_nerd_font = true
-vim.scriptencoding = "utf-8"
 opt.background = "dark"
 opt.termguicolors = true
 opt.mouse = "a"
@@ -32,12 +31,12 @@ opt.expandtab = true
 opt.smartindent = true
 opt.autoindent = true
 
--- Folding with Treesitter
+-- Folding (Treesitter)
 opt.foldmethod = "expr"
-opt.foldexpr = "nvim_treesitter#foldexpr()"
+opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldenable = true
 opt.foldlevel = 99
-opt.foldlevelstart = 4
+opt.foldlevelstart = 5
 opt.foldcolumn = "1"
 
 -- Search
@@ -76,7 +75,7 @@ vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highl
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
 
--- Restore last cursor position
+-- Restore last cursor position when reopening files
 vim.api.nvim_create_autocmd("BufReadPost", {
 	callback = function()
 		local mark = vim.api.nvim_buf_get_mark(0, '"')

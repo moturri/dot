@@ -68,13 +68,17 @@ return {
 				map("n", "<leader>gD", gs.toggle_deleted, "Toggle deleted")
 				map("n", "<leader>gb", gs.toggle_current_line_blame, "Toggle blame")
 
-				-- Visual mode hunk
+				-- Visual mode hunk actions
 				map("v", "<leader>ga", function()
-					gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+					local s = vim.fn.line("v")
+					local e = vim.fn.line(".")
+					gs.stage_hunk({ math.min(s, e), math.max(s, e) })
 				end, "Stage selection")
 
 				map("v", "<leader>gr", function()
-					gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+					local s = vim.fn.line("v")
+					local e = vim.fn.line(".")
+					gs.reset_hunk({ math.min(s, e), math.max(s, e) })
 				end, "Reset selection")
 
 				-- Git log (via Fugitive)
