@@ -19,6 +19,10 @@ keys = [
     Key([mod], "l", lazy.layout.right()),
     Key([mod], "j", lazy.layout.down()),
     Key([mod], "k", lazy.layout.up()),
+    Key(["mod1"], "Tab", lazy.window.bring_to_front(), lazy.group.next_window()),
+    Key(
+        ["mod1", "shift"], "Tab", lazy.window.bring_to_front(), lazy.group.prev_window()
+    ),
     # Window swapping
     Key([mod, "shift"], "h", lazy.layout.swap_left()),
     Key([mod, "shift"], "l", lazy.layout.swap_right()),
@@ -42,21 +46,8 @@ keys = [
     Key([mod, "shift"], "c", lazy.spawn(rofi_calc)),
     Key([mod, "shift"], "e", lazy.spawn(rofi_emoji)),
     Key([mod], "v", lazy.spawn(rofi_clipboard)),
-    Key(
-        [mod],
-        "t",
-        lazy.spawn(os.path.join(rofi_scripts, "rofi-websearch.sh")),
-    ),
-    Key(
-        [mod],
-        "F1",
-        lazy.spawn(os.path.join(rofi_scripts, "rofi-power.sh")),
-    ),
-    Key(
-        [mod],
-        "F12",
-        lazy.spawn(os.path.join(rofi_scripts, "rofi-keys.sh")),
-    ),
+    Key([mod], "t", lazy.spawn(os.path.join(rofi_scripts, "rofi-websearch.sh"))),
+    Key([mod], "F12", lazy.spawn(os.path.join(rofi_scripts, "rofi-keys.sh"))),
     Key([mod, "shift"], "a", lazy.spawn(os.path.join(rofi_scripts, "rofi-display.sh"))),
     # Session/window management
     Key([mod], "w", lazy.window.kill()),
@@ -64,13 +55,14 @@ keys = [
     Key([mod], "F4", lazy.window.toggle_floating()),
     Key([mod, "control"], "r", lazy.reload_config()),
     Key([mod, "control"], "q", lazy.shutdown()),
+    Key([], "XF86PowerOff", lazy.spawn(os.path.join(rofi_scripts, "rofi-power.sh"))),
     # Multi-monitor
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
     # Bar visibility
     Key([mod], "F3", lazy.hide_show_bar("top")),
     # System utilities
-    Key([mod], "F2", lazy.spawn("i3lock -c 000000")),
+    Key([mod], "F1", lazy.spawn("i3lock -c 000000")),
     Key([mod], "Print", lazy.spawn("screengrab")),
     # Brightness control
     Key([], "XF86MonBrightnessUp", lazy.widget["brightctl"].increase()),
@@ -80,11 +72,7 @@ keys = [
     Key([], "XF86AudioLowerVolume", lazy.widget["audio"].volume_down()),
     Key([], "XF86AudioMute", lazy.widget["audio"].toggle_mute()),
     # Mic mute toggle
-    Key(
-        [],
-        "XF86AudioMicMute",
-        lazy.widget["mic"].toggle_mute(),
-    ),
+    Key([], "XF86AudioMicMute", lazy.widget["mic"].toggle_mute()),
     # Media control
     Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
 ] + [
