@@ -32,63 +32,63 @@ config.scrollback_lines = 10000
 
 --  Cursor & Tab Color Customization
 config.colors = {
-  background = "#000000",
-  foreground = "#FFFFFF",
-  cursor_bg = "#FFFFFF",
-  cursor_border = "#FFFFFF",
-  cursor_fg = "#000000",
-  tab_bar = {
-    background = "#000000",
-    active_tab = {
-      bg_color = "#000000",
-      fg_color = "#d86304",
-    },
-    inactive_tab = {
-      bg_color = "#000000",
-      fg_color = "#A0A0A0",
-    },
-    new_tab = {
-      bg_color = "#000000",
-      fg_color = "#A0A0A0",
-    },
-    inactive_tab_edge = "#000000",
-  },
+	background = "#000000",
+	foreground = "#FFFFFF",
+	cursor_bg = "#FFFFFF",
+	cursor_border = "#FFFFFF",
+	cursor_fg = "#000000",
+	tab_bar = {
+		background = "#000000",
+		active_tab = {
+			bg_color = "#000000",
+			fg_color = "#d86304",
+		},
+		inactive_tab = {
+			bg_color = "#000000",
+			fg_color = "#A0A0A0",
+		},
+		new_tab = {
+			bg_color = "#000000",
+			fg_color = "#A0A0A0",
+		},
+		inactive_tab_edge = "#000000",
+	},
 }
 
 --  Leader Key & Keybindings
 config.leader = { key = "a", mods = "ALT", timeout_milliseconds = 2000 }
 
 config.keys = {
-  -- Tabs
-  { mods = "LEADER", key = "c",          action = wezterm.action.SpawnTab("CurrentPaneDomain") },
-  { mods = "LEADER", key = "x",          action = wezterm.action.CloseCurrentPane({ confirm = true }) },
-  { mods = "LEADER", key = "b",          action = wezterm.action.ActivateTabRelative(-1) },
-  { mods = "LEADER", key = "n",          action = wezterm.action.ActivateTabRelative(1) },
+	-- Tabs
+	{ mods = "LEADER", key = "c", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
+	{ mods = "LEADER", key = "x", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
+	{ mods = "LEADER", key = "b", action = wezterm.action.ActivateTabRelative(-1) },
+	{ mods = "LEADER", key = "n", action = wezterm.action.ActivateTabRelative(1) },
 
-  -- Splits
-  { mods = "LEADER", key = "=",          action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-  { mods = "LEADER", key = "-",          action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	-- Splits
+	{ mods = "LEADER", key = "=", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ mods = "LEADER", key = "-", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
 
-  -- Pane Navigation
-  { mods = "LEADER", key = "h",          action = wezterm.action.ActivatePaneDirection("Left") },
-  { mods = "LEADER", key = "j",          action = wezterm.action.ActivatePaneDirection("Down") },
-  { mods = "LEADER", key = "k",          action = wezterm.action.ActivatePaneDirection("Up") },
-  { mods = "LEADER", key = "l",          action = wezterm.action.ActivatePaneDirection("Right") },
+	-- Pane Navigation
+	{ mods = "LEADER", key = "h", action = wezterm.action.ActivatePaneDirection("Left") },
+	{ mods = "LEADER", key = "j", action = wezterm.action.ActivatePaneDirection("Down") },
+	{ mods = "LEADER", key = "k", action = wezterm.action.ActivatePaneDirection("Up") },
+	{ mods = "LEADER", key = "l", action = wezterm.action.ActivatePaneDirection("Right") },
 
-  -- Resize Panes
-  { mods = "ALT",    key = "LeftArrow",  action = wezterm.action.AdjustPaneSize({ "Left", 5 }) },
-  { mods = "ALT",    key = "RightArrow", action = wezterm.action.AdjustPaneSize({ "Right", 5 }) },
-  { mods = "ALT",    key = "i",          action = wezterm.action.AdjustPaneSize({ "Down", 5 }) },
-  { mods = "ALT",    key = "m",          action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
+	-- Resize Panes
+	{ mods = "ALT", key = "LeftArrow", action = wezterm.action.AdjustPaneSize({ "Left", 5 }) },
+	{ mods = "ALT", key = "RightArrow", action = wezterm.action.AdjustPaneSize({ "Right", 5 }) },
+	{ mods = "ALT", key = "i", action = wezterm.action.AdjustPaneSize({ "Down", 5 }) },
+	{ mods = "ALT", key = "m", action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
 }
 
 -- Quick tab switching
 for i = 0, 9 do
-  table.insert(config.keys, {
-    key = tostring(i),
-    mods = "LEADER",
-    action = wezterm.action.ActivateTab(i),
-  })
+	table.insert(config.keys, {
+		key = tostring(i),
+		mods = "LEADER",
+		action = wezterm.action.ActivateTab(i),
+	})
 end
 
 --  Optional Features (Uncomment to Enable)
@@ -116,12 +116,12 @@ end
 
 --  Leader Status Indicator (🐉)
 wezterm.on("update-right-status", function(window, _)
-  local prefix = window:leader_is_active() and " 🐉 " or ""
+	local prefix = window:leader_is_active() and " 🐉 " or ""
 
-  window:set_left_status(wezterm.format({
-    { Background = { Color = "#000000" } },
-    { Text = prefix },
-  }))
+	window:set_left_status(wezterm.format({
+		{ Background = { Color = "#000000" } },
+		{ Text = prefix },
+	}))
 end)
 
 return config
