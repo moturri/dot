@@ -3,7 +3,6 @@ $directory\
 $git_branch\
 $git_status\
 """
-
 palette = "dracula"
 
 # Dracula Palette (Essential Colors Only)
@@ -20,22 +19,22 @@ dracula_purple = "#bd93f9"
 "Music" = "󰝚"
 "Pictures" = ""
 "Developer" = "󰲋"
-".dot"  = "󰒓"
-".config"  = "󰒓"
+".dot" = "󰒓"
+".config" = "󰒓"
 
 # Git Branch Styling
 [git_branch]
 symbol = ""
 style = "fg:dracula_purple"
-format = '[ $symbol $branch ]($style)'
+format = "[ $symbol $branch ]($style)"
 
 # Git Status Styling
 [git_status]
 ignore_submodules = true
 style = "fg:dracula_fg"
-format = '[$all_status$_ahead_behind]($style)'
-ahead = '⇡${count}'
-behind = '⇣${count}'
+format = "[$all_status$_ahead_behind]($style)"
+ahead = "⇡${count}"
+behind = "⇣${count}"
 
 # Disable all unused modules
 [aws]

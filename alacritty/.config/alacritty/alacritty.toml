@@ -1,10 +1,8 @@
-
 # ipc_socket = true | false # (unix only)
 # Offer IPC using alacritty msg
 # Default: true
 
 # ipc_socket = true
-
 
 # SHELL
 # shell = "<string>" | { program = "<string>", args = ["<string>",] }
@@ -24,469 +22,7 @@
 # program = "/bin/zsh"
 # args = ["-l"]
 
-[terminal.shell]
-program = "/usr/bin/zsh"
-args = ["-l"]
-
-
-# ENV
-# All key-value pairs in the [env] section will be added as environment variables for any process spawned by Alacritty, including its shell. Some entries may override variables set by alacritty itself.
-# Example:
-
-# [env]
-# WINIT_X11_SCALE_FACTOR = "1.0"
-
-[env]
-WINIT_X11_SCALE_FACTOR = "1.0"
-
-
-# WINDOW
-# This section documents the [window] table of the configuration file.
-
-# dimensions = { columns = <integer>, lines = <integer> }
-# Window dimensions (changes require restart).
-# Number of lines/columns (not pixels) in the terminal. Both lines and columns must be non-zero for this to take effect. The number of columns must be at least 2, while using a value of 0 for columns and lines will fall back to the window manager's recommended size
-# Default: { column = 0, lines = 0 }
-
-# position = "None" | { x = <integer>, y = <integer> }
-# Window startup position.
-# Specified in number of pixels.
-# If the position is "None", the window manager will handle placement.
-# Default: "None"
-
-# padding = { x = <integer>, y = <integer> }
-# Blank space added around the window in pixels. This padding is scaled by DPI and the specified value is always added at both opposing sides.
-# Default: { x = 0, y = 0 }
-
-# dynamic_padding = true | false
-# Spread additional padding evenly around the terminal content.
-# Default: false
-
-# Window decorations.
-# decorations = "Full" | "None" | "Transparent" | "Buttonless"
-
-# Full
-# Borders and title bar.
-
-# None
-# Neither borders nor title bar.
-
-# Transparent (macOS only)
-# Title bar, transparent background and title bar buttons.
-
-# Buttonless (macOS only)
-# Title bar, transparent background and no title bar buttons.
-
-# Default: "Full"
-
-# Background opacity (works on macOS & KDE Wayland only)
-# opacity = <float>
-# Background opacity as a floating point number from 0.0 to 1.0. The value 0.0 is completely transparent and 1.0 is opaque.
-# Default: 0.9
-
-# Request compositor to blur content behind transparent windows (works on macOS & KDE Wayland only).
-# Default: false
-# blur = true | false 
-
-# Startup mode (changes require restart)
-# startup_mode = "Windowed" | "Maximized" | "Fullscreen" | "SimpleFullscreen"
-
-# Windowed
-# Regular window.
-
-# Maximized
-# The window will be maximized on startup.
-
-# Fullscreen
-# The window will be fullscreened on startup.
-
-# SimpleFullscreen (macOS only)
-# Same as Fullscreen, but you can stack windows on top.
-
-# Default: "Windowed"
-
-# Window title.
-# title = "<string>"
-# Default: "Alacritty"
-
-# dynamic_title = true | false
-# Allow terminal applications to change Alacritty's window title.
-# Default: true
-
-# Window class.
-# class = { instance = "<string>", general = "<string>" } # (Linux/BSD only)
-# On Wayland, general is used as app_id and instance is ignored.
-# Default: { instance = "Alacritty", general = "Alacritty" }
-
-# Override the variant of the System theme/GTK theme/Wayland client side decorations. Set this to "None" to use the system's default theme variant.
-# decorations_theme_variant = "Dark" | "Light" | "None"
-# Default: "None"
-
-# resize_increments = true | false
-# Prefer resizing window by discrete steps equal to cell dimensions.
-# Default: false
-
-# option_as_alt = "OnlyLeft" | "OnlyRight" | "Both" | "None" # (macos only)
-# Make Option key behave as Alt.
-# Default: "None"
-
-# Example:
-
-# [window]
-# padding = { x = 3, y = 3 }
-# dynamic_padding = true
-# opacity = 0.9
-
-[window]
-padding = { x = 3 , y = 3 }
-dynamic_padding = true
-decorations_theme_variant = "Dark"
-decorations = "None"
-opacity = 0.9
-blur = false
-startup_mode = "Windowed"
-title = "Alacritty"
-dynamic_title = true
-
-
-
-# SCROLLING
-# This section documents the [scrolling] table of the configuration file.
-# history = <integer>
-# Maximum number of lines in the scrollback buffer.
-# Specifying 0 will disable scrolling.
-# Limited to 100000.
-# Default: 10000
-
-# multiplier = <integer>
-# Number of line scrolled for every input scroll increment.
-# Default: 3
-
-[scrolling]
-history = 10000
-multiplier = 3
-
-
-# FONT
-# This section documents the [font] table of the configuration file.
-# normal = { family = "<string>", style = "<string>" }
-
-# Default:
-# Linux/BSD: { family = "monospace", style = "Regular" }
-# Windows: { family = "Consolas", style = "Regular" }
-# macOS: { family = "Menlo", style = "Regular" }
-
-# bold = { family = "<string>", style = "<string>" }
-# If the family is not specified, it will fall back to the value specified for the normal font.
-# Default: { style = "Bold" }
-
-# italic = { family = "<string>", style = "<string>" }
-# If the family is not specified, it will fall back to the value specified for the normal font.
-# Default: { style = "Italic" }
-
-# bold_italic = { family = "<string>", style = "<string>" }
-# If the family is not specified, it will fall back to the value specified for the normal font.
-# Default: { style = "Bold Italic" }
-
-# size = <float>
-# Font size in points.
-# Default: 11.25
-
-# offset = { x = <integer>, y = <integer> }
-# Offset is the extra space around each character. The 'y' can be thought of as modifying the line spacing, and 'x' as modifying the letter spacing.
-# Default: { x = 0, y = 0 }
-
-# glyph_offset = { x = <integer>, y = <integer> }
-# Glyph offset determines the locations of the glyphs within their cells with the default being at the bottom. Increasing x moves the glyph to the right, increasing y moves the glyph upward.
-
-# builtin_box_drawing = true | false
-# When true, Alacritty will use a custom built-in font for box drawing characters (Unicode points U+2500 - U+259F) and powerline symbols (Unicode points U+E0B0 - U+E0B3).
-# Default: true
-
-[font]
-normal = { family = "JetBrainsMonoNL Nerd Font", style = "Medium" }
-size = 8
-builtin_box_drawing = true
-
-# COLORS
-# This section documents the [colors] table of the configuration file.
-# Colors are specified using their hexadecimal values with a # prefix: #RRGGBB.
-
-# colors primary
-# This section documents the [colors.primary] table of the configuration file.
-
-#[colors]
-#foreground = "#d8d8d8"
-#background = "#181818"
-#dim_foreground = "#828482"
-#bright_foreground = "None"
-#cursor = { text = "CellBackground", cursor = "CellForeground" }
-
-# foreground = "<string>"
-# Default: "#d8d8d8"
-
-# background = "<string>"
-# Default: "#181818"
-
-# dim_foreground = "<string>"
-# If this is not set, the color is automatically calculated based on the foreground color.
-# Default: "#828482"
-
-# bright_foreground = "<string>"
-# This color is only used when draw_bold_text_with_bright_colors is true.
-# If this is not set, the normal foreground will be used.
-# Default: "None"
-
-# cursor = { text = "<string>", cursor = "<string>" }
-# Colors which should be used to draw the terminal cursor.
-# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
-# Default: { text = "CellBackground", cursor = "CellForeground" }
-
-# vi_mode_cursor = { text = "<string>", cursor = "<string>" }
-# Colors for the cursor when the vi mode is active.
-# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
-# Default: { text = "CellBackground", cursor = "CellForeground" }
-
-
-# colors search
-# This section documents the [colors.search] table of the configuration.
-# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
-
-[colors.search]
-matches = { foreground = "#181818", background = "#ac4242" }
-focused_match = { foreground = "#181818", background = "#f4bf75" }
-
-# matches = { foreground = "<string>", background = "<string>" }
-# Default: { foreground = "#181818", background = "#ac4242" }
-
-# focused_match = { foreground = "<string>", background = "<string>" }
-# Default: { foreground = "#181818", background = "#f4bf75" }
-
-# indexed_colors = [{ index = <integer>, color = "<string>" },]
-# The indexed colors include all colors from 16 to 256. When these are not set, they're filled with sensible defaults.
-# Default: []
-
-# transparent_background_colors = true | false
-# Whether or not window.opacity applies to all cell backgrounds, or only to the default background. When set to true all cells will be transparent regardless of their background color.
-# Default: false
-
-# draw_bold_text_with_bright_colors = true | false
-# When true, bold text is drawn using the bright color variants.
-# Default: false
-
-# colors hints
-# This section documents the [colors.hints] table of the configuration.
-
-[colors.hints]
-start = { foreground = "#181818", background = "#f4bf75" }
-end = { foreground = "#181818", background = "#ac4242" }
-
-# start = { foreground = "<string>", background = "<string>" }
-# First character in the hint label.
-# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
-# Default: { foreground = "#181818", background = "#f4bf75" }
-
-# end = { foreground = "<string>", background = "<string>" }
-# All characters after the first one in the hint label.
-# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
-# Default: { foreground = "#181818", background = "#ac4242" }
-
-# line_indicator = { foreground = "<string>", background = "<string>" }
-# Color used for the indicator displaying the position in history during search and vi mode.
-# Setting this to "None" will use the opposing primary color.
-# Default: { foreground = "None", background = "None" }
-
-# footer_bar = { foreground = "<string>", background = "<string>" }
-# Color used for the footer bar on the bottom, used by search regex input, hyperlink URI preview, etc.
-# Default: { foreground = "#181818", background = "#d8d8d8" }
-
-# selection = { text = "<string>", background = "<string>" }
-# Colors used for drawing selections.
-# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
-# Default: { text = "CellBackground", background = "CellForeground" }
-
-[colors.primary]
-background = '#000000'
-foreground = '#FFFFFF'
-
-
-[colors.normal]
-black = '#000000'
-red = '#cd0000'
-green = '#00cd00'
-yellow = '#cdcd00'
-blue = '#0000ee'
-magenta = '#cd00cd'
-cyan = '#00cdcd'
-white = '#e5e5e5'
-
-
-[colors.bright]
-black = '#7f7f7f'
-red = '#ff0000'
-green = '#00ff00'
-yellow = '#ffff00'
-blue = '#5c5cff'
-magenta = '#ff00ff'
-cyan = '#00ffff'
-white = '#ffffff'
-
-
-# BELL
-# This section documents the [bell] table of the configuration file.
-
-# animation = "Ease" | "EaseOut" | "EaseOutSine" | "EaseOutQuad" | "EaseOutCubic" | "EaseOutQuart" | "EaseOutQuint" | "EaseOutExpo" | "EaseOutCirc" | "Linear"
-# Visual bell animation effect for flashing the screen when the visual bell is rung.
-# Default: "Linear"
-
-# duration = <integer>
-# Duration of the visual bell flash in milliseconds. A `duration` of `0` will disable the visual bell animation.
-# Default: 0
-
-# color = "<string>"
-# Visual bell animation color.
-# Default: "#ffffff"
-
-# command = "<string>" | { program = "<string>", args = ["<string>",] }
-# This program is executed whenever the bell is rung.
-# When set to "None", no command will be executed.
-# Default: "None"
-
-[bell]
-animation = "Linear"
-duration = 0
-#color = "#ffffff"
-#command = "None"
-
-
-# SELECTION
-# This section documents the [selection] table of the configuration file.
-# semantic_escape_chars = "<string>"
-# This string contains all characters that are used as separators for "semantic words" in Alacritty.
-
-# Default: ",│`|:\"' ()[]{}<>\t"
-
-# save_to_clipboard = true | false
-# When set to true, selected text will be copied to the primary clipboard.
-# Default: false
-
-[selection]
-semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
-save_to_clipboard = true
-
-
-# CURSOR
-# This section documents the [cursor] table of the configuration file.
-
-# style = { <shape>, <blinking> }
-
-# shape = "Block" | "Underline" | "Beam"
-# Default: "Block"
-
-# blinking = "Never" | "Off" | "On" | "Always"
-# Never - Prevent the cursor from ever blinking
-# Off - Disable blinking by default
-# On - Enable blinking by default
-# Always -Force the cursor to always blink
-# Default: "Off"
-
-# vi_mode_style = { <shape>, <blinking> } | "None"
-# If the vi mode cursor style is "None" or not specified, it will fall back to the active value of the normal cursor.
-# Default: "None"
-
-# blink_interval = <integer>
-# Cursor blinking interval in milliseconds.
-# Default: 750
-
-# blink_timeout = <integer>
-# Time after which cursor stops blinking, in seconds.
-# Specifying 0 will disable timeout for blinking.
-# Default: 5
-
-# unfocused_hollow = true | false
-# When this is true, the cursor will be rendered as a hollow box when the window is not focused.
-# Default: true
-# thickness = <float>
-# Thickness of the cursor relative to the cell width as floating point number from 0.0 to 1.0.
-# Default: 0.15
-
-[cursor]
-style = { shape = "Block", blinking = "Off" }
-unfocused_hollow = true
-thickness = 0.15
-
-
-# TERMINAL
-# This section documents the [terminal] table of the configuration file.
-# osc52 = "Disabled" | "OnlyCopy" | "OnlyPaste" | "CopyPaste"
-# Controls the ability to write to the system clipboard with the OSC 52 escape sequence. While this escape sequence is useful to copy contents from the remote server, allowing any application to read from the clipboard can be easily abused while not providing significant benefits over explicitly pasting text.
-# Default: "OnlyCopy"
-
-#[terminal]
-
-
-# MOUSE
-# This section documents the [mouse] table of the configuration file.
-# hide_when_typing = true | false
-# When this is true, the cursor is temporarily hidden when typing.
-# Default: false
-
-# bindings = [{ <mouse>, <mods>, <mode>, <action> | <chars> },]
-# See keyboard.bindings for full documentation on mods, mode, action, and chars.
-
-# When an application running within Alacritty captures the mouse, the `Shift` modifier can be used to suppress mouse reporting. If no action is found for the event, actions for the event without the `Shift` modifier are triggered instead.
-# mouse = "Middle" | "Left" | "Right" | "Back" | "Forward" | <integer>
-# Mouse button which needs to be pressed to trigger this binding.
-# action = <keyboard.bindings.action> | "ExpandSelection"
-
-# ExpandSelection
-# Expand the selection to the current mouse cursor location.
-# Example:
-
-# [mouse]
-# bindings = [
-# { mouse = "Right", mods = "Control", action = "Paste" },
-# ]
-
-[mouse]
-hide_when_typing = false
-
-[general]
-
-# live_config_reload = true | false
-# Live config reload (changes require restart)
-# Default: true
-
-live_config_reload = true
-# Alacritty - TOML configuration file format.
-
-# DESCRIPTION 
-# An example configuration file for Alacritty preconfigured with default values.
-
-# SYNTAX
-# Alacritty's configuration file uses the TOML format. 
-# The format's specification can be found at https://toml.io/en/v1.0.0.
-
-# GENERAL
-
-# import = ["<string>",]
-
-# Import additional configuration files.
-# Imports are loaded in order, skipping all missing files, with the importing file being loaded last. If a field is already present in a previous import, it will be replaced.
-# All imports must either be absolute paths starting with /, or paths relative to the user's home directory starting with ~/.
-
-# Example:
-
-# import = [
-# "~/.config/alacritty/base16-dark.toml",
-# "~/.config/alacritty/keybindings.toml",
-# ]
-
-import = []
-
 [terminal]
-
-
 # HINTS
 # This section documents the [hints] table of the configuration file.
 # Terminal hints can be used to find text or hyperlinks in the visible part of the terminal and pipe it to other applications.
@@ -549,7 +85,7 @@ import = []
 # binding = { key = "U", mods = "Control|Shift" }
 # regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
 
-#[hints]
+# [hints]
 
 # KEYBOARD
 # This section documents the [keyboard] table of the configuration file.
@@ -863,7 +399,6 @@ import = []
 # Paste from the selection buffer.
 # Default: See alacritty-bindings(5)
 
-
 #
 
 # Example:
@@ -874,8 +409,7 @@ import = []
 # { key = "L", mods = "Control|Shift", chars = "l" },
 # ]
 
-#[keyboard]
-
+# [keyboard]
 
 # DEBUG
 # This section documents the [debug] table of the configuration file.
@@ -912,8 +446,7 @@ import = []
 # Use EGL as display API if the current platform allows it. Note that transparency may not work with EGL on Linux/BSD.
 # Default: false
 
-#[debug]
-
+# [debug]
 
 # SEE ALSO
 # alacritty(1), alacritty-msg(1), alacritty-bindings(5)
@@ -924,3 +457,442 @@ import = []
 # MAINTAINERS
 # · Christian Duerr <contact@christianduerr.com>
 # · Kirill Chibisov <contact@kchibisov.com>
+
+# [terminal.shell]
+# program = "/usr/bin/zsh"
+# args = ["-l"]
+
+# ENV
+# All key-value pairs in the [env] section will be added as environment variables for any process spawned by Alacritty, including its shell. Some entries may override variables set by alacritty itself.
+# Example:
+
+# [env]
+# WINIT_X11_SCALE_FACTOR = "1.0"
+
+[env]
+WINIT_X11_SCALE_FACTOR = "1.0"
+
+# WINDOW
+# This section documents the [window] table of the configuration file.
+
+# dimensions = { columns = <integer>, lines = <integer> }
+# Window dimensions (changes require restart).
+# Number of lines/columns (not pixels) in the terminal. Both lines and columns must be non-zero for this to take effect. The number of columns must be at least 2, while using a value of 0 for columns and lines will fall back to the window manager's recommended size
+# Default: { column = 0, lines = 0 }
+
+# position = "None" | { x = <integer>, y = <integer> }
+# Window startup position.
+# Specified in number of pixels.
+# If the position is "None", the window manager will handle placement.
+# Default: "None"
+
+# padding = { x = <integer>, y = <integer> }
+# Blank space added around the window in pixels. This padding is scaled by DPI and the specified value is always added at both opposing sides.
+# Default: { x = 0, y = 0 }
+
+# dynamic_padding = true | false
+# Spread additional padding evenly around the terminal content.
+# Default: false
+
+# Window decorations.
+# decorations = "Full" | "None" | "Transparent" | "Buttonless"
+
+# Full
+# Borders and title bar.
+
+# None
+# Neither borders nor title bar.
+
+# Transparent (macOS only)
+# Title bar, transparent background and title bar buttons.
+
+# Buttonless (macOS only)
+# Title bar, transparent background and no title bar buttons.
+
+# Default: "Full"
+
+# Background opacity (works on macOS & KDE Wayland only)
+# opacity = <float>
+# Background opacity as a floating point number from 0.0 to 1.0. The value 0.0 is completely transparent and 1.0 is opaque.
+# Default: 0.9
+
+# Request compositor to blur content behind transparent windows (works on macOS & KDE Wayland only).
+# Default: false
+# blur = true | false
+
+# Startup mode (changes require restart)
+# startup_mode = "Windowed" | "Maximized" | "Fullscreen" | "SimpleFullscreen"
+
+# Windowed
+# Regular window.
+
+# Maximized
+# The window will be maximized on startup.
+
+# Fullscreen
+# The window will be fullscreened on startup.
+
+# SimpleFullscreen (macOS only)
+# Same as Fullscreen, but you can stack windows on top.
+
+# Default: "Windowed"
+
+# Window title.
+# title = "<string>"
+# Default: "Alacritty"
+
+# dynamic_title = true | false
+# Allow terminal applications to change Alacritty's window title.
+# Default: true
+
+# Window class.
+# class = { instance = "<string>", general = "<string>" } # (Linux/BSD only)
+# On Wayland, general is used as app_id and instance is ignored.
+# Default: { instance = "Alacritty", general = "Alacritty" }
+
+# Override the variant of the System theme/GTK theme/Wayland client side decorations. Set this to "None" to use the system's default theme variant.
+# decorations_theme_variant = "Dark" | "Light" | "None"
+# Default: "None"
+
+# resize_increments = true | false
+# Prefer resizing window by discrete steps equal to cell dimensions.
+# Default: false
+
+# option_as_alt = "OnlyLeft" | "OnlyRight" | "Both" | "None" # (macos only)
+# Make Option key behave as Alt.
+# Default: "None"
+
+# Example:
+
+# [window]
+# padding = { x = 3, y = 3 }
+# dynamic_padding = true
+# opacity = 0.9
+
+[window]
+padding = { x = 3, y = 3 }
+dynamic_padding = true
+decorations_theme_variant = "None"
+decorations = "none"
+opacity = 0.9
+blur = false
+startup_mode = "Windowed"
+title = "Alacritty"
+dynamic_title = true
+
+# SCROLLING
+# This section documents the [scrolling] table of the configuration file.
+# history = <integer>
+# Maximum number of lines in the scrollback buffer.
+# Specifying 0 will disable scrolling.
+# Limited to 100000.
+# Default: 10000
+
+# multiplier = <integer>
+# Number of line scrolled for every input scroll increment.
+# Default: 3
+
+[scrolling]
+history = 10000
+multiplier = 3
+
+# FONT
+# This section documents the [font] table of the configuration file.
+# normal = { family = "<string>", style = "<string>" }
+
+# Default:
+# Linux/BSD: { family = "monospace", style = "Regular" }
+# Windows: { family = "Consolas", style = "Regular" }
+# macOS: { family = "Menlo", style = "Regular" }
+
+# bold = { family = "<string>", style = "<string>" }
+# If the family is not specified, it will fall back to the value specified for the normal font.
+# Default: { style = "Bold" }
+
+# italic = { family = "<string>", style = "<string>" }
+# If the family is not specified, it will fall back to the value specified for the normal font.
+# Default: { style = "Italic" }
+
+# bold_italic = { family = "<string>", style = "<string>" }
+# If the family is not specified, it will fall back to the value specified for the normal font.
+# Default: { style = "Bold Italic" }
+
+# size = <float>
+# Font size in points.
+# Default: 11.25
+
+# offset = { x = <integer>, y = <integer> }
+# Offset is the extra space around each character. The 'y' can be thought of as modifying the line spacing, and 'x' as modifying the letter spacing.
+# Default: { x = 0, y = 0 }
+
+# glyph_offset = { x = <integer>, y = <integer> }
+# Glyph offset determines the locations of the glyphs within their cells with the default being at the bottom. Increasing x moves the glyph to the right, increasing y moves the glyph upward.
+
+# builtin_box_drawing = true | false
+# When true, Alacritty will use a custom built-in font for box drawing characters (Unicode points U+2500 - U+259F) and powerline symbols (Unicode points U+E0B0 - U+E0B3).
+# Default: true
+
+[font]
+normal = { family = "JetBrainsMonoNL Nerd Font", style = "Medium" }
+size = 12
+builtin_box_drawing = true
+
+# COLORS
+# This section documents the [colors] table of the configuration file.
+# Colors are specified using their hexadecimal values with a # prefix: #RRGGBB.
+
+# colors primary
+# This section documents the [colors.primary] table of the configuration file.
+
+# [colors]
+# foreground = "#d8d8d8"
+# background = "#181818"
+# dim_foreground = "#828482"
+# bright_foreground = "None"
+# cursor = { text = "CellBackground", cursor = "CellForeground" }
+
+# foreground = "<string>"
+# Default: "#d8d8d8"
+
+# background = "<string>"
+# Default: "#181818"
+
+# dim_foreground = "<string>"
+# If this is not set, the color is automatically calculated based on the foreground color.
+# Default: "#828482"
+
+# bright_foreground = "<string>"
+# This color is only used when draw_bold_text_with_bright_colors is true.
+# If this is not set, the normal foreground will be used.
+# Default: "None"
+
+# cursor = { text = "<string>", cursor = "<string>" }
+# Colors which should be used to draw the terminal cursor.
+# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
+# Default: { text = "CellBackground", cursor = "CellForeground" }
+
+# vi_mode_cursor = { text = "<string>", cursor = "<string>" }
+# Colors for the cursor when the vi mode is active.
+# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
+# Default: { text = "CellBackground", cursor = "CellForeground" }
+
+# colors search
+# This section documents the [colors.search] table of the configuration.
+# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
+
+[colors.search]
+matches = { foreground = "#181818", background = "#ac4242" }
+focused_match = { foreground = "#181818", background = "#f4bf75" }
+
+# matches = { foreground = "<string>", background = "<string>" }
+# Default: { foreground = "#181818", background = "#ac4242" }
+
+# focused_match = { foreground = "<string>", background = "<string>" }
+# Default: { foreground = "#181818", background = "#f4bf75" }
+
+# indexed_colors = [{ index = <integer>, color = "<string>" },]
+# The indexed colors include all colors from 16 to 256. When these are not set, they're filled with sensible defaults.
+# Default: []
+
+# transparent_background_colors = true | false
+# Whether or not window.opacity applies to all cell backgrounds, or only to the default background. When set to true all cells will be transparent regardless of their background color.
+# Default: false
+
+# draw_bold_text_with_bright_colors = true | false
+# When true, bold text is drawn using the bright color variants.
+# Default: false
+
+# colors hints
+# This section documents the [colors.hints] table of the configuration.
+
+[colors.hints]
+start = { foreground = "#181818", background = "#f4bf75" }
+end = { foreground = "#181818", background = "#ac4242" }
+
+# start = { foreground = "<string>", background = "<string>" }
+# First character in the hint label.
+# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
+# Default: { foreground = "#181818", background = "#f4bf75" }
+
+# end = { foreground = "<string>", background = "<string>" }
+# All characters after the first one in the hint label.
+# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
+# Default: { foreground = "#181818", background = "#ac4242" }
+
+# line_indicator = { foreground = "<string>", background = "<string>" }
+# Color used for the indicator displaying the position in history during search and vi mode.
+# Setting this to "None" will use the opposing primary color.
+# Default: { foreground = "None", background = "None" }
+
+# footer_bar = { foreground = "<string>", background = "<string>" }
+# Color used for the footer bar on the bottom, used by search regex input, hyperlink URI preview, etc.
+# Default: { foreground = "#181818", background = "#d8d8d8" }
+
+# selection = { text = "<string>", background = "<string>" }
+# Colors used for drawing selections.
+# Allowed values are hexadecimal colors like #ff00ff, or CellForeground/CellBackground, which references the affected cell.
+# Default: { text = "CellBackground", background = "CellForeground" }
+
+[colors.primary]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[colors.normal]
+black = "#000000"
+red = "#cd0000"
+green = "#00cd00"
+yellow = "#cdcd00"
+blue = "#0000ee"
+magenta = "#cd00cd"
+cyan = "#00cdcd"
+white = "#e5e5e5"
+
+[colors.bright]
+black = "#7f7f7f"
+red = "#ff0000"
+green = "#00ff00"
+yellow = "#ffff00"
+blue = "#5c5cff"
+magenta = "#ff00ff"
+cyan = "#00ffff"
+white = "#ffffff"
+
+# BELL
+# This section documents the [bell] table of the configuration file.
+
+# animation = "Ease" | "EaseOut" | "EaseOutSine" | "EaseOutQuad" | "EaseOutCubic" | "EaseOutQuart" | "EaseOutQuint" | "EaseOutExpo" | "EaseOutCirc" | "Linear"
+# Visual bell animation effect for flashing the screen when the visual bell is rung.
+# Default: "Linear"
+
+# duration = <integer>
+# Duration of the visual bell flash in milliseconds. A `duration` of `0` will disable the visual bell animation.
+# Default: 0
+
+# color = "<string>"
+# Visual bell animation color.
+# Default: "#ffffff"
+
+# command = "<string>" | { program = "<string>", args = ["<string>",] }
+# This program is executed whenever the bell is rung.
+# When set to "None", no command will be executed.
+# Default: "None"
+
+[bell]
+animation = "Linear"
+duration = 0
+# color = "#ffffff"
+# command = "None"
+
+# SELECTION
+# This section documents the [selection] table of the configuration file.
+# semantic_escape_chars = "<string>"
+# This string contains all characters that are used as separators for "semantic words" in Alacritty.
+
+# Default: ",│`|:\"' ()[]{}<>\t"
+
+# save_to_clipboard = true | false
+# When set to true, selected text will be copied to the primary clipboard.
+# Default: false
+
+[selection]
+semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
+save_to_clipboard = true
+
+# CURSOR
+# This section documents the [cursor] table of the configuration file.
+
+# style = { <shape>, <blinking> }
+
+# shape = "Block" | "Underline" | "Beam"
+# Default: "Block"
+
+# blinking = "Never" | "Off" | "On" | "Always"
+# Never - Prevent the cursor from ever blinking
+# Off - Disable blinking by default
+# On - Enable blinking by default
+# Always -Force the cursor to always blink
+# Default: "Off"
+
+# vi_mode_style = { <shape>, <blinking> } | "None"
+# If the vi mode cursor style is "None" or not specified, it will fall back to the active value of the normal cursor.
+# Default: "None"
+
+# blink_interval = <integer>
+# Cursor blinking interval in milliseconds.
+# Default: 750
+
+# blink_timeout = <integer>
+# Time after which cursor stops blinking, in seconds.
+# Specifying 0 will disable timeout for blinking.
+# Default: 5
+
+# unfocused_hollow = true | false
+# When this is true, the cursor will be rendered as a hollow box when the window is not focused.
+# Default: true
+# thickness = <float>
+# Thickness of the cursor relative to the cell width as floating point number from 0.0 to 1.0.
+# Default: 0.15
+
+[cursor]
+style = { shape = "Block", blinking = "Off" }
+unfocused_hollow = true
+thickness = 0.15
+
+# TERMINAL
+# This section documents the [terminal] table of the configuration file.
+# osc52 = "Disabled" | "OnlyCopy" | "OnlyPaste" | "CopyPaste"
+# Controls the ability to write to the system clipboard with the OSC 52 escape sequence. While this escape sequence is useful to copy contents from the remote server, allowing any application to read from the clipboard can be easily abused while not providing significant benefits over explicitly pasting text.
+# Default: "OnlyCopy"
+
+# [terminal]
+
+# MOUSE
+# This section documents the [mouse] table of the configuration file.
+# hide_when_typing = true | false
+# When this is true, the cursor is temporarily hidden when typing.
+# Default: false
+
+# bindings = [{ <mouse>, <mods>, <mode>, <action> | <chars> },]
+# See keyboard.bindings for full documentation on mods, mode, action, and chars.
+
+# When an application running within Alacritty captures the mouse, the `Shift` modifier can be used to suppress mouse reporting. If no action is found for the event, actions for the event without the `Shift` modifier are triggered instead.
+# mouse = "Middle" | "Left" | "Right" | "Back" | "Forward" | <integer>
+# Mouse button which needs to be pressed to trigger this binding.
+# action = <keyboard.bindings.action> | "ExpandSelection"
+
+# ExpandSelection
+# Expand the selection to the current mouse cursor location.
+# Example:
+
+# [mouse]
+# bindings = [
+# { mouse = "Right", mods = "Control", action = "Paste" },
+# ]
+
+[mouse]
+hide_when_typing = false
+
+[general]
+# live_config_reload = true | false
+# Live config reload (changes require restart)
+# Default: true
+
+live_config_reload = true
+# Alacritty - TOML configuration file format.
+# DESCRIPTION
+# An example configuration file for Alacritty preconfigured with default values.
+# SYNTAX
+# Alacritty's configuration file uses the TOML format.
+# The format's specification can be found at https://toml.io/en/v1.0.0.
+# GENERAL
+# import = ["<string>",]
+# Import additional configuration files.
+# Imports are loaded in order, skipping all missing files, with the importing file being loaded last. If a field is already present in a previous import, it will be replaced.
+# All imports must either be absolute paths starting with /, or paths relative to the user's home directory starting with ~/.
+# Example:
+# import = [
+# "~/.config/alacritty/base16-dark.toml",
+# "~/.config/alacritty/keybindings.toml",
+# ]
+import = []
+
