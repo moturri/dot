@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 
-import logging
 import shutil
 import subprocess
 from typing import Any, List, Tuple
@@ -29,9 +28,7 @@ from typing import Any, List, Tuple
 from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
 from qtile_extras.widget import GenPollText
 
-logger = logging.getLogger(__name__)
-
-BRIGHTNESS_ICONS: Tuple[Tuple[int, str, str], ...] = (
+ICONS: Tuple[Tuple[int, str, str], ...] = (
     (80, "gold", "󰃠"),
     (60, "orange", "󰃝"),
     (40, "tan", "󰃟"),
@@ -41,7 +38,7 @@ BRIGHTNESS_ICONS: Tuple[Tuple[int, str, str], ...] = (
 
 
 class BrightctlWidget(GenPollText):  # type: ignore
-    """Minimal and efficient brightness widget using brightnessctl."""
+    """Minimal, stateless brightness widget using brightnessctl."""
 
     def __init__(
         self,
@@ -51,36 +48,24 @@ class BrightctlWidget(GenPollText):  # type: ignore
         **config: Any,
     ) -> None:
         if not shutil.which("brightnessctl"):
-            raise RuntimeError("brightnessctl not found in PATH")
+            raise RuntimeError("brightnessctl not found")
 
         self.step = max(1, min(step, 100))
         self.min_brightness = max(1, min(min_brightness, 100))
-        self._max_brightness = self._get_max_brightness()
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _run(self, args: List[str]) -> str:
         try:
             return subprocess.check_output(args, text=True, timeout=0.5).strip()
-        except Exception as e:
-            logger.warning("brightnessctl command failed: %s", e)
+        except Exception:
             return ""
-
-    def _get_max_brightness(self) -> int:
-        val = self._run(["brightnessctl", "max"])
-        try:
-            return max(1, int(val))
-        except ValueError:
-            logger.error("Invalid max brightness value: %r", val)
-            return 100
 
     def _get_brightness(self) -> int:
         val = self._run(["brightnessctl", "get"])
+        max_val = self._run(["brightnessctl", "max"])
         try:
-            brightness = (int(val) * 100) // self._max_brightness
-            logger.debug("Current brightness: %d%%", brightness)
-            return brightness
-        except (ValueError, ZeroDivisionError):
-            logger.warning("Could not read current brightness: %r", val)
+            return (int(val) * 100) // max(int(max_val), 1)
+        except ValueError:
             return 0
 
     def _set_brightness(self, percent: int) -> None:
@@ -90,15 +75,14 @@ class BrightctlWidget(GenPollText):  # type: ignore
 
     def _icon_and_color(self, brightness: int) -> Tuple[str, str]:
         return next(
-            (color, icon)
-            for threshold, color, icon in BRIGHTNESS_ICONS
-            if brightness >= threshold
+            ((color, icon) for t, color, icon in ICONS if brightness >= t),
+            ("grey", "󰃜"),
         )
 
     def _poll(self) -> str:
-        brightness = self._get_brightness()
-        color, icon = self._icon_and_color(brightness)
-        return f'<span foreground="{color}">{icon}  {brightness}%</span>'
+        b = self._get_brightness()
+        color, icon = self._icon_and_color(b)
+        return f'<span foreground="{color}">{icon}  {b}%</span>'
 
     @expose_command()
     def increase(self) -> None:
