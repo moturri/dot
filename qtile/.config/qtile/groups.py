@@ -4,7 +4,7 @@ from libqtile.lazy import lazy
 
 group_definitions = [
     ("1", "󰣇", ["discord"]),
-    ("2", "󰞷", ["alacritty", "org.wezfurlong.wezterm", "code-oss"]),
+    ("2", "󰞷", ["org.wezfurlong.wezterm", "code-oss"]),
     ("3", "󰆋", ["firefox", "zen"]),
     ("4", "󰊠", ["octopi", "qbittorrent", "wireshark"]),
     (
@@ -15,7 +15,14 @@ group_definitions = [
     (
         "6",
         "󱉟",
-        ["soffice.bin", "calibre", "calibre-gui", "org.pwmt.zathura", "obsidian"],
+        [
+            "soffice.bin",
+            "calibre",
+            "calibre-gui",
+            "org.pwmt.zathura",
+            "obsidian",
+            "xournalpp",
+        ],
     ),
     ("7", "󰟴", ["stremio", "mpv"]),
     (
@@ -82,7 +89,7 @@ def scratches() -> ScratchPad:
             ),
             DropDown(
                 "bluetui",
-                "kitty -e bluetui",
+                "alacritty -e bluetui",
                 width=0.4,
                 height=0.5,
                 x=0.3,
@@ -91,7 +98,7 @@ def scratches() -> ScratchPad:
             ),
             # DropDown(
             #     "impala",
-            #     "kitty -e impala",
+            #     "alacritty -e impala",
             #     width=0.6,
             #     height=0.7,
             #     x=0.2,
@@ -99,8 +106,8 @@ def scratches() -> ScratchPad:
             #     opacity=1,
             # ),
             DropDown(
-                "kitty",
-                "kitty",
+                "alacritty",
+                "alacritty",
                 width=0.8,
                 height=0.8,
                 x=0.1,
@@ -148,7 +155,7 @@ scratch_keys = {
     "arandr": "a",
     "bluetui": "b",
     # "impala": "i",
-    "kitty": "x",
+    "alacritty": "x",
     "localsend": "l",
     "obsidian": "o",
     "pavucontrol-qt": "v",

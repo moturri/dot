@@ -4,7 +4,7 @@ from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.lazy import lazy
 
 mod = "mod4"
-terminal = "kitty"
+terminal = "alacritty"
 
 rofi_scripts = os.path.expanduser("~/.config/rofi/scripts/")
 rofi_calc = "rofi -show calc -modi calc -no-show-match -no-sort"
