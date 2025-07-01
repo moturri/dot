@@ -49,6 +49,7 @@ keys = [
     Key([mod], "t", lazy.spawn(os.path.join(rofi_scripts, "rofi-websearch.sh"))),
     Key([mod], "F12", lazy.spawn(os.path.join(rofi_scripts, "rofi-keys.sh"))),
     Key([mod, "shift"], "a", lazy.spawn(os.path.join(rofi_scripts, "rofi-display.sh"))),
+    Key([mod, "shift"], "i", lazy.spawn(os.path.join(rofi_scripts, "rofi-hotspot.sh"))),
     # Session/window management
     Key([mod], "w", lazy.window.kill()),
     Key([mod], "F11", lazy.window.toggle_fullscreen()),
