@@ -4,7 +4,6 @@ return {
 		lazy = true,
 		event = "BufReadPost",
 		dependencies = {
-			"kyazdani42/nvim-web-devicons",
 			"j-hui/fidget.nvim",
 		},
 		opts = function()
