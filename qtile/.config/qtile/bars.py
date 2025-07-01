@@ -140,7 +140,15 @@ def systemWidgets(
         ]
 
     if show_battery:
-        widgets.append(AcpiWidget(**wdecor))
+        widgets.append(
+            AcpiWidget(
+                name="acpi",
+                mouse_callbacks={
+                    "Button2": lazy.widget["acpi"].refresh(),
+                },
+                **wdecor,
+            )
+        )
 
     return widgets
 

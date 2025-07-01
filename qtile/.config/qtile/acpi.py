@@ -44,7 +44,7 @@ BATTERY_ICONS = (
 
 
 class AcpiWidget(GenPollText):  # type: ignore
-    """Minimal and responsive ACPI-based battery widget."""
+    """Minimal and suckless ACPI-based battery widget."""
 
     def __init__(
         self,
@@ -69,15 +69,21 @@ class AcpiWidget(GenPollText):  # type: ignore
 
     def _get_acpi_data(self) -> Optional[Tuple[int, str, Optional[int]]]:
         try:
-            output = subprocess.check_output(["acpi", "-b"], text=True, timeout=1.0)
+            output = subprocess.check_output(
+                ["acpi", "-b"], text=True, timeout=1.0, env={"LC_ALL": "C.UTF-8"}
+            )
             parts = output.split(":", 1)[1].strip().split(", ")
+
             state = parts[0].lower()
             pct = int(parts[1].rstrip("%")) if parts[1].rstrip("%").isdigit() else 0
 
             minutes = None
             if len(parts) > 2 and ":" in parts[2]:
-                h, m = map(int, parts[2].split(":")[:2])
-                minutes = h * 60 + m
+                try:
+                    h, m = map(int, parts[2].split(":")[:2])
+                    minutes = h * 60 + m
+                except ValueError:
+                    minutes = None
 
             return pct, state, minutes
         except Exception:
@@ -87,11 +93,12 @@ class AcpiWidget(GenPollText):  # type: ignore
         if state == "charging":
             for threshold, icon, color in BATTERY_ICONS:
                 if pct >= threshold:
-                    return f"{CHARGING_ICON}{icon}", color
+                    return f"{CHARGING_ICON} {icon}", color
             return f"{CHARGING_ICON}{EMPTY_ICON}", "darkgreen"
 
         if state == "full":
             return FULL_ICON, "lime"
+
         if pct <= self.critical_threshold:
             return EMPTY_ICON, "red" if pct <= 5 else "orange"
 

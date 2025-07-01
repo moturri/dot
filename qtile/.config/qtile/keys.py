@@ -83,6 +83,7 @@ keys = [
             Key([], "o", lazy.spawn("/usr/bin/octopi")),
             Key([], "l", lazy.spawn("soffice")),
             Key([], "k", lazy.spawn("kitty")),
+            Key([], "a", lazy.spawn("alacritty")),
             Key([], "p", lazy.spawn("pcmanfm-qt")),
             Key([], "z", lazy.spawn("zen-browser")),
             Key([], "c", lazy.spawn("cider")),
