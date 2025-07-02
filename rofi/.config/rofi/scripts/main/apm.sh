@@ -43,9 +43,9 @@ start_ap() {
 
 	echo "Starting Wi-Fi Access Point:"
 	echo "  Interface : $WIFI_INTERFACE"
-	[ -n "$channel" ] && echo "  Channel   : $channel"
 	echo "  SSID      : $SSID"
 	echo "  Password  : [hidden]"
+	[ -n "$channel" ] && echo "  Channel   : $channel"
 	echo
 
 	sudo create_ap "$WIFI_INTERFACE" "$WIFI_INTERFACE" "$SSID" "$PASSWORD" ${channel:+-c "$channel"}
