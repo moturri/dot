@@ -35,13 +35,11 @@ def describe_lazy(cmds):
     return ", ".join(desc)
 
 
-def format_keybinding(key, max_len=30, indent=0):
-    mods = "+".join(format_modifier(mod) for mod in key.modifiers)
-    key_combo = f"{mods}+{key.key}" if mods else key.key
-    desc = describe_lazy(key.commands)
+def format_keybinding(key_obj, display_string, max_len=30, indent=0):
+    desc = describe_lazy(key_obj.commands)
 
     # Adjust spacing with padding
-    combo = key_combo.ljust(max_len)
+    combo = display_string.ljust(max_len)
     spacing = " " * indent
     return f"{spacing}{combo}  {desc}"
 
@@ -56,23 +54,23 @@ def collect_keybindings():
         if isinstance(key, Key):
             mods = "+".join(format_modifier(mod) for mod in key.modifiers)
             combo = f"{mods}+{key.key}" if mods else key.key
-            flat_keys.append((key, combo))
+            flat_keys.append((key, combo, combo))  # (key_obj, display_string, sort_string)
             max_len = max(max_len, len(combo))
         elif isinstance(key, KeyChord):
-            chord_combo = (
-                "+".join(format_modifier(mod) for mod in key.modifiers) + f"+{key.key}"
-            )
-            max_len = max(max_len, len(chord_combo))
+            chord_mods = "+".join(format_modifier(mod) for mod in key.modifiers)
+            chord_combo_prefix = f"{chord_mods}+{key.key}" if chord_mods else key.key
+            max_len = max(max_len, len(chord_combo_prefix))
             for subkey in key.submappings:
-                mods = "+".join(format_modifier(mod) for mod in subkey.modifiers)
-                combo = f"{mods}+{subkey.key}" if mods else subkey.key
-                full_combo = f"{chord_combo} → {combo}"
-                flat_keys.append((subkey, full_combo))
-                max_len = max(max_len, len(full_combo))
+                sub_mods = "+".join(format_modifier(mod) for mod in subkey.modifiers)
+                sub_combo = f"{sub_mods}+{subkey.key}" if sub_mods else subkey.key
+                display_string = f"{chord_combo_prefix} → {sub_combo}"
+                sort_string = f"{chord_combo_prefix}{sub_combo}" # For sorting, remove the arrow
+                flat_keys.append((subkey, display_string, sort_string))
+                max_len = max(max_len, len(display_string))
 
     # Format and sort
-    for key, combo in sorted(flat_keys, key=lambda x: x[1]):
-        lines.append(format_keybinding(key, max_len))
+    for key_obj, display_string, sort_string in sorted(flat_keys, key=lambda x: x[2]):
+        lines.append(format_keybinding(key_obj, display_string, max_len))
 
     return "\n".join(lines)
 
