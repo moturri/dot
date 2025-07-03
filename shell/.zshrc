@@ -130,7 +130,7 @@ unset key
 # }}} End configuration added by Zim install
 
 
-export TERMINAL=kitty
+export TERMINAL=alacritty
 export EDITOR=nvim
 export VISUAL=nvim
 
@@ -140,6 +140,7 @@ alias vi="nvim"
 alias lta="eza -lTag --icons"
 alias lta2="eza -lTag --level=2 --icons"
 alias lta3="eza -lTag --level=3 --icons"
+alias cat="bat --paging=never --style=full"
 
 
 cht() {
@@ -195,5 +196,3 @@ yayfz-widget() {
 }
 zle -N yayfz-widget
 bindkey '^Y' yayfz-widget
-
-alias cat="bat --paging=never --style=full"

@@ -8,7 +8,7 @@ ignore_newline = no
 # Notification display
 alignment = left
 show_age_threshold = 60
-show_indicators = no
+show_indicators = yes
 history_length = 10
 sticky_history = yes
 hide_duplicate_count = true
@@ -25,9 +25,9 @@ separator_height = 2
 separator_color = frame
 frame_width = 0
 frame_color = "#000000"
-transparency = 10
+transparency = 0
 width = (0, 400)
-height = (0, 400)
+height = (0, 200)
 scale = 0
 
 # Placement
@@ -56,19 +56,19 @@ class = "Dunst"
 
 [urgency_low]
 background = "#000000"
-foreground = "#888888"
+foreground = "#8ec07c"
 timeout = 10
 default_icon = dialog-information
 
 [urgency_normal]
 background = "#000000"
-foreground = "#dddddd"
+foreground = "#ebdbb2"
 timeout = 10
 default_icon = dialog-information
 
 [urgency_critical]
 background = "#000000"
-foreground = "#ff5555"
+foreground = "#fb4934"
 timeout = 30
 default_icon = dialog-warning
 

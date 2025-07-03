@@ -2,7 +2,7 @@ return {
 	-- Git CLI wrapper
 	{
 		"tpope/vim-fugitive",
-		cmd = { "Git", "G" }, -- Lazy load
+		cmd = { "Git", "G" },
 	},
 
 	-- Git signs & inline actions
