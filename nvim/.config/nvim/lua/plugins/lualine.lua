@@ -1,54 +1,31 @@
 return {
 	{
 		"nvim-lualine/lualine.nvim",
-		lazy = true,
-		event = "BufReadPost",
-		dependencies = {
-			"j-hui/fidget.nvim",
-		},
 		opts = function()
-			local progress_util
-			local has_fidget, fidget = pcall(require, "fidget")
-			if has_fidget then
-				fidget.setup({})
-				local ok, progress = pcall(require, "fidget.progress")
-				if ok then
-					progress_util = progress
-				end
-			end
-
-			local has_node = vim.fn.executable("node") == 1
-			local cached_node_version = nil
-
-			local function fidget_status()
-				if progress_util then
-					local msg = progress_util.get_progress_message()
-					return msg and msg.title or ""
-				end
-				return ""
-			end
+			-- Memoize node version for performance
+			local cached_node_version
 
 			local function python_env()
-				if vim.bo.filetype == "python" and vim.env.VIRTUAL_ENV then
-					return "🐍 " .. vim.env.VIRTUAL_ENV:match("^.+/(.+)$")
+				local venv = vim.env.VIRTUAL_ENV
+				if venv and venv ~= "" then
+					return "🐍 " .. vim.fn.fnamemodify(venv, ":t")
 				end
 				return ""
 			end
 
 			local function node_version()
-				local ft = vim.bo.filetype
-				if has_node and ft:match("javascript") or ft:match("typescript") or ft:match("react$") then
-					if not cached_node_version then
-						local handle = io.popen("node -v 2>/dev/null")
-						if handle then
-							local version = handle:read("*a")
-							handle:close()
-							cached_node_version = version and version:gsub("\n", "") or ""
-						end
-					end
-					return cached_node_version
+				if not vim.fn.executable("node") == 1 then
+					return ""
 				end
-				return ""
+				local ft = vim.bo.filetype
+				if not (ft:match("javascript") or ft:match("typescript") or ft:match("react$")) then
+					return ""
+				end
+
+				if not cached_node_version then
+					cached_node_version = vim.fn.system("node -v"):gsub("\n", "")
+				end
+				return cached_node_version
 			end
 
 			return {
@@ -88,14 +65,13 @@ return {
 						{
 							"filename",
 							file_status = true,
-							path = 1,
+							path = 1, -- relative path
 							symbols = {
 								modified = " 󰐗",
 								readonly = " ",
 								unnamed = "[No Name]",
 							},
 						},
-						fidget_status,
 					},
 					lualine_x = {
 						"filetype",
@@ -160,3 +136,4 @@ return {
 		end,
 	},
 }
+

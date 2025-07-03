@@ -14,41 +14,41 @@ ENV_DIR="$HOME/.config/create_ap"
 # === Functions ===
 
 die() {
-	echo "Error: $1" >&2
-	exit 1
+  echo "Error: $1" >&2
+  exit 1
 }
 
 get_channel() {
-	iw dev "$WIFI_INTERFACE" info 2>/dev/null | grep -oE 'channel [0-9]+' | awk '{print $2}' || true
+  iw dev "$WIFI_INTERFACE" info 2>/dev/null | grep -oE 'channel [0-9]+' | awk '{print $2}' || true
 }
 
 load_env() {
-	local profile="$1"
-	local env_file="$ENV_DIR/env_$profile"
-	if [ ! -f "$env_file" ]; then
-		die "Missing profile: $env_file"
-	fi
-	# shellcheck disable=SC1090
-	. "$env_file"
+  local profile="$1"
+  local env_file="$ENV_DIR/env_$profile"
+  if [ ! -f "$env_file" ]; then
+    die "Missing profile: $env_file"
+  fi
+  # shellcheck disable=SC1090
+  . "$env_file"
 }
 
 to_lower() {
-	# Works in both bash and zsh
-	echo "$1" | tr '[:upper:]' '[:lower:]'
+  # Works in both bash and zsh
+  echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
 start_ap() {
-	local channel
-	channel=$(get_channel)
+  local channel
+  channel=$(get_channel)
 
-	echo "Starting Wi-Fi Access Point:"
-	echo "  Interface : $WIFI_INTERFACE"
-	echo "  SSID      : $SSID"
-	echo "  Password  : [hidden]"
-	[ -n "$channel" ] && echo "  Channel   : $channel"
-	echo
+  echo "Starting Wi-Fi Access Point:"
+  echo "  Interface : $WIFI_INTERFACE"
+  echo "  SSID      : $SSID"
+  echo "  Password  : [hidden]"
+  [ -n "$channel" ] && echo "  Channel   : $channel"
+  echo
 
-	sudo create_ap "$WIFI_INTERFACE" "$WIFI_INTERFACE" "$SSID" "$PASSWORD" ${channel:+-c "$channel"}
+  sudo create_ap "$WIFI_INTERFACE" "$WIFI_INTERFACE" "$SSID" "$PASSWORD" ${channel:+-c "$channel"}
 }
 
 # === Main ===
@@ -63,8 +63,8 @@ read -r confirm
 confirm=$(to_lower "$confirm")
 
 if [ "$confirm" = "y" ]; then
-	start_ap
+  start_ap
 else
-	echo "Aborted."
-	exit 0
+  echo "Aborted."
+  exit 0
 fi

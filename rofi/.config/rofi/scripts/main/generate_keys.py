@@ -54,7 +54,9 @@ def collect_keybindings():
         if isinstance(key, Key):
             mods = "+".join(format_modifier(mod) for mod in key.modifiers)
             combo = f"{mods}+{key.key}" if mods else key.key
-            flat_keys.append((key, combo, combo))  # (key_obj, display_string, sort_string)
+            flat_keys.append(
+                (key, combo, combo)
+            )  # (key_obj, display_string, sort_string)
             max_len = max(max_len, len(combo))
         elif isinstance(key, KeyChord):
             chord_mods = "+".join(format_modifier(mod) for mod in key.modifiers)
@@ -64,7 +66,9 @@ def collect_keybindings():
                 sub_mods = "+".join(format_modifier(mod) for mod in subkey.modifiers)
                 sub_combo = f"{sub_mods}+{subkey.key}" if sub_mods else subkey.key
                 display_string = f"{chord_combo_prefix} → {sub_combo}"
-                sort_string = f"{chord_combo_prefix}{sub_combo}" # For sorting, remove the arrow
+                sort_string = (
+                    f"{chord_combo_prefix}{sub_combo}"  # For sorting, remove the arrow
+                )
                 flat_keys.append((subkey, display_string, sort_string))
                 max_len = max(max_len, len(display_string))
 

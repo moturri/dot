@@ -1,13 +1,16 @@
 import os
 from typing import List, Union
+
 from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.lazy import lazy
 
 mod = "mod4"
 terminal = "alacritty"
 
+
 def rofi_script(script_name: str) -> str:
     return os.path.expanduser(f"~/.config/rofi/scripts/{script_name}")
+
 
 rofi_calc = "rofi -show calc -modi calc -no-show-match -no-sort"
 rofi_emoji = "rofi -modi emoji -show emoji"

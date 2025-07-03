@@ -55,9 +55,6 @@ return {
 				map("n", "<leader>gr", vim.lsp.buf.references, opts)
 				map("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 				map("n", "<leader>rn", vim.lsp.buf.rename, opts)
-				map("n", "<leader>f", function()
-					vim.lsp.buf.format({ async = true })
-				end, opts)
 
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then

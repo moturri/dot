@@ -27,12 +27,13 @@ def decorated_widget(widget_class: Any, **config: Any) -> Any:
                     radius=12,
                     filled=True,
                     group=True,
-                ) # type: ignore
+                )  # type: ignore
             ],
             "padding": theme["padding"],
             **config,
         }
     )
+
 
 def spacer(length: int = 10) -> widget.Spacer:
     return widget.Spacer(length=length)

@@ -36,7 +36,11 @@ def run_command(command: List[str], timeout: float = 0.5) -> Optional[str]:
             timeout=timeout,
             env={"LC_ALL": "C.UTF-8", **os.environ},
         ).strip()
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
         return None
 
 

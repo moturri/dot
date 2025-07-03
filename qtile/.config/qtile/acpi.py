@@ -25,7 +25,6 @@ from typing import Any, Optional, Tuple
 
 from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
-
 from widget_utils import check_dependency, run_command
 
 CHARGING_ICON = "󱐋"
