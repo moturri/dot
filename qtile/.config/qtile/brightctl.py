@@ -21,12 +21,12 @@
 # SOFTWARE.
 
 
-import shutil
-import subprocess
-from typing import Any, List, Tuple
+from typing import Any, Tuple
 
-from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
+from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
+
+from widget_utils import check_dependency, run_command
 
 ICONS: Tuple[Tuple[int, str, str], ...] = (
     (80, "gold", "󰃠"),
@@ -47,30 +47,24 @@ class BrightctlWidget(GenPollText):  # type: ignore
         update_interval: float = 9999.0,
         **config: Any,
     ) -> None:
-        if not shutil.which("brightnessctl"):
-            raise RuntimeError("brightnessctl not found")
-
+        check_dependency("brightnessctl")
         self.step = max(1, min(step, 100))
         self.min_brightness = max(1, min(min_brightness, 100))
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
-    def _run(self, args: List[str]) -> str:
-        try:
-            return subprocess.check_output(args, text=True, timeout=0.5).strip()
-        except Exception:
-            return ""
-
     def _get_brightness(self) -> int:
-        val = self._run(["brightnessctl", "get"])
-        max_val = self._run(["brightnessctl", "max"])
+        val = run_command(["brightnessctl", "get"])
+        max_val = run_command(["brightnessctl", "max"])
+        if val is None or max_val is None:
+            return 0
         try:
             return (int(val) * 100) // max(int(max_val), 1)
-        except ValueError:
+        except (ValueError, TypeError):
             return 0
 
     def _set_brightness(self, percent: int) -> None:
         clamped = max(self.min_brightness, min(100, percent))
-        self._run(["brightnessctl", "set", f"{clamped}%"])
+        run_command(["brightnessctl", "set", f"{clamped}%"])
         self.force_update()
 
     def _icon_and_color(self, brightness: int) -> Tuple[str, str]:

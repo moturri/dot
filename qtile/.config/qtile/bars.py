@@ -16,20 +16,23 @@ theme: Dict[str, Any] = {
 }
 
 
-wdecor: Dict[str, Any] = {
-    "background": theme["bg"],
-    "foreground": theme["fg"],
-    "decorations": [
-        RectDecoration(
-            use_widget_background=True,
-            radius=12,
-            filled=True,
-            group=True,
-        )  # type: ignore
-    ],
-    "padding": theme["padding"],
-}
-
+def decorated_widget(widget_class: Any, **config: Any) -> Any:
+    return widget_class(
+        **{
+            "background": theme["bg"],
+            "foreground": theme["fg"],
+            "decorations": [
+                RectDecoration(
+                    use_widget_background=True,
+                    radius=12,
+                    filled=True,
+                    group=True,
+                ) # type: ignore
+            ],
+            "padding": theme["padding"],
+            **config,
+        }
+    )
 
 def spacer(length: int = 10) -> widget.Spacer:
     return widget.Spacer(length=length)
@@ -37,10 +40,7 @@ def spacer(length: int = 10) -> widget.Spacer:
 
 def clockWidget() -> List[Any]:
     return [
-        widget.Clock(
-            format="   %e %b    %H:%M  ",
-            **wdecor,
-        ),
+        decorated_widget(widget.Clock, format="   %e %b    %H:%M  "),
         spacer(),
     ]
 
@@ -54,7 +54,8 @@ def systemTray() -> List[Any]:
 
 def groupWidgets() -> List[Any]:
     return [
-        widget.GroupBox(
+        decorated_widget(
+            widget.GroupBox,
             hide_unused=True,
             highlight_method="text",
             urgent_alert_method="text",
@@ -62,7 +63,6 @@ def groupWidgets() -> List[Any]:
             disable_drag=True,
             this_current_screen_border=theme["accent"],
             urgent_border=theme["alert"],
-            **wdecor,
         ),
         widget.TaskList(
             icon_size=24,
@@ -84,15 +84,16 @@ def systemWidgets(
     show_battery: bool = True,
 ) -> List[Any]:
     widgets: List[Any] = [
-        widget.TextBox(
+        decorated_widget(
+            widget.TextBox,
             text=" 󰂚 ",
             mouse_callbacks={
                 "Button1": lazy.spawn("dunstctl history-pop"),
                 "Button3": lazy.spawn("dunstctl history-clear"),
             },
-            **wdecor,
         ),
-        widget.Mpris2(
+        decorated_widget(
+            widget.Mpris2,
             name="mpris",
             format="󰀰 ",
             no_metadata_text="󱆵 ",
@@ -100,10 +101,10 @@ def systemWidgets(
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
-            **wdecor,
         ),
         spacer(),
-        AudioWidget(
+        decorated_widget(
+            AudioWidget,
             name="audio",
             mouse_callbacks={
                 "Button2": lazy.widget["audio"].refresh(),
@@ -111,9 +112,9 @@ def systemWidgets(
                 "Button4": lazy.widget["audio"].volume_up(),
                 "Button5": lazy.widget["audio"].volume_down(),
             },
-            **wdecor,
         ),
-        MicWidget(
+        decorated_widget(
+            MicWidget,
             name="mic",
             mouse_callbacks={
                 "Button2": lazy.widget["mic"].refresh(),
@@ -121,32 +122,31 @@ def systemWidgets(
                 "Button4": lazy.widget["mic"].volume_up(),
                 "Button5": lazy.widget["mic"].volume_down(),
             },
-            **wdecor,
         ),
         spacer(),
     ]
 
     if show_brightness:
         widgets += [
-            BrightctlWidget(
+            decorated_widget(
+                BrightctlWidget,
                 name="brightctl",
                 mouse_callbacks={
                     "Button4": lazy.widget["brightctl"].increase(),
                     "Button5": lazy.widget["brightctl"].decrease(),
                 },
-                **wdecor,
             ),
             spacer(),
         ]
 
     if show_battery:
         widgets.append(
-            AcpiWidget(
+            decorated_widget(
+                AcpiWidget,
                 name="acpi",
                 mouse_callbacks={
                     "Button2": lazy.widget["acpi"].refresh(),
                 },
-                **wdecor,
             )
         )
 

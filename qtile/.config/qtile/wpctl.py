@@ -21,12 +21,12 @@
 # SOFTWARE.
 
 
-import os
-import subprocess
-from typing import Any, List, Tuple
+from typing import Any, Tuple
 
-from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
+from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
+
+from widget_utils import check_dependency, run_command
 
 
 class AudioWidget(GenPollText):  # type: ignore
@@ -49,26 +49,23 @@ class AudioWidget(GenPollText):  # type: ignore
         show_icon: bool = True,
         **config: Any,
     ) -> None:
+        check_dependency("wpctl")
         self.device = device
         self.step = max(1, min(step, 25))
         self.max_volume = max(50, min(max_volume, 150))
         self.show_icon = show_icon
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
-    def _run(self, args: List[str]) -> str:
-        try:
-            return subprocess.check_output(
-                args, text=True, timeout=0.5, env={"LC_ALL": "C.UTF-8", **os.environ}
-            ).strip()
-        except Exception:
-            return ""
-
     def _get_state(self) -> Tuple[int, bool]:
-        output = self._run(["wpctl", "get-volume", self.device])
+        output = run_command(["wpctl", "get-volume", self.device])
+        if not output:
+            return 0, True
+
         try:
             vol = round(float(output.split()[1]) * 100)
         except (IndexError, ValueError):
             vol = 0
+
         muted = "[MUTED]" in output
         return vol, muted
 
@@ -88,7 +85,7 @@ class AudioWidget(GenPollText):  # type: ignore
 
     def _set_volume(self, value: int) -> None:
         vol = max(0, min(value, self.max_volume))
-        self._run(["wpctl", "set-volume", self.device, f"{vol}%"])
+        run_command(["wpctl", "set-volume", self.device, f"{vol}%"])
         self.force_update()
 
     @expose_command()
@@ -103,17 +100,17 @@ class AudioWidget(GenPollText):  # type: ignore
 
     @expose_command()
     def toggle_mute(self) -> None:
-        self._run(["wpctl", "set-mute", self.device, "toggle"])
+        run_command(["wpctl", "set-mute", self.device, "toggle"])
         self.force_update()
 
     @expose_command()
     def mute(self) -> None:
-        self._run(["wpctl", "set-mute", self.device, "1"])
+        run_command(["wpctl", "set-mute", self.device, "1"])
         self.force_update()
 
     @expose_command()
     def unmute(self) -> None:
-        self._run(["wpctl", "set-mute", self.device, "0"])
+        run_command(["wpctl", "set-mute", self.device, "0"])
         self.force_update()
 
     @expose_command()

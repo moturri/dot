@@ -1,28 +1,28 @@
 import os
-
+from typing import List, Union
 from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.lazy import lazy
 
 mod = "mod4"
 terminal = "alacritty"
 
-rofi_scripts = os.path.expanduser("~/.config/rofi/scripts/")
+def rofi_script(script_name: str) -> str:
+    return os.path.expanduser(f"~/.config/rofi/scripts/{script_name}")
+
 rofi_calc = "rofi -show calc -modi calc -no-show-match -no-sort"
 rofi_emoji = "rofi -modi emoji -show emoji"
 rofi_clipboard = "rofi -modi 'clipboard:greenclip print' -show clipboard"
 rofi_drun = "rofi -show drun"
 rofi_window = "rofi -show window"
 
-keys = [
+keys: List[Union[Key, KeyChord]] = [
     # Window navigation
     Key([mod], "h", lazy.layout.left()),
     Key([mod], "l", lazy.layout.right()),
     Key([mod], "j", lazy.layout.down()),
     Key([mod], "k", lazy.layout.up()),
-    Key(["mod1"], "Tab", lazy.window.bring_to_front(), lazy.group.next_window()),
-    Key(
-        ["mod1", "shift"], "Tab", lazy.window.bring_to_front(), lazy.group.prev_window()
-    ),
+    Key(["mod1"], "Tab", lazy.group.next_window()),
+    Key(["mod1", "shift"], "Tab", lazy.group.prev_window()),
     # Window swapping
     Key([mod, "shift"], "h", lazy.layout.swap_left()),
     Key([mod, "shift"], "l", lazy.layout.swap_right()),
@@ -46,17 +46,17 @@ keys = [
     Key([mod, "shift"], "c", lazy.spawn(rofi_calc)),
     Key([mod, "shift"], "e", lazy.spawn(rofi_emoji)),
     Key([mod], "v", lazy.spawn(rofi_clipboard)),
-    Key([mod], "t", lazy.spawn(os.path.join(rofi_scripts, "rofi-websearch.sh"))),
-    Key([mod], "F12", lazy.spawn(os.path.join(rofi_scripts, "rofi-keys.sh"))),
-    Key([mod, "shift"], "a", lazy.spawn(os.path.join(rofi_scripts, "rofi-display.sh"))),
-    Key([mod, "shift"], "i", lazy.spawn(os.path.join(rofi_scripts, "rofi-hotspot.sh"))),
+    Key([mod], "t", lazy.spawn(rofi_script("rofi-websearch.sh"))),
+    Key([mod], "F12", lazy.spawn(rofi_script("rofi-keys.sh"))),
+    Key([mod, "shift"], "a", lazy.spawn(rofi_script("rofi-display.sh"))),
+    Key([mod, "shift"], "i", lazy.spawn(rofi_script("rofi-hotspot.sh"))),
     # Session/window management
     Key([mod], "w", lazy.window.kill()),
     Key([mod], "F11", lazy.window.toggle_fullscreen()),
     Key([mod], "F4", lazy.window.toggle_floating()),
     Key([mod, "control"], "r", lazy.reload_config()),
     Key([mod, "control"], "q", lazy.shutdown()),
-    Key([], "XF86PowerOff", lazy.spawn(os.path.join(rofi_scripts, "rofi-power.sh"))),
+    Key([], "XF86PowerOff", lazy.spawn(rofi_script("rofi-power.sh"))),
     # Multi-monitor
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),

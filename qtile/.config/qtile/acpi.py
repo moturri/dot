@@ -21,11 +21,12 @@
 # SOFTWARE.
 
 
-import subprocess
 from typing import Any, Optional, Tuple
 
-from libqtile.widget.base import expose_command  # type: ignore[attr-defined]
+from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
+
+from widget_utils import check_dependency, run_command
 
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
@@ -53,6 +54,7 @@ class AcpiWidget(GenPollText):  # type: ignore
         critical_threshold: int = 20,
         **config: Any,
     ) -> None:
+        check_dependency("acpi")
         self.show_time = show_time
         self.critical_threshold = max(5, min(25, critical_threshold))
         super().__init__(func=self._poll, update_interval=update_interval, **config)
@@ -68,25 +70,22 @@ class AcpiWidget(GenPollText):  # type: ignore
         return f'<span foreground="{color}">{icon} {pct}%{time_str}</span>'
 
     def _get_acpi_data(self) -> Optional[Tuple[int, str, Optional[int]]]:
-        try:
-            output = subprocess.check_output(
-                ["acpi", "-b"], text=True, timeout=1.0, env={"LC_ALL": "C.UTF-8"}
-            )
-            parts = output.split(":", 1)[1].strip().split(", ")
+        output = run_command(["acpi", "-b"])
+        if not output:
+            return None
 
+        try:
+            parts = output.split(":", 1)[1].strip().split(", ")
             state = parts[0].lower()
-            pct = int(parts[1].rstrip("%")) if parts[1].rstrip("%").isdigit() else 0
+            pct = int(parts[1].rstrip("%"))
 
             minutes = None
             if len(parts) > 2 and ":" in parts[2]:
-                try:
-                    h, m = map(int, parts[2].split(":")[:2])
-                    minutes = h * 60 + m
-                except ValueError:
-                    minutes = None
+                h, m = map(int, parts[2].split(":")[:2])
+                minutes = h * 60 + m
 
             return pct, state, minutes
-        except Exception:
+        except (IndexError, ValueError):
             return None
 
     def _icon_color(self, pct: int, state: str) -> Tuple[str, str]:
