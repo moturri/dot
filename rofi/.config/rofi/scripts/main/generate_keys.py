@@ -1,29 +1,27 @@
 import sys
-sys.path.append('/home/m/.config/qtile/')
-from keys import keys  # Adjust this path if needed
+
+sys.path.append("/home/m/.config/qtile/")
+
+from keys import keys
 from libqtile.config import Key, KeyChord
+
+MODIFIER_ICONS = {
+    "mod4": " ",
+    "shift": "⇧ ",
+    "control": "Ctrl",
+    "mod1": "Alt",
+}
 
 
 def format_modifier(mod: str) -> str:
-    return {
-        "mod4": "",  # Windows/Super
-        "shift": "󰘶",  # Shift symbol
-        "control": "Ctrl",
-        "mod1": "Alt",  # Alt key
-    }.get(mod, mod)
-
-
-def format_keybinding(key, max_len):
-    mods = "+".join(format_modifier(mod) for mod in key.modifiers)
-    key_str = f"{mods}+{key.key}"
-    return f"{key_str:<{max_len}} → {describe_lazy(key.commands)}"
+    return MODIFIER_ICONS.get(mod, mod.capitalize())
 
 
 def describe_lazy(cmds):
     desc = []
     for cmd in cmds:
         if cmd.name == "spawn":
-            desc.append(f"Run: {cmd.args[0]}")
+            desc.append(f"Run '{cmd.args[0]}'")
         elif cmd.name == "layout":
             desc.append(f"Layout.{cmd.attr}()")
         elif cmd.name == "window":
@@ -37,43 +35,48 @@ def describe_lazy(cmds):
     return ", ".join(desc)
 
 
+def format_keybinding(key, max_len=30, indent=0):
+    mods = "+".join(format_modifier(mod) for mod in key.modifiers)
+    key_combo = f"{mods}+{key.key}" if mods else key.key
+    desc = describe_lazy(key.commands)
+
+    # Adjust spacing with padding
+    combo = key_combo.ljust(max_len)
+    spacing = " " * indent
+    return f"{spacing}{combo}  {desc}"
+
+
 def collect_keybindings():
-    bindings = []
+    lines = []
+    max_len = 0
+    flat_keys = []
+
+    # Flatten keys and compute max_len
     for key in keys:
         if isinstance(key, Key):
             mods = "+".join(format_modifier(mod) for mod in key.modifiers)
-            key_str = f"{mods}+{key.key}"
-            bindings.append((key, key_str))
+            combo = f"{mods}+{key.key}" if mods else key.key
+            flat_keys.append((key, combo))
+            max_len = max(max_len, len(combo))
         elif isinstance(key, KeyChord):
-            chord_mods = "+".join(format_modifier(mod) for mod in key.modifiers)
-            chord = f"{chord_mods}+{key.key}"
+            chord_combo = (
+                "+".join(format_modifier(mod) for mod in key.modifiers) + f"+{key.key}"
+            )
+            max_len = max(max_len, len(chord_combo))
             for subkey in key.submappings:
-                submods = "+".join(format_modifier(mod) for mod in subkey.modifiers)
-                full_key_str = (
-                    f"{chord} then {submods}+{subkey.key}"
-                    if submods
-                    else f"{chord} then {subkey.key}"
-                )
-                bindings.append((subkey, full_key_str))
-    return bindings
+                mods = "+".join(format_modifier(mod) for mod in subkey.modifiers)
+                combo = f"{mods}+{subkey.key}" if mods else subkey.key
+                full_combo = f"{chord_combo} → {combo}"
+                flat_keys.append((subkey, full_combo))
+                max_len = max(max_len, len(full_combo))
+
+    # Format and sort
+    for key, combo in sorted(flat_keys, key=lambda x: x[1]):
+        lines.append(format_keybinding(key, max_len))
+
+    return "\n".join(lines)
 
 
-def main():
-    keybindings_raw = collect_keybindings()
-    max_len = 0
-    for key, _ in keybindings_raw:
-        mods = "+".join(format_modifier(mod) for mod in key.modifiers)
-        key_str = f"{mods}+{key.key}"
-        if len(key_str) > max_len:
-            max_len = len(key_str)
-
-    keybindings = []
-    for key, key_str in keybindings_raw:
-        keybindings.append(f"{key_str:<{max_len}} → {describe_lazy(key.commands)}")
-
-    for line in sorted(keybindings):
-        print(line)
-
-
+# Output
 if __name__ == "__main__":
-    main()
+    print(collect_keybindings())
