@@ -25,7 +25,7 @@ from typing import Any, Optional, Tuple
 
 from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
-from widget_utils import check_dependency, run_command
+from widget_utils import run_command
 
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
@@ -44,16 +44,17 @@ BATTERY_ICONS = (
 
 
 class AcpiWidget(GenPollText):  # type: ignore
-    """Minimal and suckless ACPI-based battery widget."""
+    """Minimal and efficient ACPI-based battery widget using /sys or acpi fallback."""
 
     def __init__(
         self,
         update_interval: float = 15.0,
         show_time: bool = False,
         critical_threshold: int = 20,
+        battery_path: str = "/sys/class/power_supply/BAT0",
         **config: Any,
     ) -> None:
-        check_dependency("acpi")
+        self.battery_path = battery_path
         self.show_time = show_time
         self.critical_threshold = max(5, min(25, critical_threshold))
         super().__init__(func=self._poll, update_interval=update_interval, **config)
@@ -69,6 +70,48 @@ class AcpiWidget(GenPollText):  # type: ignore
         return f'<span foreground="{color}">{icon} {pct}%{time_str}</span>'
 
     def _get_acpi_data(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        """Attempt to get battery data from /sys; fallback to `acpi` command."""
+        try:
+            pct = self._read_int("capacity")
+            state = self._read("status").lower()
+
+            minutes = self._calculate_time(state)
+            return pct, state, minutes
+
+        except (FileNotFoundError, ValueError, OSError):
+            return self._fallback_acpi()
+
+    def _read(self, name: str) -> str:
+        with open(f"{self.battery_path}/{name}", "r", encoding="utf-8") as f:
+            return f.read().strip()
+
+    def _read_int(self, name: str) -> int:
+        return int(self._read(name))
+
+    def _calculate_time(self, state: str) -> Optional[int]:
+        """Estimate remaining time from /sys if discharging."""
+        if state != "discharging":
+            return None
+
+        try:
+            charge_now = self._read_int("charge_now")
+            charge_full = self._read_int("charge_full")
+            current_now = self._read_int("current_now")
+            if current_now > 0:
+                return int((charge_now / current_now) * 60)
+        except FileNotFoundError:
+            try:
+                energy_now = self._read_int("energy_now")
+                energy_full = self._read_int("energy_full")
+                power_now = self._read_int("power_now")
+                if power_now > 0:
+                    return int((energy_now / power_now) * 60)
+            except FileNotFoundError:
+                return None
+
+        return None
+
+    def _fallback_acpi(self) -> Optional[Tuple[int, str, Optional[int]]]:
         output = run_command(["acpi", "-b"])
         if not output:
             return None
@@ -77,12 +120,10 @@ class AcpiWidget(GenPollText):  # type: ignore
             parts = output.split(":", 1)[1].strip().split(", ")
             state = parts[0].lower()
             pct = int(parts[1].rstrip("%"))
-
             minutes = None
             if len(parts) > 2 and ":" in parts[2]:
                 h, m = map(int, parts[2].split(":")[:2])
                 minutes = h * 60 + m
-
             return pct, state, minutes
         except (IndexError, ValueError):
             return None
