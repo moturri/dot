@@ -8,7 +8,7 @@ ignore_newline = no
 # Notification display
 alignment = left
 show_age_threshold = 60
-show_indicators = yes
+show_indicators = no
 history_length = 10
 sticky_history = yes
 hide_duplicate_count = true
