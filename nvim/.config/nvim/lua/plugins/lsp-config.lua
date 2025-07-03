@@ -71,6 +71,9 @@ return {
 			end
 
 			for _, server in ipairs(mason_lspconfig.get_installed_servers() or {}) do
+				if server == "tombi" then
+					goto continue
+				end
 				local ok, server_module = pcall(function()
 					return lspconfig[server]
 				end)
@@ -80,6 +83,7 @@ return {
 						on_attach = on_attach,
 					})
 				end
+				::continue::
 			end
 		end,
 	},
