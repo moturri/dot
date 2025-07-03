@@ -21,13 +21,15 @@ c.fonts.default_size = "12pt"
 
 # Privacy & Security
 c.content.cookies.accept = "no-3rdparty"
-c.content.javascript.enabled = True  # Some sites need this, disable if you want max security
+c.content.javascript.enabled = (
+    True  # Some sites need this, disable if you want max security
+)
 c.content.autoplay = False
 c.content.blocking.method = "both"
 c.content.blocking.adblock.lists = [
     "https://easylist.to/easylist/easylist.txt",
     "https://easylist.to/easylist/easyprivacy.txt",
-    "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt"
+    "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt",
 ]
 
 # Search engines
@@ -58,4 +60,3 @@ c.editor.command = ["kitty", "-e", "nvim", "{}"]
 
 # Disable notifications (can be noisy)
 c.content.notifications.enabled = False
-
