@@ -132,9 +132,9 @@ unset key
 # }}} End configuration added by Zim install
 
 
-# export TERMINAL=kitty
-# export EDITOR=nvim
-# export VISUAL=nvim
+export TERMINAL=kitty
+export EDITOR=nvim
+export VISUAL=nvim
 
 
 alias ls="eza --icons=always"
@@ -158,7 +158,7 @@ tldrr() {
 
   if [[ -n $cmd ]]; then
     tldr "$cmd"
-    echo -e "\n[Press Enter to return to prompt]"
+    echo -e "\n[Enter]"
     read -r
   fi
 }
@@ -184,7 +184,7 @@ yayfz() {
 
   if [[ -n $selected_pkg ]]; then
     yay -Si "$selected_pkg" 2>/dev/null || yay -Qi "$selected_pkg" 2>/dev/null
-    echo "\n[Press Enter to return to prompt]"
+    echo "\n[Enter]"
     read -r
   fi
 }

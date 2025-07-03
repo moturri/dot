@@ -40,8 +40,7 @@ def format_keybinding(key_obj, display_string, max_len=30, indent=0):
 
     # Adjust spacing with padding
     combo = display_string.ljust(max_len)
-    spacing = " " * indent
-    return f"{spacing}{combo}  {desc}"
+    return f"{combo}: {desc}"
 
 
 def collect_keybindings():
