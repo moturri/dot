@@ -53,8 +53,6 @@ layouts = [
 
 # transparent = "#00000000"
 # wallpaper_path = "/home/m/.config/qtile/wallpaper/arc.jpg"
-# if not os.path.exists(wallpaper_path):
-#     wallpaper_path = "/usr/share/backgrounds/default.jpg"
 
 screens = [
     Screen(

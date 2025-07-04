@@ -125,31 +125,35 @@ def systemWidgets(
             },
         ),
         spacer(),
+        *(
+            [
+                decorated_widget(
+                    BrightctlWidget,
+                    name="brightctl",
+                    mouse_callbacks={
+                        "Button4": lazy.widget["brightctl"].increase(),
+                        "Button5": lazy.widget["brightctl"].decrease(),
+                    },
+                ),
+                spacer(),
+            ]
+            if show_brightness
+            else []
+        ),
+        *(
+            [
+                decorated_widget(
+                    AcpiWidget,
+                    name="acpi",
+                    mouse_callbacks={
+                        "Button2": lazy.widget["acpi"].refresh(),
+                    },
+                )
+            ]
+            if show_battery
+            else []
+        ),
     ]
-
-    if show_brightness:
-        widgets += [
-            decorated_widget(
-                BrightctlWidget,
-                name="brightctl",
-                mouse_callbacks={
-                    "Button4": lazy.widget["brightctl"].increase(),
-                    "Button5": lazy.widget["brightctl"].decrease(),
-                },
-            ),
-            spacer(),
-        ]
-
-    if show_battery:
-        widgets.append(
-            decorated_widget(
-                AcpiWidget,
-                name="acpi",
-                mouse_callbacks={
-                    "Button2": lazy.widget["acpi"].refresh(),
-                },
-            )
-        )
 
     return widgets
 
