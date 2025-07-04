@@ -141,6 +141,7 @@ alias lta="eza -lTag --icons"
 alias lta2="eza -lTag --level=2 --icons"
 alias lta3="eza -lTag --level=3 --icons"
 alias cat="bat --paging=never --style=full"
+alias sudo="sudo-rs"
 
 
 cht() {
