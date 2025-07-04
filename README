@@ -10,14 +10,13 @@ This repository is organized into the following categories:
 - **`gtkqt/`**: Theming and configuration files for GTK and Qt applications.
 - **`qtile/`**: Custom configurations and scripts for the [Qtile](https://qtile.org/) window manager, including efficient [Rofi](https://github.com/davatorium/rofi) scripts for enhanced workflow.
 - **`shell/`**: Configurations for various shells, command-line utilities, and text editors.
-
 - **`terminal/`**: Settings for terminal emulators.
 - **`X11/`**: X Window System specific configurations.
 
 ## Features
 
 - **OLED Dark Aesthetic**: Designed with a dark, high-contrast theme optimized for OLED displays, minimizing eye strain and maximizing battery life.
-- **Efficient Rofi Workflows**: Custom [Rofi](https://github.com/davatorium/rofi) scripts integrated with [Qtile](https://qtile.org/) for quick application launching, window switching, and system control.
+- **Efficient Rofi Workflows**: Custom Rofi scripts integrated with Qtile for quick application launching, window switching, and system control.
 
 ## Dependencies
 
