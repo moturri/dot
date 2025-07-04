@@ -24,4 +24,3 @@ return {
 		end, { desc = "Format buffer" })
 	end,
 }
-

@@ -1,30 +1,25 @@
 return {
+	-- Lualine: statusline
 	{
 		"nvim-lualine/lualine.nvim",
+		event = "VeryLazy",
 		opts = function()
-			-- Memoize node version for performance
 			local cached_node_version
 
 			local function python_env()
 				local venv = vim.env.VIRTUAL_ENV
-				if venv and venv ~= "" then
-					return "🐍 " .. vim.fn.fnamemodify(venv, ":t")
-				end
-				return ""
+				return venv and venv ~= "" and "🐍 " .. vim.fn.fnamemodify(venv, ":t") or ""
 			end
 
 			local function node_version()
-				if not vim.fn.executable("node") == 1 then
+				if vim.fn.executable("node") ~= 1 then
 					return ""
 				end
 				local ft = vim.bo.filetype
 				if not (ft:match("javascript") or ft:match("typescript") or ft:match("react$")) then
 					return ""
 				end
-
-				if not cached_node_version then
-					cached_node_version = vim.fn.system("node -v"):gsub("\n", "")
-				end
+				cached_node_version = cached_node_version or vim.fn.system("node -v"):gsub("\n", "")
 				return cached_node_version
 			end
 
@@ -65,7 +60,7 @@ return {
 						{
 							"filename",
 							file_status = true,
-							path = 1, -- relative path
+							path = 1,
 							symbols = {
 								modified = " 󰐗",
 								readonly = " ",
@@ -82,6 +77,7 @@ return {
 							end,
 						},
 						"fileformat",
+						
 						python_env,
 						node_version,
 					},
@@ -136,4 +132,3 @@ return {
 		end,
 	},
 }
-
