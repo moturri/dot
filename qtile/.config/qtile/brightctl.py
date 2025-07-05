@@ -21,11 +21,13 @@
 # SOFTWARE.
 
 
-from typing import Any, Tuple
+import os
+import shutil
+import subprocess
+from typing import Any, List, Optional, Tuple
 
 from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
-from widget_utils import check_dependency, run_command
 
 ICONS: Tuple[Tuple[int, str, str], ...] = (
     (80, "gold", "󰃠"),
@@ -36,8 +38,22 @@ ICONS: Tuple[Tuple[int, str, str], ...] = (
 )
 
 
-class BrightctlWidget(GenPollText):  # type: ignore
-    """Minimal, stateless brightness widget using brightnessctl."""
+def run(command: List[str], timeout: float = 0.5) -> Optional[str]:
+    try:
+        return subprocess.check_output(
+            command, text=True, timeout=timeout, env={"LC_ALL": "C.UTF-8", **os.environ}
+        ).strip()
+    except Exception:
+        return None
+
+
+def require(command: str) -> None:
+    if not shutil.which(command):
+        raise RuntimeError(f"Missing dependency: {command}")
+
+
+class BrightctlWidget(GenPollText):
+    """Minimal brightness widget for Qtile using brightnessctl."""
 
     def __init__(
         self,
@@ -45,37 +61,31 @@ class BrightctlWidget(GenPollText):  # type: ignore
         min_brightness: int = 1,
         update_interval: float = 9999.0,
         **config: Any,
-    ) -> None:
-        check_dependency("brightnessctl")
+    ):
+        require("brightnessctl")
         self.step = max(1, min(step, 100))
         self.min_brightness = max(1, min(min_brightness, 100))
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _get_brightness(self) -> int:
-        val = run_command(["brightnessctl", "get"])
-        max_val = run_command(["brightnessctl", "max"])
-        if val is None or max_val is None:
-            return 0
+        val = run(["brightnessctl", "get"])
+        max_val = run(["brightnessctl", "max"])
         try:
             return (int(val) * 100) // max(int(max_val), 1)
-        except (ValueError, TypeError):
+        except Exception:
             return 0
 
     def _set_brightness(self, percent: int) -> None:
-        clamped = max(self.min_brightness, min(100, percent))
-        run_command(["brightnessctl", "set", f"{clamped}%"])
+        pct = max(self.min_brightness, min(100, percent))
+        run(["brightnessctl", "set", f"{pct}%"])
         self.force_update()
-
-    def _icon_and_color(self, brightness: int) -> Tuple[str, str]:
-        return next(
-            ((color, icon) for t, color, icon in ICONS if brightness >= t),
-            ("grey", "󰃜"),
-        )
 
     def _poll(self) -> str:
         b = self._get_brightness()
-        color, icon = self._icon_and_color(b)
-        return f'<span foreground="{color}">{icon}  {b}%</span>'
+        for t, color, icon in ICONS:
+            if b >= t:
+                return f'<span foreground="{color}">{icon}  {b}%</span>'
+        return f'<span foreground="grey">󰃜  {b}%</span>'
 
     @expose_command()
     def increase(self) -> None:

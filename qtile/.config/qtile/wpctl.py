@@ -21,23 +21,39 @@
 # SOFTWARE.
 
 
-from typing import Any, Tuple
+import os
+import shutil
+import subprocess
+from typing import Any, List, Optional, Tuple
 
 from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
-from widget_utils import check_dependency, run_command
 
 
-class AudioWidget(GenPollText):  # type: ignore
+def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
+    try:
+        return subprocess.check_output(
+            cmd, text=True, timeout=timeout, env={"LC_ALL": "C.UTF-8", **os.environ}
+        ).strip()
+    except Exception:
+        return None
+
+
+def require(command: str) -> None:
+    if not shutil.which(command):
+        raise RuntimeError(f"Missing dependency: {command}")
+
+
+class AudioWidget(GenPollText):
     """Suckless PipeWire audio widget using wpctl."""
 
-    _LEVELS: Tuple[Tuple[int, str, str], ...] = (
+    LEVELS: Tuple[Tuple[int, str, str], ...] = (
         (75, "salmon", "󰕾"),
         (50, "mediumpurple", "󰖀"),
         (25, "lightblue", "󰕿"),
         (0, "palegreen", "󰕿"),
     )
-    _MUTED: Tuple[str, str] = ("grey", "󰝟")
+    MUTED: Tuple[str, str] = ("grey", "󰝟")
 
     def __init__(
         self,
@@ -47,8 +63,8 @@ class AudioWidget(GenPollText):  # type: ignore
         update_interval: float = 9999.0,
         show_icon: bool = True,
         **config: Any,
-    ) -> None:
-        check_dependency("wpctl")
+    ):
+        require("wpctl")
         self.device = device
         self.step = max(1, min(step, 25))
         self.max_volume = max(50, min(max_volume, 150))
@@ -56,60 +72,60 @@ class AudioWidget(GenPollText):  # type: ignore
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _get_state(self) -> Tuple[int, bool]:
-        output = run_command(["wpctl", "get-volume", self.device])
-        if not output:
+        out = run(["wpctl", "get-volume", self.device])
+        if not out:
             return 0, True
+        return self._parse_state(out)
 
-        try:
-            vol = round(float(output.split()[1]) * 100)
-        except (IndexError, ValueError):
-            vol = 0
-
+    def _parse_state(self, output: str) -> Tuple[int, bool]:
         muted = "[MUTED]" in output
+        try:
+            vol = int(float(output.split()[1]) * 100)
+        except Exception:
+            vol = 0
         return vol, muted
-
-    def _icon_color(self, vol: int, muted: bool) -> Tuple[str, str]:
-        if muted:
-            return self._MUTED
-        for threshold, color, icon in self._LEVELS:
-            if vol >= threshold:
-                return color, icon
-        return self._LEVELS[-1][1], self._LEVELS[-1][2]
 
     def _poll(self) -> str:
         vol, muted = self._get_state()
-        color, icon = self._icon_color(vol, muted)
+        color, icon = self._icon(vol, muted)
         text = f"{icon}  {vol}%" if self.show_icon else f"{vol}%"
         return f'<span foreground="{color}">{text}</span>'
 
-    def _set_volume(self, value: int) -> None:
-        vol = max(0, min(value, self.max_volume))
-        run_command(["wpctl", "set-volume", self.device, f"{vol}%"])
+    def _icon(self, vol: int, muted: bool) -> Tuple[str, str]:
+        if muted:
+            return self.MUTED
+        return next(
+            ((c, i) for t, c, i in self.LEVELS if vol >= t), self.LEVELS[-1][1:]
+        )
+
+    def _set_volume(self, vol: int) -> None:
+        pct = max(0, min(vol, self.max_volume))
+        run(["wpctl", "set-volume", self.device, f"{pct}%"])
         self.force_update()
 
     @expose_command()
     def volume_up(self) -> None:
-        vol, _ = self._get_state()
-        self._set_volume(vol + self.step)
+        v, _ = self._get_state()
+        self._set_volume(v + self.step)
 
     @expose_command()
     def volume_down(self) -> None:
-        vol, _ = self._get_state()
-        self._set_volume(vol - self.step)
+        v, _ = self._get_state()
+        self._set_volume(v - self.step)
 
     @expose_command()
     def toggle_mute(self) -> None:
-        run_command(["wpctl", "set-mute", self.device, "toggle"])
+        run(["wpctl", "set-mute", self.device, "toggle"])
         self.force_update()
 
     @expose_command()
     def mute(self) -> None:
-        run_command(["wpctl", "set-mute", self.device, "1"])
+        run(["wpctl", "set-mute", self.device, "1"])
         self.force_update()
 
     @expose_command()
     def unmute(self) -> None:
-        run_command(["wpctl", "set-mute", self.device, "0"])
+        run(["wpctl", "set-mute", self.device, "0"])
         self.force_update()
 
     @expose_command()
@@ -125,13 +141,13 @@ class AudioWidget(GenPollText):  # type: ignore
 class MicWidget(AudioWidget):
     """Suckless PipeWire microphone widget using wpctl."""
 
-    _LEVELS: Tuple[Tuple[int, str, str], ...] = (
+    LEVELS: Tuple[Tuple[int, str, str], ...] = (
         (75, "salmon", "󰍬"),
         (50, "mediumpurple", "󰍬"),
         (25, "lightblue", "󰍬"),
         (0, "palegreen", "󰍬"),
     )
-    _MUTED: Tuple[str, str] = ("grey", "󰍭")
+    MUTED: Tuple[str, str] = ("grey", "󰍭")
 
     def __init__(self, **config: Any) -> None:
         config.setdefault("device", "@DEFAULT_AUDIO_SOURCE@")
