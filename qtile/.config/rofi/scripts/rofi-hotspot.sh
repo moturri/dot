@@ -48,7 +48,7 @@ create_ap_tmux() {
 
   # Start create_ap in a new window
   tmux new-window -t "$SESSION:" -n "create_ap" \
-    "sudo create_ap '$WIFI_INTERFACE' '$WIFI_INTERFACE' '$SSID' '$PASSWORD' -c $channel; read -n1 -r -p 'Press any key to exit...'"
+    "sudo-rs create_ap '$WIFI_INTERFACE' '$WIFI_INTERFACE' '$SSID' '$PASSWORD' -c $channel; read -n1 -r -p 'Press any key to exit...'"
 
   tmux attach-session -t "$SESSION"
 }
