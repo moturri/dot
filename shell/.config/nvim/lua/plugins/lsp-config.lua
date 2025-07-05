@@ -25,10 +25,9 @@ return {
 			require("mason-tool-installer").setup({
 				ensure_installed = {
 					"clangd",
-					"typescript-language-server",
+					"markdownlint",
 					"black",
 					"tombi",
-					"lua_ls",
 					"stylua",
 					"isort",
 					"clang-format",

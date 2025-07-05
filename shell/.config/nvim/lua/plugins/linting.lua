@@ -6,7 +6,7 @@ return {
 		lint.linters_by_ft = {
 			sh = { "shellcheck" },
 			python = { "flake8" },
-			-- e.g.: markdown = { "markdownlint" }
+			markdown = { "markdownlint" }
 		}
 
 		-- Create an autocmd group to prevent duplicate autocmds
