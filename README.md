@@ -1,8 +1,9 @@
-# Dotfiles
+# Arch Qtile Dotfiles
 
 This repository contains my personal dotfiles for a suckless-inspired approach.
-Specifically tailored for [Arch Linux](https://archlinux.org/) and the [Qtile](https://qtile.org/).
-It contains configurations for various tools and environments, ensuring
+Specifically tailored for [Arch Linux](https://archlinux.org/) and
+[Qtile](https://qtile.org/) wm.
+The configs are for various tools and environments, ensuring
 a streamlined and personalized experience across my Linux setup.
 
 ## Contents
