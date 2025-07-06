@@ -124,7 +124,14 @@ scratchpad = ScratchPad(
             opacity=0.9,
         ),
         DropDown(
-            "obsidian", "obsidian", width=0.8, height=0.8, x=0.1, y=0.1, opacity=1
+            "obsidian",
+            "obsidian",
+            width=0.8,
+            height=0.8,
+            x=0.1,
+            y=0.1,
+            opacity=1,
+            on_focus_lost_hide=True,
         ),
         DropDown(
             "pavucontrol-qt",

@@ -44,7 +44,7 @@ def require(command: str) -> None:
         raise RuntimeError(f"Missing dependency: {command}")
 
 
-class AudioWidget(GenPollText):
+class AudioWidget(GenPollText):  # type: ignore[misc]
     """Suckless PipeWire audio widget using wpctl."""
 
     LEVELS: Tuple[Tuple[int, str, str], ...] = (

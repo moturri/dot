@@ -53,7 +53,7 @@ def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
         return None
 
 
-class AcpiWidget(GenPollText):
+class AcpiWidget(GenPollText):  # type: ignore[misc]
     """Suckless Qtile battery widget with /sys and acpi fallback."""
 
     def __init__(

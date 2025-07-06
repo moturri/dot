@@ -52,7 +52,7 @@ def require(command: str) -> None:
         raise RuntimeError(f"Missing dependency: {command}")
 
 
-class BrightctlWidget(GenPollText):
+class BrightctlWidget(GenPollText):  # type: ignore[misc]
     """Minimal brightness widget for Qtile using brightnessctl."""
 
     def __init__(
@@ -70,6 +70,8 @@ class BrightctlWidget(GenPollText):
     def _get_brightness(self) -> int:
         val = run(["brightnessctl", "get"])
         max_val = run(["brightnessctl", "max"])
+        if val is None or max_val is None:
+            return 0
         try:
             return (int(val) * 100) // max(int(max_val), 1)
         except Exception:
