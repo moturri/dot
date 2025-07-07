@@ -32,6 +32,7 @@ return {
 					mode = "symbol_text",
 					maxwidth = 50,
 					ellipsis_char = "…",
+					preset = "default",
 					menu = {
 						nvim_lsp = "[LSP]",
 						luasnip = "[SNIP]",

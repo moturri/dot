@@ -29,9 +29,9 @@ return {
 					"markdownlint",
 					"glow",
 					"cbfmt",
-					"black",
 					"tombi",
 					"stylua",
+					"black",
 					"isort",
 					"clang-format",
 					"shfmt",
@@ -41,6 +41,7 @@ return {
 					"luacheck",
 					"shellcheck",
 					"jsonlint",
+					"pyright",
 				},
 			})
 		end,
@@ -143,10 +144,7 @@ return {
 					yaml = { "prettier" },
 					markdown = { "prettier" },
 				},
-				format_on_save = {
-					timeout_ms = 500,
-					lsp_fallback = true, -- fallback to LSP format if external tools not available
-				},
+				format_on_save = false,
 			})
 
 			vim.keymap.set("n", "<leader>gf", function()
