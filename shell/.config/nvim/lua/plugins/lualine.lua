@@ -1,27 +1,30 @@
+local function python_env()
+	local venv = vim.env.VIRTUAL_ENV
+	return venv and venv ~= "" and "🐍 " .. vim.fn.fnamemodify(venv, ":t") or ""
+end
+
+-- Cached Node.js version display for JS/TS files
+local cached_node_version
+local function node_version()
+	if vim.fn.executable("node") ~= 1 then
+		return ""
+	end
+
+	local ft = vim.bo.filetype
+	if not ft:match("javascript") and not ft:match("typescript") and not ft:match("react$") then
+		return ""
+	end
+
+	cached_node_version = cached_node_version or vim.fn.system("node -v"):gsub("\n", "")
+	return cached_node_version
+end
+
 return {
 	"nvim-lualine/lualine.nvim",
 	enabled = true,
 	event = "VeryLazy",
+
 	opts = function()
-		local cached_node_version
-
-		local function python_env()
-			local venv = vim.env.VIRTUAL_ENV
-			return venv and venv ~= "" and "🐍 " .. vim.fn.fnamemodify(venv, ":t") or ""
-		end
-
-		local function node_version()
-			if vim.fn.executable("node") ~= 1 then
-				return ""
-			end
-			local ft = vim.bo.filetype
-			if not ft:match("javascript") and not ft:match("typescript") and not ft:match("react$") then
-				return ""
-			end
-			cached_node_version = cached_node_version or vim.fn.system("node -v"):gsub("\n", "")
-			return cached_node_version
-		end
-
 		return {
 			options = {
 				icons_enabled = true,
@@ -41,7 +44,11 @@ return {
 					{ "branch", icon = "" },
 					{
 						"diff",
-						symbols = { added = "󰐗 ", modified = "󰛿 ", removed = "󰍶 " },
+						symbols = {
+							added = "󰐗 ",
+							modified = "󰛿 ",
+							removed = "󰍶 ",
+						},
 						colored = true,
 					},
 					{
