@@ -10,15 +10,16 @@ return {
 		"rafamadriz/friendly-snippets",
 		"onsails/lspkind.nvim",
 	},
+
 	config = function()
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 
-		-- Load VSCode snippets lazily
+		-- Lazy load VSCode-style snippets
 		require("luasnip.loaders.from_vscode").lazy_load()
 
-		-- Set recommended completion options globally
-		vim.opt.completeopt = "menu,menuone,noselect"
+		-- Recommended completion behavior
+		vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
 		cmp.setup({
 			snippet = {
@@ -26,33 +27,39 @@ return {
 					luasnip.lsp_expand(args.body)
 				end,
 			},
-			completion = { keyword_length = 2 },
+
+			completion = {
+				keyword_length = 2,
+			},
+
 			formatting = {
 				format = require("lspkind").cmp_format({
 					mode = "symbol_text",
 					maxwidth = 50,
 					ellipsis_char = "…",
-					preset = "default",
 					menu = {
 						nvim_lsp = "[LSP]",
 						luasnip = "[SNIP]",
 						buffer = "[BUF]",
 						path = "[PATH]",
-						nvim_lsp_signature_help = "[SIG]",
 						cmdline = "[CMD]",
+						nvim_lsp_signature_help = "[SIG]",
 					},
 				}),
 			},
+
 			window = {
 				completion = cmp.config.window.bordered(),
 				documentation = cmp.config.window.bordered(),
 			},
+
 			mapping = cmp.mapping.preset.insert({
 				["<C-b>"] = cmp.mapping.scroll_docs(-4),
 				["<C-f>"] = cmp.mapping.scroll_docs(4),
 				["<C-Space>"] = cmp.mapping.complete(),
 				["<C-e>"] = cmp.mapping.abort(),
-				["<CR>"] = cmp.mapping.confirm({ select = true }), -- auto-select first item
+				["<CR>"] = cmp.mapping.confirm({ select = true }),
+
 				["<Tab>"] = cmp.mapping(function(fallback)
 					if cmp.visible() then
 						cmp.select_next_item()
@@ -62,6 +69,7 @@ return {
 						fallback()
 					end
 				end, { "i", "s" }),
+
 				["<S-Tab>"] = cmp.mapping(function(fallback)
 					if cmp.visible() then
 						cmp.select_prev_item()
@@ -72,10 +80,11 @@ return {
 					end
 				end, { "i", "s" }),
 			}),
+
 			sources = cmp.config.sources({
 				{ name = "nvim_lsp" },
 				{ name = "luasnip" },
-				{ name = "nvim_lsp_signature_help" }, -- added signature help source
+				{ name = "nvim_lsp_signature_help" },
 				{
 					name = "buffer",
 					option = {
@@ -88,7 +97,6 @@ return {
 			}),
 		})
 
-		-- Cmdline completion for :
 		cmp.setup.cmdline(":", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = cmp.config.sources({
@@ -97,7 +105,6 @@ return {
 			}),
 		})
 
-		-- Cmdline completion for /
 		cmp.setup.cmdline("/", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = {

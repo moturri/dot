@@ -2,11 +2,13 @@ return {
 	"nvim-treesitter/nvim-treesitter",
 	build = ":TSUpdate",
 	event = { "BufReadPost", "BufNewFile" },
+
 	dependencies = {
 		"nvim-treesitter/nvim-treesitter-textobjects",
 		"windwp/nvim-ts-autotag",
 		"JoosepAlviste/nvim-ts-context-commentstring",
 	},
+
 	config = function()
 		require("nvim-treesitter.configs").setup({
 			ensure_installed = vim.tbl_flatten({
@@ -23,6 +25,7 @@ return {
 				-- Notes
 				{ "norg" },
 			}),
+
 			sync_install = false,
 			auto_install = true,
 
@@ -38,7 +41,7 @@ return {
 
 			indent = {
 				enable = true,
-				disable = { "yaml", "json" }, -- optional: reduce indent bugs
+				disable = { "yaml", "json" },
 			},
 
 			incremental_selection = {
@@ -51,9 +54,7 @@ return {
 				},
 			},
 
-			autotag = {
-				enable = true,
-			},
+			autotag = { enable = true },
 
 			textobjects = {
 				select = {
@@ -75,6 +76,7 @@ return {
 						["as"] = "@statement.outer",
 					},
 				},
+
 				move = {
 					enable = true,
 					set_jumps = true,
@@ -97,6 +99,7 @@ return {
 						["[s"] = "@statement.outer",
 					},
 				},
+
 				swap = {
 					enable = true,
 					swap_next = {
@@ -109,10 +112,10 @@ return {
 			},
 		})
 
-		-- ts-context-commentstring (safe setup)
+		-- ts-context-commentstring safe setup
 		vim.g.skip_ts_context_commentstring_module = true
 		pcall(function()
-			require("ts_context_commentstring").setup({})
+			require("ts_context_commentstring").setup()
 		end)
 	end,
 }
