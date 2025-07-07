@@ -69,6 +69,32 @@ return {
 				Snacks.explorer()
 			end, "File Explorer"),
 
+			-- Find
+			map("<leader>,", function()
+				Snacks.picker.buffers()
+			end, "Buffers"),
+			map("<leader>ff", function()
+				Snacks.picker.files()
+			end, "Find Files"),
+			map("<leader>s/", function()
+				Snacks.picker.search_history()
+			end, "Search History"),
+			map("<leader>sa", function()
+				Snacks.picker.autocmds()
+			end, "Autocmds"),
+			map("<leader>fc", function()
+				Snacks.picker.files({ cwd = vim.fn.stdpath("config") })
+			end, "Find Config File"),
+			map("<leader>fg", function()
+				Snacks.picker.git_files()
+			end, "Find Git Files"),
+			map("<leader>fp", function()
+				Snacks.picker.projects()
+			end, "Projects"),
+			map("<leader>fr", function()
+				Snacks.picker.recent()
+			end, "Recent Files"),
+
 			-- Git
 			map("<leader>gs", function()
 				Snacks.picker.git_status()
@@ -79,6 +105,24 @@ return {
 			map("<leader>gg", function()
 				Snacks.lazygit()
 			end, "Lazygit"),
+			map("<leader>gb", function()
+				Snacks.picker.git_branches()
+			end, "Git Branches"),
+			map("<leader>gL", function()
+				Snacks.picker.git_log_line()
+			end, "Git Log Line"),
+			map("<leader>gS", function()
+				Snacks.picker.git_stash()
+			end, "Git Stash"),
+			map("<leader>gd", function()
+				Snacks.picker.git_diff()
+			end, "Git Diff (Hunks)"),
+			map("<leader>gf", function()
+				Snacks.picker.git_log_file()
+			end, "Git Log File"),
+			map("<leader>gB", function()
+				Snacks.gitbrowse()
+			end, "Git Browse", { mode = { "n", "v" } }),
 
 			-- Diagnostics
 			map("<leader>sd", function()
@@ -101,20 +145,120 @@ return {
 			map("gy", function()
 				Snacks.picker.lsp_type_definitions()
 			end, "Type Definition"),
+			map("gI", function()
+				Snacks.picker.lsp_implementations()
+			end, "Goto Implementation"),
+
+			-- Grep/Search
+			map("<leader>sb", function()
+				Snacks.picker.lines()
+			end, "Buffer Lines"),
+			map("<leader>sB", function()
+				Snacks.picker.grep_buffers()
+			end, "Grep Open Buffers"),
+			map("<leader>sw", function()
+				Snacks.picker.grep_word()
+			end, "Word Under Cursor or Visual", { mode = { "n", "x" } }),
+			map("<leader>sC", function()
+				Snacks.picker.commands()
+			end, "All Commands"),
+			map("<leader>sH", function()
+				Snacks.picker.highlights()
+			end, "Highlight Groups"),
+			map("<leader>si", function()
+				Snacks.picker.icons()
+			end, "Icons"),
+			map("<leader>sj", function()
+				Snacks.picker.jumps()
+			end, "Jumps"),
+			map("<leader>sk", function()
+				Snacks.picker.keymaps()
+			end, "Keymaps"),
+			map("<leader>sl", function()
+				Snacks.picker.loclist()
+			end, "Location List"),
+			map("<leader>sm", function()
+				Snacks.picker.marks()
+			end, "Marks"),
+			map("<leader>sM", function()
+				Snacks.picker.man()
+			end, "Man Pages"),
+			map("<leader>sp", function()
+				Snacks.picker.lazy()
+			end, "Plugin Specs"),
+			map("<leader>sq", function()
+				Snacks.picker.qflist()
+			end, "Quickfix List"),
+			map("<leader>sR", function()
+				Snacks.picker.resume()
+			end, "Resume Last Picker"),
+			map("<leader>su", function()
+				Snacks.picker.undo()
+			end, "Undo History"),
+			map("<leader>sh", function()
+				Snacks.picker.help()
+			end, "Help Pages"),
+			map("<leader>sS", function()
+				Snacks.picker.lsp_workspace_symbols()
+			end, "Workspace Symbols"),
+			map("<leader>ss", function()
+				Snacks.picker.lsp_symbols()
+			end, "Document Symbols"),
+			map("<leader>uC", function()
+				Snacks.picker.colorschemes()
+			end, "Colorschemes"),
 
 			-- Toggle Zen, Scratch, Terminal
 			map("<leader>z", function()
 				Snacks.zen()
 			end, "Toggle Zen Mode"),
+			map("<leader>Z", function()
+				Snacks.zen.zoom()
+			end, "Toggle Zoom"),
 			map("<leader>.", function()
 				Snacks.scratch()
 			end, "Scratch Buffer"),
-			map("<C-/>", function()
+			map("<C-t>", function()
 				Snacks.terminal()
 			end, "Toggle Terminal"),
-			map("<C-_>", function()
-				Snacks.terminal()
-			end, "Toggle Terminal"),
+
+			map("<leader>bd", function()
+				Snacks.bufdelete()
+			end, "Delete Buffer"),
+			map("<leader>cR", function()
+				Snacks.rename.rename_file()
+			end, "Rename File"),
+
+			map("<leader>n", function()
+				Snacks.picker.notifications()
+			end, "Notification History"),
+
+			map("<leader>un", function()
+				Snacks.notifier.hide()
+			end, "Dismiss Notifications"),
+			map("<leader>S", function()
+				Snacks.scratch.select()
+			end, "Select Scratch Buffer"),
+			map("<leader>N", function()
+				Snacks.win({
+					file = vim.api.nvim_get_runtime_file("doc/news.txt", false)[1],
+					width = 0.6,
+					height = 0.6,
+					wo = {
+						spell = false,
+						wrap = false,
+						signcolumn = "yes",
+						statuscolumn = " ",
+						conceallevel = 3,
+					},
+				})
+			end, "Neovim News"),
+			map("]]", function()
+				Snacks.words.jump(vim.v.count1)
+			end, "Next Reference", { mode = { "n", "t" } }),
+			map("[[", function()
+				Snacks.words.jump(-vim.v.count1)
+			end, "Previous Reference", { mode = { "n", "t" } }),
 		}
 	end)(),
 

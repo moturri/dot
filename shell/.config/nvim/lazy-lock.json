@@ -21,7 +21,7 @@
   "nvim-treesitter-textobjects": { "branch": "master", "commit": "89ebe73cd2836db80a22d9748999ace0241917a5" },
   "nvim-ts-autotag": { "branch": "main", "commit": "a1d526af391f6aebb25a8795cbc05351ed3620b5" },
   "nvim-ts-context-commentstring": { "branch": "main", "commit": "1b212c2eee76d787bbea6aa5e92a2b534e7b4f8f" },
-  "sequoia.nvim": { "branch": "master", "commit": "56f197d996507aa559cb00bc95305b631c4a6e76" },
+  "sequoia.nvim": { "branch": "master", "commit": "4ebc2f1d21545098af1046a1a95ee53dc45442f0" },
   "snacks.nvim": { "branch": "main", "commit": "bc0630e43be5699bb94dadc302c0d21615421d93" },
   "vim-fugitive": { "branch": "master", "commit": "593f831d6f6d779cbabb70a4d1e6b1b1936a88af" },
   "which-key.nvim": { "branch": "main", "commit": "370ec46f710e058c9c1646273e6b225acf47cbed" }

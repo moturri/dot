@@ -2,18 +2,20 @@ return {
 	{
 		"forest-nvim/sequoia.nvim",
 		priority = 1000,
-		lazy = false, -- Load immediately for correct highlight ordering
+		lazy = false,
 		config = function()
 			local colorscheme = "sequoia-insomnia" -- or "sequoia-night"
 
-			local ok = pcall(vim.cmd.colorscheme, colorscheme)
+			local ok, _ = pcall(vim.cmd.colorscheme, colorscheme)
 			if not ok then
 				vim.notify("Sequoia colorscheme not found: " .. colorscheme, vim.log.levels.ERROR)
 				return
 			end
 
-			-- Transparent background groups
-			local transparent_groups = {
+			local set_hl = vim.api.nvim_set_hl
+			local transparent = { bg = "none", ctermbg = "none" }
+
+			local groups = {
 				"Normal",
 				"NormalNC",
 				"NormalFloat",
@@ -30,13 +32,12 @@ return {
 				"TelescopeBorder",
 			}
 
-			for _, group in ipairs(transparent_groups) do
-				vim.api.nvim_set_hl(0, group, { bg = "none", ctermbg = "none" })
+			for _, group in ipairs(groups) do
+				set_hl(0, group, transparent)
 			end
 
-			-- Reset blend values for clarity plugins
-			vim.api.nvim_set_hl(0, "Pmenu", { blend = 0 })
-			vim.api.nvim_set_hl(0, "PmenuSel", { blend = 0 })
+			set_hl(0, "Pmenu", { blend = 0 })
+			set_hl(0, "PmenuSel", { blend = 0 })
 		end,
 	},
 }
