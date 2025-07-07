@@ -15,7 +15,7 @@ return {
 				sh = { "shfmt" },
 				json = { "prettier" },
 				yaml = { "prettier" },
-				markdown = { "prettier" },
+				markdown = { "marksman", "prettier" },
 			},
 		})
 

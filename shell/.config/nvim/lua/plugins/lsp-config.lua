@@ -25,7 +25,10 @@ return {
 			require("mason-tool-installer").setup({
 				ensure_installed = {
 					"clangd",
+					"marksman",
 					"markdownlint",
+					"glow",
+					"cbfmt",
 					"black",
 					"tombi",
 					"stylua",
