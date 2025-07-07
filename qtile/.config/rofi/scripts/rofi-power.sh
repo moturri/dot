@@ -31,7 +31,7 @@ confirm_action() {
 
 logout_session() {
   if pgrep -x qtile >/dev/null; then
-    qtile cmd-obj -o cmd -f shutdown
+    qtile cmd-obj -o cmd -f logout
   elif pgrep -x i3 >/dev/null; then
     i3-msg exit
   elif [[ -n "${XDG_SESSION_ID:-}" ]]; then

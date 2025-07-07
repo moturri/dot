@@ -59,7 +59,6 @@ groups = [
     for name, label, classes in group_definitions
 ]
 
-# Generate group keys
 for group in groups:
     keys.extend(
         [

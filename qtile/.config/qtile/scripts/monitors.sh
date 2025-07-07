@@ -1,10 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
-primaryMonitor="eDP-1"
-secondMonitor="DP-1"
+primary="eDP-1"
+secondary="DP-1"
 
-if xrandr | grep -q "${secondMonitor} connected"; then
-	xrandr --output "${primaryMonitor}" --primary --auto --output "${secondMonitor}" --auto --left-of "${primaryMonitor}" || exit 1
+if xrandr | grep -q "^$secondary connected"; then
+  xrandr --output "$primary" --primary --auto \
+    --output "$secondary" --auto --left-of "$primary"
 else
-	xrandr --output "${primaryMonitor}" --primary --auto --output "${secondMonitor}" --off || exit 1
+  xrandr --output "$primary" --primary --auto \
+    --output "$secondary" --off
 fi

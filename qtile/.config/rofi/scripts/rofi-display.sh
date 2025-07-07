@@ -5,7 +5,7 @@ EXTERNAL_DISPLAY="${1:-DP-1}"
 INTERNAL_DISPLAY="${INTERNAL_DISPLAY:-eDP-1}"
 ROFI_CMD="rofi -dmenu -i -p"
 
-for cmd in xrandr notify-send rofi; do
+for cmd in xrandr notify-send rofi qtile; do
   command -v "$cmd" >/dev/null || {
     notify-send "Display Setup " "❌ Missing required command: $cmd"
     exit 1
@@ -46,7 +46,7 @@ main() {
     ;;
   esac
 
-  # sleep 1 && qtile cmd-obj -o cmd -f restart
+  sleep 1 && qtile cmd-obj -o cmd -f restart
 }
 
 main

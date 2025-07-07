@@ -30,6 +30,7 @@ from qtile_extras.widget import GenPollText
 
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
+
 EMPTY_ICON = "󰁺"
 
 BATTERY_ICONS = (
