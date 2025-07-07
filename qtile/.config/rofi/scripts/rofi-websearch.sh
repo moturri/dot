@@ -1,9 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-query=$(rofi -dmenu -i -p "󰇥 ")
+SEARCH_ENGINE_URL="${SEARCH_ENGINE_URL:-https://duckduckgo.com/?q=}"
+DEPENDENCIES=(rofi jq xdg-open notify-send)
 
-[ -z "$query" ] && exit 0
+for cmd in "${DEPENDENCIES[@]}"; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    notify-send "Missing Dependency" "❌ $cmd is not installed."
+    exit 1
+  }
+done
 
-encoded_query=$(printf '%s\n' "$query" | jq -sRr @uri)
+query=$(rofi -dmenu -i -p "󰇥 Search" || true)
+[[ -z "${query// /}" ]] && exit 0
 
-xdg-open "https://duckduckgo.com/?q=${encoded_query}" >/dev/null 2>&1 &
+encoded_query=$(printf '%s' "$query" | jq -sRr @uri)
+xdg-open "${SEARCH_ENGINE_URL}${encoded_query}" >/dev/null 2>&1 &
