@@ -87,12 +87,6 @@ return {
 				client.server_capabilities.documentFormattingProvider = false
 				client.server_capabilities.documentRangeFormattingProvider = false
 
-				map("n", "K", vim.lsp.buf.hover, opts)
-				map("n", "<leader>gd", vim.lsp.buf.definition, opts)
-				map("n", "<leader>gr", vim.lsp.buf.references, opts)
-				map("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-				map("n", "<leader>rn", vim.lsp.buf.rename, opts)
-
 				-- Optional: navic for winbar context
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then

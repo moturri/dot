@@ -66,7 +66,7 @@ return {
 				map("n", "<leader>gu", gs.undo_stage_hunk, "Undo stage")
 				map("n", "<leader>gd", gs.diffthis, "Diff buffer")
 				map("n", "<leader>gD", gs.toggle_deleted, "Toggle deleted")
-				map("n", "<leader>gb", gs.toggle_current_line_blame, "Toggle blame")
+				map("n", "<leader>gB", gs.toggle_current_line_blame, "Toggle blame")
 
 				-- Visual mode hunk actions
 				map("v", "<leader>ga", function()
