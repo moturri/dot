@@ -14,7 +14,11 @@ return {
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 
+		-- Load VSCode snippets lazily
 		require("luasnip.loaders.from_vscode").lazy_load()
+
+		-- Set recommended completion options globally
+		vim.opt.completeopt = "menu,menuone,noselect"
 
 		cmp.setup({
 			snippet = {
@@ -33,6 +37,8 @@ return {
 						luasnip = "[SNIP]",
 						buffer = "[BUF]",
 						path = "[PATH]",
+						nvim_lsp_signature_help = "[SIG]",
+						cmdline = "[CMD]",
 					},
 				}),
 			},
@@ -45,7 +51,7 @@ return {
 				["<C-f>"] = cmp.mapping.scroll_docs(4),
 				["<C-Space>"] = cmp.mapping.complete(),
 				["<C-e>"] = cmp.mapping.abort(),
-				["<CR>"] = cmp.mapping.confirm({ select = false }),
+				["<CR>"] = cmp.mapping.confirm({ select = true }), -- auto-select first item
 				["<Tab>"] = cmp.mapping(function(fallback)
 					if cmp.visible() then
 						cmp.select_next_item()
@@ -68,6 +74,7 @@ return {
 			sources = cmp.config.sources({
 				{ name = "nvim_lsp" },
 				{ name = "luasnip" },
+				{ name = "nvim_lsp_signature_help" }, -- added signature help source
 				{
 					name = "buffer",
 					option = {
@@ -80,6 +87,7 @@ return {
 			}),
 		})
 
+		-- Cmdline completion for :
 		cmp.setup.cmdline(":", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = cmp.config.sources({
@@ -88,6 +96,7 @@ return {
 			}),
 		})
 
+		-- Cmdline completion for /
 		cmp.setup.cmdline("/", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = {

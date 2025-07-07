@@ -9,28 +9,36 @@ return {
 	},
 	config = function()
 		require("nvim-treesitter.configs").setup({
-			ensure_installed = {
-				"bash",
-				"css",
-				"html",
-				"javascript",
-				"json",
-				"lua",
-				"markdown",
-				"python",
-				"typescript",
-				"yaml",
-			},
+			ensure_installed = vim.tbl_flatten({
+				-- Essentials
+				{ "bash", "lua", "vim", "vimdoc", "regex" },
+				-- Web
+				{ "html", "css", "scss", "javascript", "typescript", "tsx", "vue", "svelte", "json" },
+				-- Markdown / Docs
+				{ "markdown", "markdown_inline", "yaml" },
+				-- Scripting / Data
+				{ "python" },
+				-- LaTeX / Typesetting
+				{ "latex", "typst" },
+				-- Notes
+				{ "norg" },
+			}),
 			sync_install = false,
 			auto_install = true,
 
 			highlight = {
 				enable = true,
 				additional_vim_regex_highlighting = false,
+				disable = function(lang, bufnr)
+					local max_filesize = 100 * 1024 -- 100 KB
+					local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
+					return ok and stats and stats.size > max_filesize
+				end,
 			},
 
 			indent = {
 				enable = true,
+				disable = { "yaml", "json" }, -- optional: reduce indent bugs
 			},
 
 			incremental_selection = {
@@ -67,7 +75,6 @@ return {
 						["as"] = "@statement.outer",
 					},
 				},
-
 				move = {
 					enable = true,
 					set_jumps = true,
@@ -90,7 +97,6 @@ return {
 						["[s"] = "@statement.outer",
 					},
 				},
-
 				swap = {
 					enable = true,
 					swap_next = {
@@ -103,7 +109,7 @@ return {
 			},
 		})
 
-		-- Context Commentstring setup (safe load)
+		-- ts-context-commentstring (safe setup)
 		vim.g.skip_ts_context_commentstring_module = true
 		pcall(function()
 			require("ts_context_commentstring").setup({})

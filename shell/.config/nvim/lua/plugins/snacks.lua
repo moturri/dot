@@ -2,12 +2,22 @@ return {
 	"folke/snacks.nvim",
 	priority = 1000,
 	lazy = false,
+	dependencies = {
+		"folke/which-key.nvim",
+	},
+
 	---@type snacks.Config
 	opts = {
 		bigfile = { enabled = true },
 		dashboard = { enabled = true },
+		statuscolumn = { enabled = true },
 		explorer = {
 			enabled = true,
+			replace_netrw = true,
+			hidden = true,
+			tree = true,
+			follow_file = true,
+			supports_live = true,
 		},
 		indent = { enabled = true },
 		input = { enabled = true },
@@ -15,7 +25,11 @@ return {
 			enabled = true,
 			timeout = 3000,
 		},
-		picker = { enabled = true },
+		picker = {
+			enabled = true,
+			tree = true,
+			hidden = true,
+		},
 		quickfile = { enabled = true },
 		scope = { enabled = true },
 		scroll = { enabled = true },
@@ -23,7 +37,7 @@ return {
 		words = { enabled = true },
 		styles = {
 			notification = {
-				-- wo = { wrap = true } -- Wrap notifications
+				wo = { wrap = true },
 			},
 		},
 	},

@@ -1,11 +1,11 @@
 return {
-	-- Git CLI wrapper
+	-- Vim Fugitive (Git CLI) — no keymaps, just load on demand
 	{
 		"tpope/vim-fugitive",
 		cmd = { "Git", "G" },
 	},
 
-	-- Git signs & inline actions
+	-- Git signs, but no keymaps to avoid overriding snacks
 	{
 		"lewis6991/gitsigns.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -36,55 +36,11 @@ return {
 			max_file_length = 40000,
 			update_debounce = 100,
 
+			-- Disable all default keymaps here
 			on_attach = function(bufnr)
 				local gs = package.loaded.gitsigns
-				local map = function(mode, lhs, rhs, desc)
-					vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
-				end
-
-				-- Hunk navigation
-				map("n", "]c", function()
-					if vim.wo.diff then
-						return "]c"
-					end
-					vim.schedule(gs.next_hunk)
-					return "<Ignore>"
-				end, "Next hunk")
-
-				map("n", "[c", function()
-					if vim.wo.diff then
-						return "[c"
-					end
-					vim.schedule(gs.prev_hunk)
-					return "<Ignore>"
-				end, "Prev hunk")
-
-				-- Hunk actions
-				map("n", "<leader>gp", gs.preview_hunk, "Preview hunk")
-				map("n", "<leader>ga", gs.stage_hunk, "Stage hunk")
-				map("n", "<leader>gr", gs.reset_hunk, "Reset hunk")
-				map("n", "<leader>gu", gs.undo_stage_hunk, "Undo stage")
-				map("n", "<leader>gd", gs.diffthis, "Diff buffer")
-				map("n", "<leader>gD", gs.toggle_deleted, "Toggle deleted")
-				map("n", "<leader>gB", gs.toggle_current_line_blame, "Toggle blame")
-
-				-- Visual mode hunk actions
-				map("v", "<leader>ga", function()
-					local s = vim.fn.line("v")
-					local e = vim.fn.line(".")
-					gs.stage_hunk({ math.min(s, e), math.max(s, e) })
-				end, "Stage selection")
-
-				map("v", "<leader>gr", function()
-					local s = vim.fn.line("v")
-					local e = vim.fn.line(".")
-					gs.reset_hunk({ math.min(s, e), math.max(s, e) })
-				end, "Reset selection")
-
-				-- Git log (via Fugitive)
-				map("n", "<leader>gl", function()
-					vim.cmd("Git log")
-				end, "Git log")
+				-- You can optionally add minimal keymaps here if needed
+				-- but keep empty or minimal to avoid overriding snacks
 			end,
 		},
 	},

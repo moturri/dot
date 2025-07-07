@@ -56,9 +56,6 @@ opt.showmatch = true
 opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 
--- Completion
-opt.completeopt = { "menuone", "noselect" }
-
 -- Wildmenu
 opt.wildmenu = true
 opt.wildmode = { "longest:full", "full" }
@@ -70,7 +67,6 @@ opt.selection = "inclusive"
 opt.modifiable = true
 
 -- Keymaps
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostics list" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlights" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
