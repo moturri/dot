@@ -79,6 +79,19 @@ return {
 			enabled = true,
 		},
 		input = { enabled = true },
+		statuscolumn = {
+			enabled = true,
+			left = { "mark", "sign" },
+			right = { "fold", "git" },
+			folds = {
+				open = false,
+				git_hl = false,
+			},
+			git = {
+				patterns = { "GitSign", "MiniDiffSign" },
+			},
+			refresh = 50,
+		},
 		notifier = {
 			enabled = true,
 			timeout = 3000,
