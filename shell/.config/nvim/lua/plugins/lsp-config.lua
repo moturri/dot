@@ -1,7 +1,7 @@
 return {
 	{
 		"williamboman/mason.nvim",
-		event = { "BufReadPre", "BufNewFile" },
+		cmd = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUpdate", "MasonUpdateAll", "MasonUninstall", "MasonUninstallAll", "MasonLog" },
 		opts = {
 			ui = { border = "rounded" },
 		},
@@ -10,6 +10,7 @@ return {
 	{
 		"williamboman/mason-lspconfig.nvim",
 		event = { "BufReadPre", "BufNewFile" },
+		dependencies = { "williamboman/mason.nvim" },
 		opts = {
 			automatic_installation = true,
 		},
@@ -17,6 +18,7 @@ return {
 
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		cmd = { "MasonToolsInstall", "MasonToolsUpdate", "MasonToolsUninstall" },
 		dependencies = { "williamboman/mason.nvim" },
 		config = function()
 			require("mason-tool-installer").setup({

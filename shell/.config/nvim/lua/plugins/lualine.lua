@@ -11,7 +11,7 @@ return {
 				component_separators = { left = "", right = "" },
 				section_separators = { left = "", right = "" },
 				disabled_filetypes = {
-					statusline = { "lazy", "Outline" },
+					statusline = { "lazy", "Outline", "mason" },
 				},
 				always_divide_middle = true,
 				globalstatus = true,

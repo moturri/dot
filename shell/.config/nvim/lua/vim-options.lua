@@ -7,7 +7,6 @@ g.have_nerd_font = true
 opt.background = "dark"
 opt.termguicolors = true
 opt.mouse = "a"
-opt.clipboard = "unnamedplus"
 opt.timeoutlen = 300
 opt.updatetime = 200
 opt.scrolloff = 8
@@ -49,8 +48,6 @@ opt.selection = "inclusive"
 opt.modifiable = true
 
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlights" })
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
 
 vim.api.nvim_create_autocmd("BufReadPost", {
 	callback = function()
@@ -59,5 +56,12 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 		if mark[1] > 0 and mark[1] <= lcount then
 			pcall(vim.api.nvim_win_set_cursor, 0, mark)
 		end
+	end,
+})
+
+vim.api.nvim_create_autocmd("VimEnter", {
+	pattern = "*",
+	callback = function()
+		vim.opt.clipboard = "unnamedplus"
 	end,
 })
