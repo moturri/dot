@@ -15,18 +15,16 @@ return {
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 
-		-- Lazy load VSCode-style snippets
 		require("luasnip.loaders.from_vscode").lazy_load()
 
-		-- Recommended completion behavior
 		vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
 		cmp.setup({
 			performance = {
-				max_view_entries = 50, -- Limit the number of entries shown in the completion menu
-				debounce = 100,       -- Milliseconds to wait before triggering completion
-				throttle = 100,       -- Milliseconds to wait before filtering and displaying completions
-				fetching_timeout = 500, -- Milliseconds to wait for sources to return results
+				max_view_entries = 50,
+				debounce = 100,
+				throttle = 100,
+				fetching_timeout = 500,
 			},
 			snippet = {
 				expand = function(args)

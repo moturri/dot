@@ -75,21 +75,46 @@ return {
 			vim.lsp.set_log_level("off")
 
 			local function on_attach(client, bufnr)
-				client.server_capabilities.documentFormattingProvider = false
-				client.server_capabilities.documentRangeFormattingProvider = false
+				local map = function(mode, lhs, rhs, desc)
+					vim.keymap.set(mode, lhs, rhs, { silent = true, buffer = bufnr, desc = "LSP: " .. desc })
+				end
+
+				map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
+				map("n", "[d", vim.diagnostic.goto_prev, "Go to Previous Diagnostic")
+				map("n", "]d", vim.diagnostic.goto_next, "Go to Next Diagnostic")
+				map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Actions")
+				map("n", "<leader>rn", vim.lsp.buf.rename, "Rename Symbol")
+				map({ "n", "v" }, "<leader>ws", vim.lsp.buf.workspace_symbol, "Search Workspace Symbols")
 
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then
 					navic.attach(client, bufnr)
 				end
+
+				if client.server_capabilities.foldingRangeProvider then
+					vim.wo[bufnr].foldmethod = "expr"
+					vim.wo[bufnr].foldexpr = "vim.lsp.fold.foldexpr()"
+					vim.wo[bufnr].foldlevel = 99
+					vim.wo[bufnr].foldenable = true
+				end
+
+				client.server_capabilities.documentFormattingProvider = false
+				client.server_capabilities.documentRangeFormattingProvider = false
+
+				vim.notify("LSP attached: " .. client.name, vim.log.levels.INFO, { title = "LSP" })
 			end
 
-			vim.api.nvim_create_autocmd("LspAttach", {
-				callback = function(args)
-					local client = vim.lsp.get_client_by_id(args.data.client_id)
-					vim.notify("LSP attached: " .. client.name, vim.log.levels.INFO)
-				end,
-			})
+			local default_providers = {
+				"node",
+				"perl",
+				"python",
+				"python3",
+				"ruby",
+			}
+
+			for _, provider in ipairs(default_providers) do
+				vim.g["loaded_" .. provider .. "_provider"] = 0
+			end
 
 			local ignore = { tombi = true }
 			local mason_lspconfig = require("mason-lspconfig")
@@ -122,8 +147,8 @@ return {
 					python = { "isort", "black" },
 					javascript = { "prettier" },
 					typescript = { "prettier" },
-					c = { "clang_format" },
-					cpp = { "clang_format" },
+					c = { "cbfmt", "clang_format" },
+					cpp = { "cbfmt", "clang_format" },
 					sh = { "shfmt" },
 					json = { "prettier" },
 					yaml = { "prettier" },
@@ -132,7 +157,7 @@ return {
 				format_on_save = false,
 			})
 
-			vim.keymap.set("n", "<leader>gf", function()
+			vim.keymap.set("n", "<leader>fm", function()
 				conform.format({ async = true, lsp_fallback = true })
 			end, { desc = "Format buffer" })
 		end,
@@ -147,10 +172,13 @@ return {
 				sh = { "shellcheck" },
 				python = { "flake8" },
 				markdown = { "markdownlint" },
+				lua = { "luacheck" },
+				javascript = { "eslint_d" },
+				json = { "jsonlint" },
 			}
 
 			vim.keymap.set("n", "<leader>ge", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
-			vim.keymap.set("n", "<leader>gl", function()
+			vim.keymap.set("n", "<leader>ll", function()
 				lint.try_lint()
 			end, { desc = "Manually lint current buffer" })
 		end,
