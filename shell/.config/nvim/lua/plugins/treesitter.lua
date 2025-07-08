@@ -40,7 +40,7 @@ return {
 			},
 
 			indent = {
-				enable = true,
+				enable = false,
 				disable = { "yaml", "json" },
 			},
 

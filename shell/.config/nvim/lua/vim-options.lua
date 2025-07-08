@@ -23,14 +23,6 @@ vim.fn.mkdir(undodir, "p")
 opt.undodir = undodir
 opt.undofile = true
 
--- Indentation
-opt.tabstop = 2
-opt.softtabstop = 2
-opt.shiftwidth = 2
-opt.expandtab = true
-opt.smartindent = true
-opt.autoindent = true
-
 -- Folding (Treesitter)
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
@@ -81,3 +73,29 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 		end
 	end,
 })
+
+-- Disable some default providers
+local default_providers = {
+	"node",
+	"perl",
+	"python",
+	"python3",
+	"ruby",
+}
+
+for _, provider in ipairs(default_providers) do
+	vim.g["loaded_" .. provider .. "_provider"] = 0
+end
+
+-- LSP-based folding
+vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("LspFolding", { clear = true }), -- Autogroup for LSP-based folding
+	callback = function(args)
+		local client = vim.lsp.get_client_by_id(args.data.client_id)
+		-- If the LSP client provides folding ranges, use 'syntax' foldmethod
+		if client.server_capabilities.foldingRangeProvider then
+			vim.bo[args.buf].foldmethod = "syntax"
+		end
+	end,
+})
+
