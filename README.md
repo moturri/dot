@@ -2,7 +2,7 @@
 
 This repository contains my personal dotfiles for a suckless-inspired approach.
 Specifically tailored for [Arch Linux](https://archlinux.org/) and
-[Qtile](https://qtile.org/) wm.
+[Qtile](https://qtile.org/) with dwm switching.
 The configs are for various tools and environments, ensuring
 a streamlined and personalized experience across my Linux setup.
 
@@ -10,15 +10,15 @@ a streamlined and personalized experience across my Linux setup.
 
 This repository is organized into the following categories:
 
+- **`X11`**: X Window System specific configurations.
 - **`browser`**: Configurations for web browsers and related tools.
 - **`gtkqt`**: Theming and configuration files for GTK and Qt applications.
-- **`qtile`**: Custom configurations and scripts for the
-  window manager, including efficient [Rofi](https://github.com/davatorium/rofi)
-  scripts for enhanced workflow.
 - **`shell`**: Configurations for various shells, command-line utilities,
   and text editors.
 - **`terminal`**: Settings for terminal emulators.(alacritty, kitty & wezterm)
-- **`X11`**: X Window System specific configurations.
+- **`wm`**: Custom configurations and scripts for the window manager,
+  including efficient [Rofi](https://github.com/davatorium/rofi)
+  scripts for enhanced workflow.
 
 ## Dependencies
 
