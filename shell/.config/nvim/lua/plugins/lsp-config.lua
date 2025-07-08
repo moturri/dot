@@ -86,7 +86,6 @@ return {
 				map("n", "]d", vim.diagnostic.goto_next, "Go to Next Diagnostic")
 				map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Actions")
 				map("n", "<leader>rn", vim.lsp.buf.rename, "Rename Symbol")
-				map({ "n", "v" }, "<leader>ws", vim.lsp.buf.workspace_symbol, "Search Workspace Symbols")
 
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then
