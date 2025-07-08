@@ -22,6 +22,12 @@ return {
 		vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
 		cmp.setup({
+			performance = {
+				max_view_entries = 50, -- Limit the number of entries shown in the completion menu
+				debounce = 100,       -- Milliseconds to wait before triggering completion
+				throttle = 100,       -- Milliseconds to wait before filtering and displaying completions
+				fetching_timeout = 500, -- Milliseconds to wait for sources to return results
+			},
 			snippet = {
 				expand = function(args)
 					luasnip.lsp_expand(args.body)
