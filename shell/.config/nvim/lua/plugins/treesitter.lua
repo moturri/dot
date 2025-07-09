@@ -1,7 +1,6 @@
 return {
 	"nvim-treesitter/nvim-treesitter",
-	build = ":TSUpdate",
-	event = { "BufReadPost", "BufNewFile" },
+	event = { "VeryLazy" },
 
 	dependencies = {
 		"nvim-treesitter/nvim-treesitter-textobjects",
@@ -12,17 +11,11 @@ return {
 	config = function()
 		require("nvim-treesitter.configs").setup({
 			ensure_installed = vim.tbl_flatten({
-				-- Essentials
-				{ "bash", "lua", "vim", "vimdoc", "regex" },
-				-- Web
 				{ "html", "css", "scss", "javascript", "typescript", "tsx", "vue", "svelte", "json" },
-				-- Markdown / Docs
+				{ "bash", "lua", "vim", "vimdoc", "regex" },
 				{ "markdown", "markdown_inline", "yaml" },
-				-- Scripting / Data
 				{ "python" },
-				-- LaTeX / Typesetting
 				{ "latex", "typst" },
-				-- Notes
 				{ "norg" },
 			}),
 
@@ -33,15 +26,17 @@ return {
 				enable = true,
 				additional_vim_regex_highlighting = false,
 				disable = function(lang, bufnr)
-					local max_filesize = 100 * 1024 -- 100 KB
+					local max_filesize = 100 * 1024
 					local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
-					return ok and stats and stats.size > max_filesize
+					if ok and stats and stats.size > max_filesize then
+						return true
+					end
 				end,
 			},
 
 			indent = {
-				enable = false,
-				disable = { "yaml", "json" },
+				enable = true,
+				-- disable = { "yaml" },
 			},
 
 			incremental_selection = {
@@ -54,7 +49,9 @@ return {
 				},
 			},
 
-			autotag = { enable = true },
+			autotag = {
+				enable = true,
+			},
 
 			textobjects = {
 				select = {
@@ -76,7 +73,6 @@ return {
 						["as"] = "@statement.outer",
 					},
 				},
-
 				move = {
 					enable = true,
 					set_jumps = true,
@@ -93,13 +89,12 @@ return {
 						["[f"] = "@function.outer",
 						["[c"] = "@class.outer",
 						["[a"] = "@parameter.outer",
-						["[i"] = "@conditional.outer",
+						["[i]"] = "@conditional.outer",
 						["[l"] = "@loop.outer",
 						["[b"] = "@block.outer",
 						["[s"] = "@statement.outer",
 					},
 				},
-
 				swap = {
 					enable = true,
 					swap_next = {
@@ -112,10 +107,7 @@ return {
 			},
 		})
 
-		-- ts-context-commentstring safe setup
-		vim.g.skip_ts_context_commentstring_module = true
-		pcall(function()
-			require("ts_context_commentstring").setup()
-		end)
+		require("ts_context_commentstring").setup()
 	end,
 }
+

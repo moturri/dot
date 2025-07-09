@@ -1,7 +1,7 @@
 return {
 	"nvim-lualine/lualine.nvim",
 	enabled = true,
-	event = "VimEnter",
+	event = "BufEnter",
 
 	opts = function()
 		return {

@@ -1,14 +1,15 @@
 # pylint: disable=too-many-branches,too-many-statements
 # -*- coding: utf-8 -*-
 """Dracula color scheme for ranger."""
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 
-from ranger.gui.colorscheme import ColorScheme
 from ranger.gui.color import (
     black,
     blue,
     bold,
     cyan,
+    default,
+    default_colors,
     green,
     magenta,
     normal,
@@ -16,13 +17,13 @@ from ranger.gui.color import (
     reverse,
     white,
     yellow,
-    default,
-    default_colors,
 )
+from ranger.gui.colorscheme import ColorScheme
 
 
 class Dracula(ColorScheme):
     """Dracula color scheme."""
+
     progress_bar_color = 135
 
     def use(self, context):
@@ -51,9 +52,9 @@ class Dracula(ColorScheme):
                 fg = 95
             if context.directory:
                 fg = 141
-            elif context.executable and not \
-                    any((context.media, context.container,
-                         context.fifo, context.socket)):
+            elif context.executable and not any(
+                (context.media, context.container, context.fifo, context.socket)
+            ):
                 fg = 81
                 attr |= bold
             if context.socket:
@@ -169,3 +170,4 @@ class Dracula(ColorScheme):
                 fg = 203
 
         return fg, bg, attr
+

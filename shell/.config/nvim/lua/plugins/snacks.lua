@@ -80,7 +80,7 @@ return {
 		},
 		input = { enabled = true },
 		statuscolumn = {
-			enabled = true,
+			enabled = false,
 			left = { "mark", "sign" },
 			right = { "fold", "git" },
 			folds = {
@@ -100,10 +100,10 @@ return {
 			enabled = true,
 			tree = true,
 			hidden = true,
+			follow_file = true,
 		},
 		quickfile = {
 			enabled = true,
-			exclude = { "python" },
 		},
 		scope = {
 			enabled = true,
@@ -147,9 +147,6 @@ return {
 			end, "File Explorer"),
 
 			-- Find
-			map("<leader>,", function()
-				Snacks.picker.buffers()
-			end, "Buffers"),
 			map("<leader>ff", function()
 				Snacks.picker.files()
 			end, "Find Files"),

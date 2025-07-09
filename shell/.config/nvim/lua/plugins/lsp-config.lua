@@ -1,7 +1,16 @@
 return {
 	{
 		"williamboman/mason.nvim",
-		cmd = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUpdate", "MasonUpdateAll", "MasonUninstall", "MasonUninstallAll", "MasonLog" },
+		cmd = {
+			"Mason",
+			"MasonInstall",
+			"MasonInstallAll",
+			"MasonUpdate",
+			"MasonUpdateAll",
+			"MasonUninstall",
+			"MasonUninstallAll",
+			"MasonLog",
+		},
 		opts = {
 			ui = { border = "rounded" },
 		},
@@ -76,27 +85,12 @@ return {
 
 			vim.lsp.set_log_level("off")
 
-			local function on_attach(client, bufnr)
-				local map = function(mode, lhs, rhs, desc)
-					vim.keymap.set(mode, lhs, rhs, { silent = true, buffer = bufnr, desc = "LSP: " .. desc })
-				end
+			
 
-				map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
-				map("n", "[d", vim.diagnostic.goto_prev, "Go to Previous Diagnostic")
-				map("n", "]d", vim.diagnostic.goto_next, "Go to Next Diagnostic")
-				map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Actions")
-				map("n", "<leader>rn", vim.lsp.buf.rename, "Rename Symbol")
-
+				local function on_attach(client, bufnr)
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then
 					navic.attach(client, bufnr)
-				end
-
-				if client.server_capabilities.foldingRangeProvider then
-					vim.wo[bufnr].foldmethod = "expr"
-					vim.wo[bufnr].foldexpr = "vim.lsp.fold.foldexpr()"
-					vim.wo[bufnr].foldlevel = 99
-					vim.wo[bufnr].foldenable = true
 				end
 
 				client.server_capabilities.documentFormattingProvider = false
@@ -149,7 +143,7 @@ return {
 					javascript = { "prettier" },
 					typescript = { "prettier" },
 					c = { "cbfmt", "clang_format" },
-					cpp = { "cbfmt", "clang_format" },
+					cpp = { "clang_format" },
 					sh = { "shfmt" },
 					json = { "prettier" },
 					yaml = { "prettier" },
@@ -166,6 +160,7 @@ return {
 
 	{
 		"mfussenegger/nvim-lint",
+		event = { "BufReadPre", "BufNewFile" },
 		config = function()
 			local lint = require("lint")
 
