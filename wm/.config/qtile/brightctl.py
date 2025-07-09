@@ -22,7 +22,6 @@
 
 
 import os
-import re
 import shutil
 import subprocess
 from typing import Any, List, Optional, Tuple
@@ -39,10 +38,13 @@ ICONS: Tuple[Tuple[int, str, str], ...] = (
 )
 
 
-def run(command: List[str], timeout: float = 0.5) -> Optional[str]:
+def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
     try:
         return subprocess.check_output(
-            command, text=True, timeout=timeout, env={"LC_ALL": "C.UTF-8", **os.environ}
+            cmd,
+            text=True,
+            timeout=timeout,
+            env={"LC_ALL": "C.UTF-8", **os.environ},
         ).strip()
     except Exception:
         return None
@@ -54,7 +56,6 @@ def require(command: str) -> None:
 
 
 class BrightctlWidget(GenPollText):  # type: ignore[misc]
-    """Minimal brightness widget for Qtile using brightnessctl."""
 
     def __init__(
         self,
@@ -69,12 +70,12 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _get_brightness(self) -> int:
-        val = run(["brightnessctl", "get"])
-        max_val = run(["brightnessctl", "max"])
-        if val is None or max_val is None:
-            return 0
+        current = run(["brightnessctl", "get"])
+        maximum = run(["brightnessctl", "max"])
         try:
-            return (int(val) * 100) // max(int(max_val), 1)
+            cur = int(current) if current else 0
+            max_ = int(maximum) if maximum else 1
+            return (cur * 100) // max(1, max_)
         except Exception:
             return 0
 
@@ -84,11 +85,12 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
         self.force_update()
 
     def _poll(self) -> str:
-        b = self._get_brightness()
-        for t, color, icon in ICONS:
-            if b >= t:
-                return f'<span foreground="{color}">{icon}  {b}%</span>'
-        return f'<span foreground="grey">󰃜  {b}%</span>'
+        brightness = self._get_brightness()
+        icon, color = next(
+            ((i, c) for t, c, i in ICONS if brightness >= t),
+            ("󰃜", "grey"),
+        )
+        return f'<span foreground="{color}">{icon}  {brightness}%</span>'
 
     @expose_command()
     def increase(self) -> None:

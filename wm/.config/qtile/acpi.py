@@ -30,10 +30,9 @@ from qtile_extras.widget import GenPollText
 
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
-
 EMPTY_ICON = "󰁺"
 
-BATTERY_ICONS = (
+BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
     (95, "󰂂", "limegreen"),
     (80, "󰂁", "palegreen"),
     (60, "󰂀", "khaki"),
@@ -55,7 +54,6 @@ def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
 
 
 class AcpiWidget(GenPollText):  # type: ignore[misc]
-    """Suckless Qtile battery widget with /sys and acpi fallback."""
 
     def __init__(
         self,
@@ -67,18 +65,18 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
     ):
         self.path = battery_path
         self.show_time = show_time
-        self.critical = max(5, min(25, critical_threshold))
+        self.critical = max(5, min(critical_threshold, 25))
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _poll(self) -> str:
-        data = self._from_sys() or self._from_acpi()
-        if not data:
+        status = self._from_sys() or self._from_acpi()
+        if not status:
             return f'<span foreground="grey">{EMPTY_ICON} N/A</span>'
 
-        pct, state, mins = data
+        pct, state, mins = status
         icon, color = self._icon(pct, state)
-        time = self._format_time(mins) if self.show_time and mins else ""
-        return f'<span foreground="{color}">{icon} {pct}%{time}</span>'
+        time_str = self._format_time(mins) if self.show_time and mins else ""
+        return f'<span foreground="{color}">{icon} {pct}%{time_str}</span>'
 
     def _from_sys(self) -> Optional[Tuple[int, str, Optional[int]]]:
         try:
@@ -90,7 +88,8 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             return None
 
     def _read(self, name: str) -> str:
-        with open(f"{self.path}/{name}", "r", encoding="utf-8") as f:
+        path = os.path.join(self.path, name)
+        with open(path, "r", encoding="utf-8") as f:
             return f.read().strip()
 
     def _read_int(self, name: str) -> int:
@@ -111,11 +110,11 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         return None
 
     def _from_acpi(self) -> Optional[Tuple[int, str, Optional[int]]]:
-        out = run(["acpi", "-b"])
-        if not out:
+        output = run(["acpi", "-b"])
+        if not output:
             return None
         try:
-            parts = out.split(":", 1)[1].strip().split(", ")
+            parts = output.split(":", 1)[1].strip().split(", ")
             state = parts[0].lower()
             pct = int(parts[1].rstrip("%"))
             mins = None
@@ -132,16 +131,21 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
                 if pct >= threshold:
                     return f"{CHARGING_ICON} {icon}", color
             return f"{CHARGING_ICON} {EMPTY_ICON}", "darkgreen"
+
         if state == "full":
             return FULL_ICON, "lime"
+
         if pct <= self.critical:
             return EMPTY_ICON, "red" if pct <= 5 else "orange"
+
         for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
                 return icon, color
+
         return EMPTY_ICON, "grey"
 
-    def _format_time(self, mins: int) -> str:
+    @staticmethod
+    def _format_time(mins: int) -> str:
         h, m = divmod(mins, 60)
         return f" ({h}h {m:02d}m)" if h else f" ({m}m)"
 

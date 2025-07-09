@@ -35,17 +35,16 @@ def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
         return subprocess.check_output(
             cmd, text=True, timeout=timeout, env={"LC_ALL": "C.UTF-8", **os.environ}
         ).strip()
-    except Exception:
+    except (subprocess.SubprocessError, FileNotFoundError):
         return None
 
 
 def require(command: str) -> None:
-    if not shutil.which(command):
+    if shutil.which(command) is None:
         raise RuntimeError(f"Missing dependency: {command}")
 
 
 class AudioWidget(GenPollText):  # type: ignore[misc]
-    """Suckless PipeWire audio widget using wpctl."""
 
     LEVELS: Tuple[Tuple[int, str, str], ...] = (
         (75, "salmon", "󰕾"),
@@ -71,36 +70,37 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
         self.show_icon = show_icon
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
+    def _poll(self) -> str:
+        volume, muted = self._get_state()
+        color, icon = self._icon(volume, muted)
+        text = f"{icon}  {volume}%" if self.show_icon else f"{volume}%"
+        return f'<span foreground="{color}">{text}</span>'
+
     def _get_state(self) -> Tuple[int, bool]:
-        out = run(["wpctl", "get-volume", self.device])
-        if not out:
-            return 0, True
-        return self._parse_state(out)
+        output = run(["wpctl", "get-volume", self.device])
+        return self._parse_state(output) if output else (0, True)
 
     def _parse_state(self, output: str) -> Tuple[int, bool]:
+        parts = output.strip().split()
         muted = "[MUTED]" in output
         try:
-            vol = int(float(output.split()[1]) * 100)
-        except Exception:
-            vol = 0
-        return vol, muted
-
-    def _poll(self) -> str:
-        vol, muted = self._get_state()
-        color, icon = self._icon(vol, muted)
-        text = f"{icon}  {vol}%" if self.show_icon else f"{vol}%"
-        return f'<span foreground="{color}">{text}</span>'
+            vol_float = float(parts[1])
+            volume = min(150, max(0, int(vol_float * 100)))
+        except (IndexError, ValueError):
+            volume = 0
+        return volume, muted
 
     def _icon(self, vol: int, muted: bool) -> Tuple[str, str]:
         if muted:
             return self.MUTED
-        return next(
-            ((c, i) for t, c, i in self.LEVELS if vol >= t), self.LEVELS[-1][1:]
-        )
+        for threshold, color, icon in self.LEVELS:
+            if vol >= threshold:
+                return color, icon
+        return self.LEVELS[-1][1], self.LEVELS[-1][2]
 
     def _set_volume(self, vol: int) -> None:
-        pct = max(0, min(vol, self.max_volume))
-        run(["wpctl", "set-volume", self.device, f"{pct}%"])
+        clamped = max(0, min(vol, self.max_volume))
+        run(["wpctl", "set-volume", self.device, f"{clamped}%"])
         self.force_update()
 
     @expose_command()
