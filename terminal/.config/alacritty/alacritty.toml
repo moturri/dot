@@ -10,7 +10,7 @@ padding = { x = 3, y = 3 }
 dynamic_padding = true
 decorations_theme_variant = "None"
 decorations = "none"
-opacity = 1
+opacity = 0.9
 blur = false
 startup_mode = "Windowed"
 title = "Alacritty"
