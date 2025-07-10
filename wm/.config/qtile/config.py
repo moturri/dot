@@ -28,11 +28,13 @@ import os
 import subprocess
 from typing import Any, List
 
-from bars import main, misc
-from groups import groups  # noqa: F401
-from keys import keys, mouse  # noqa: F401
 from libqtile import bar, hook, layout
 from libqtile.config import Match, Screen
+
+from bars import main, misc
+from colors import theme
+from groups import groups  # noqa: F401
+from keys import keys, mouse  # noqa: F401
 
 widget_defaults = dict(
     font="Inter Variable Bold",
@@ -42,6 +44,8 @@ widget_defaults = dict(
 ldecor = {
     "margin": 8,
     "border_width": 0,
+    "border_focus": theme["active"],
+    "border_normal": theme["bbg"],
 }
 
 layouts = [
@@ -51,7 +55,6 @@ layouts = [
     layout.Max(**ldecor),  # type: ignore
 ]
 
-# transparent = "#00000000"
 # wallpaper_path = "/home/m/.config/qtile/wallpaper/arc.jpg"
 
 screens = [
@@ -61,7 +64,7 @@ screens = [
         top=bar.Bar(
             main(),
             28,
-            # background=transparent,
+            # background=theme["transparent"],
             margin=[0, 8, 0, 8],
         ),
     ),
@@ -71,7 +74,7 @@ screens = [
         top=bar.Bar(
             misc(),
             28,
-            # background=transparent,
+            # background=theme["transparent"],
             margin=[0, 8, 0, 8],
         ),
     ),

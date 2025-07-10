@@ -1,26 +1,20 @@
-from typing import Any, Dict, List
+from typing import Any, List
 
-from acpi import AcpiWidget
-from brightctl import BrightctlWidget
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
-from wpctl import AudioWidget, MicWidget
 
-theme: Dict[str, Any] = {
-    "accent": "#6f3aea",
-    "alert": "#ff5555",
-    "fg": "#ffffff",
-    "bg": "#0a0a0a",
-    "padding": 6,
-}
+from acpi import AcpiWidget
+from brightctl import BrightctlWidget
+from colors import theme
+from wpctl import AudioWidget, MicWidget
 
 
 def decorated_widget(widget_class: Any, **config: Any) -> Any:
     return widget_class(
         **{
-            "background": theme["bg"],
-            "foreground": theme["fg"],
+            "background": theme["bbg"],
+            "foreground": theme["bfg"],
             "decorations": [
                 RectDecoration(
                     use_widget_background=True,
