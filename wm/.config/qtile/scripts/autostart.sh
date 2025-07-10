@@ -3,9 +3,9 @@
 set -euo pipefail
 
 function run() {
-  if ! pgrep -f "$1" >/dev/null; then
-    "$@" &
-  fi
+	if ! pgrep -f "$1" >/dev/null; then
+		"$@" &
+	fi
 }
 
 xset b off
