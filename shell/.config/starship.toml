@@ -21,6 +21,7 @@ dracula_purple = "#bd93f9"
 "Developer" = "󰲋"
 ".dot" = "󰒓"
 ".config" = "󰒓"
+"shell" = "󰞷"
 
 # Git Branch Styling
 [git_branch]
