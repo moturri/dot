@@ -80,7 +80,7 @@ return {
 		},
 		input = { enabled = true },
 		statuscolumn = {
-			enabled = false,
+			enabled = true,
 			left = { "mark", "sign" },
 			right = { "fold", "git" },
 			folds = {
