@@ -2,27 +2,34 @@
 set -euo pipefail
 
 LOCK_CMD="${LOCK_CMD:-}"
-ROFI_CMD="rofi -dmenu -i -p"
-
 if [[ -z "$LOCK_CMD" ]]; then
-	for lock in betterlockscreen i3lock xlock swaylock; do
-		if command -v "$lock" >/dev/null 2>&1; then
-			LOCK_CMD="$lock"
+	for cmd in i3lock betterlockscreen xlock swaylock; do
+		if command -v "$cmd" &>/dev/null; then
+			LOCK_CMD="$cmd"
 			break
 		fi
 	done
 fi
 
-lock="󰌾  Lock"
-sleep="󰒲  Sleep"
-logout="  Logout"
-reboot="󱑞  Reboot"
-shutdown="󰐥  Shutdown"
-cancel="󰜺  Cancel"
+ROFI_CMD="rofi -dmenu -i -p"
+TITLE_ICON="󰟀 "
+LOCK_ICON="󰌾  Lock"
+SLEEP_ICON="󰒲  Sleep"
+LOGOUT_ICON="  Logout"
+REBOOT_ICON="󱑞  Reboot"
+SHUTDOWN_ICON="󰐥  Shutdown"
+CANCEL_ICON="󰜺  Cancel"
 
-options=("$lock" "$sleep" "$logout" "$reboot" "$shutdown" "$cancel")
+options=(
+	"$LOCK_ICON"
+	"$SLEEP_ICON"
+	"$LOGOUT_ICON"
+	"$REBOOT_ICON"
+	"$SHUTDOWN_ICON"
+	"$CANCEL_ICON"
+)
 
-choice=$(printf '%s\n' "${options[@]}" | $ROFI_CMD "󰟀 Power" -lines "${#options[@]}" || exit 1)
+choice=$(printf '%s\n' "${options[@]}" | $ROFI_CMD "$TITLE_ICON" -lines "${#options[@]}" || exit 1)
 
 confirm_action() {
 	local prompt="$1"
@@ -30,9 +37,9 @@ confirm_action() {
 }
 
 logout_session() {
-	if pgrep -x qtile >/dev/null; then
+	if pgrep -x qtile &>/dev/null; then
 		qtile cmd-obj -o cmd -f logout
-	elif pgrep -x i3 >/dev/null; then
+	elif pgrep -x i3 &>/dev/null; then
 		i3-msg exit
 	elif [[ -n "${XDG_SESSION_ID:-}" ]]; then
 		loginctl terminate-session "$XDG_SESSION_ID"
@@ -41,27 +48,40 @@ logout_session() {
 	fi
 }
 
+lock_system() {
+	case "$LOCK_CMD" in
+	i3lock)
+		i3lock -c 000000
+		;;
+	betterlockscreen)
+		betterlockscreen -l
+		;;
+	xlock | swaylock)
+		"$LOCK_CMD"
+		;;
+	*)
+		notify-send "Power Menu " "No valid lock command found in PATH."
+		;;
+	esac
+}
+
 case "$choice" in
-"$lock")
-	if [[ -n "$LOCK_CMD" ]]; then
-		exec "$LOCK_CMD"
-	else
-		notify-send "Power Menu " "No lock command found in PATH."
-	fi
+"$LOCK_ICON")
+	lock_system
 	;;
-"$sleep")
+"$SLEEP_ICON")
 	[[ "$(confirm_action '󰒲  Suspend system?')" == "Yes" ]] && systemctl suspend
 	;;
-"$logout")
+"$LOGOUT_ICON")
 	[[ "$(confirm_action '  Logout?')" == "Yes" ]] && logout_session
 	;;
-"$reboot")
+"$REBOOT_ICON")
 	[[ "$(confirm_action '󱑞  Reboot system?')" == "Yes" ]] && systemctl reboot
 	;;
-"$shutdown")
+"$SHUTDOWN_ICON")
 	[[ "$(confirm_action '󰐥  Power off system?')" == "Yes" ]] && systemctl poweroff
 	;;
-"$cancel" | *)
+"$CANCEL_ICON" | *)
 	exit 0
 	;;
 esac
