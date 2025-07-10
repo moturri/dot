@@ -73,7 +73,7 @@ main() {
 	local options=("󰖩  Create Hotspot" "  Attach to Session" "󰯅  Launch Session Only")
 	local choice
 
-	choice=$(printf '%s\n' "${options[@]}" | rofi -dmenu -i -p "󰀂 create_ap")
+	choice=$(printf '%s\n' "${options[@]}" | rofi -dmenu -i -p "󰀂 ")
 
 	case "$choice" in
 	"󰖩  Create Hotspot")
