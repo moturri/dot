@@ -1,8 +1,7 @@
 # Arch Qtile Dotfiles
 
 This repository contains my personal dotfiles for a suckless-inspired approach.
-Specifically tailored for [Arch Linux](https://archlinux.org/) and
-[Qtile](https://qtile.org/) with dwm switching.
+Specifically tailored for [Arch Linux](https://archlinux.org/) and [Qtile](https://qtile.org/).
 The configs are for various tools and environments, ensuring
 a streamlined and personalized experience across my Linux setup.
 
@@ -10,15 +9,24 @@ a streamlined and personalized experience across my Linux setup.
 
 This repository is organized into the following categories:
 
-- **`X11`**: X Window System specific configurations.
-- **`browser`**: Configurations for web browsers and related tools.
-- **`gtkqt`**: Theming and configuration files for GTK and Qt applications.
-- **`shell`**: Configurations for various shells, command-line utilities,
-  and text editors.
-- **`terminal`**: Settings for terminal emulators.(alacritty, kitty & wezterm)
-- **`wm`**: Custom configurations and scripts for the window manager,
-  including efficient [Rofi](https://github.com/davatorium/rofi)
-  scripts for enhanced workflow.
+- **`X11`**: X Window System specific configurations (`.xprofile`, `.Xresources`, `xinitrc`).
+- **`browser`**: Configurations for `qutebrowser` and Firefox (`user.js`, `userChrome.css`).
+- **`gtkqt`**: Theming and configuration files for GTK (`gtk-2.0`, `gtk-3.0`, `gtk-4.0`)
+  and Qt applications (`Kvantum`, `qt5ct`, `qt6ct`).
+- **`shell`**: Configurations for various shells, command-line utilities, and text editors.
+  - Shells: `bash`, `zsh`, `fish`
+  - Prompt: `starship`
+  - Multiplexer: `tmux`
+  - Editors: `neovim`, `vim`
+  - File Managers: `ranger`, `yazi`
+  - Utilities: `fastfetch`, `tealdeer`
+- **`terminal`**: Settings for terminal emulators: `alacritty`, `kitty`, and `wezterm`.
+- **`wm`**: Custom configurations and scripts for the window manager and related tools.
+  - Window Manager: `qtile`
+  - Compositor: `picom`
+  - Notification Daemon: `dunst`
+  - Clipboard Manager: `greenclip`
+  - Launcher: `rofi` (with custom scripts for enhanced workflow)
 
 ## Dependencies
 
