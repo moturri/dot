@@ -10,7 +10,7 @@ a streamlined and personalized experience across my Linux setup.
 This repository is organized into the following categories:
 
 - **`X11`**: X Window System specific configurations (`.xprofile`, `.Xresources`, `xinitrc`).
-- **`browser`**: Configurations for `qutebrowser` and Firefox (`user.js`, `userChrome.css`).
+- **`browser`**: Configurations for `qutebrowser` and `zen browser` (`user.js`, `userChrome.css`).
 - **`gtkqt`**: Theming and configuration files for GTK (`gtk-2.0`, `gtk-3.0`, `gtk-4.0`)
   and Qt applications (`Kvantum`, `qt5ct`, `qt6ct`).
 - **`shell`**: Configurations for various shells, command-line utilities, and text editors.
