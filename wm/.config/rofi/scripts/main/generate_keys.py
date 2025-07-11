@@ -48,7 +48,7 @@ def format_keybinding(key_obj, display_string, max_len=30):
 
 
 def collect_keybindings():
-    from keys import keys
+    from keys import keys  # type: ignore
     from libqtile.config import Key, KeyChord
 
     lines = []
@@ -58,12 +58,14 @@ def collect_keybindings():
     for key in keys:
         if isinstance(key, Key):
             mods = "+".join(format_modifier(mod) for mod in key.modifiers)
-            combo = f"{mods}+{key.key}" if mods else key.key
+            key_str = str(key.key)
+            combo = f"{mods}+{key_str}" if mods else key_str
             flat_keys.append((key, combo, combo))
             max_len = max(max_len, len(combo))
         elif isinstance(key, KeyChord):
             chord_mods = "+".join(format_modifier(mod) for mod in key.modifiers)
-            chord_combo_prefix = f"{chord_mods}+{key.key}" if chord_mods else key.key
+            key_str = str(key.key)
+            chord_combo_prefix = f"{chord_mods}+{key_str}" if chord_mods else key_str
             max_len = max(max_len, len(chord_combo_prefix))
             for subkey in key.submappings:
                 sub_mods = "+".join(format_modifier(mod) for mod in subkey.modifiers)
