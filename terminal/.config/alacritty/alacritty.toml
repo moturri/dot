@@ -1,62 +1,69 @@
 [env]
 WINIT_X11_SCALE_FACTOR = "1.0"
 
+[window]
+padding = { x = 3, y = 3 }
+decorations = "none"
+opacity = 0.9
+
 [scrolling]
 history = 10000
 multiplier = 3
 
-[window]
-padding = { x = 3, y = 3 }
-dynamic_padding = true
-decorations_theme_variant = "None"
-decorations = "none"
-opacity = 0.9
-blur = false
-startup_mode = "Windowed"
-title = "Alacritty"
-dynamic_title = true
-resize_increments = true
-
 [font]
 normal = { family = "JetBrainsMonoNL Nerd Font", style = "Medium" }
 size = 12
-builtin_box_drawing = true
+
+[cursor]
+style = { shape = "Block", blinking = "Off" }
+unfocused_hollow = true
+
+[mouse]
+hide_when_typing = false
+
+[selection]
+save_to_clipboard = true
 
 [bell]
 animation = "Linear"
 duration = 0
 
-[selection]
-semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
-save_to_clipboard = true
+[colors.primary]
+background = "#000000"
+foreground = "#FFFFFF"
 
-[cursor]
-style = { shape = "Block", blinking = "Off" }
-unfocused_hollow = true
-thickness = 0.15
+[colors.normal]
+black = "#000000"
+red = "#cd0000"
+green = "#00cd00"
+yellow = "#cdcd00"
+blue = "#0000ee"
+magenta = "#cd00cd"
+cyan = "#00cdcd"
+white = "#e5e5e5"
 
-[mouse]
-hide_when_typing = false
+[colors.bright]
+black = "#7f7f7f"
+red = "#ff0000"
+green = "#00ff00"
+yellow = "#ffff00"
+blue = "#5c5cff"
+magenta = "#ff00ff"
+cyan = "#00ffff"
+white = "#ffffff"
 
-[general]
-live_config_reload = true
-import = [
-  "~/.config/alacritty/colors.toml",
-  "~/.config/alacritty/keybindings.toml",
+[keyboard]
+bindings = [
+  { key = "N", mods = "Control|Shift", action = "CreateNewWindow" },
+  { key = "C", mods = "Control|Shift", action = "Copy" },
+  { key = "V", mods = "Control|Shift", action = "Paste" },
+  { key = "Equals", mods = "Control", action = "IncreaseFontSize" },
+  { key = "Minus", mods = "Control", action = "DecreaseFontSize" },
+  { key = "Key0", mods = "Control", action = "ResetFontSize" },
+  { key = "PageUp", action = "ScrollPageUp" },
+  { key = "PageDown", action = "ScrollPageDown" },
+  { key = "Up", mods = "Control", action = "ScrollLineUp" },
+  { key = "Down", mods = "Control", action = "ScrollLineDown" },
+  { key = "F11", action = "ToggleFullscreen" },
+  { key = "L", mods = "Control|Shift", chars = "ls -la\n" },
 ]
-
-# [terminal.shell]
-# program = "/bin/zsh"
-# args = ["-l"]
-
-[[hints.enabled]]
-regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\\u0000-\\u001F\\u007F-\\u009F<>\"\\s{-}\\^⟨⟩`]+"
-hyperlinks = true
-post_processing = true
-persist = false
-mouse.enabled = true
-binding = { key = "U", mods = "Control|Shift" }
-command = "xdg-open"
-
-[terminal]
-
