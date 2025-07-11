@@ -79,7 +79,8 @@ def collect_keybindings():
     flat_keys.sort(key=lambda x: x[2])
 
     for key_obj, display_string, _ in flat_keys:
-        lines.append(format_keybinding(key_obj, display_string, max_len))
+        if key_obj.commands:
+            lines.append(format_keybinding(key_obj, display_string, max_len))
 
     return "\n".join(lines)
 
