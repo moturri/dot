@@ -28,13 +28,12 @@ import os
 import subprocess
 from typing import Any, List
 
-from libqtile import bar, hook, layout
-from libqtile.config import Match, Screen
-
 from bars import main, misc
 from colors import theme
 from groups import groups  # noqa: F401
 from keys import keys, mouse  # noqa: F401
+from libqtile import bar, hook, layout
+from libqtile.config import Match, Screen
 
 widget_defaults = dict(
     font="Inter Variable Bold",

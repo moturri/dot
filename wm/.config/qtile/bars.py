@@ -1,12 +1,11 @@
 from typing import Any, List
 
-from libqtile.lazy import lazy
-from qtile_extras import widget
-from qtile_extras.widget.decorations import RectDecoration
-
 from acpi import AcpiWidget
 from brightctl import BrightctlWidget
 from colors import theme
+from libqtile.lazy import lazy
+from qtile_extras import widget
+from qtile_extras.widget.decorations import RectDecoration
 from wpctl import AudioWidget, MicWidget
 
 

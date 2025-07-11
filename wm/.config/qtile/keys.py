@@ -66,7 +66,8 @@ keys: List[Union[Key, KeyChord]] = [
     Key([], "XF86AudioMute", lazy.widget["audio"].toggle_mute()),
     Key([], "XF86AudioMicMute", lazy.widget["mic"].toggle_mute()),
     Key([mod], "F7", lazy.widget["mpris"].toggle_player()),
-    Key([mod], "bracketleft", lazy.widget["mpris"].play_pause()),
+    Key([mod], "bracketleft", lazy.widget["mpris"].previous()),
+    Key([mod], "space", lazy.widget["mpris"].play_pause()),
     Key([mod], "bracketright", lazy.widget["mpris"].next()),
 ] + [
     KeyChord(
