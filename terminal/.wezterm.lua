@@ -3,8 +3,6 @@ local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
 --  Basic Configuration
-config.term = "wezterm"
-config.color_scheme = "Windows NT (base16)" -- Still used internally for some themes
 config.font = wezterm.font("JetBrainsMonoNL Nerd Font", { weight = "Medium" })
 config.font_size = 12.0
 config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
@@ -18,13 +16,11 @@ config.front_end = "OpenGL" -- Use "WebGpu" for experimental WebGPU support
 config.window_background_opacity = 0.9
 config.window_decorations = "NONE"
 config.force_reverse_video_cursor = true
-config.adjust_window_size_when_changing_font_size = false
 
 --  Tabs & Panes
 config.hide_tab_bar_if_only_one_tab = true
 config.tab_bar_at_bottom = false
 config.use_fancy_tab_bar = false
-config.tab_and_split_indices_are_zero_based = true
 config.window_close_confirmation = "NeverPrompt"
 
 --  Scrollback
@@ -116,11 +112,12 @@ end
 
 --  Leader Status Indicator (🐉)
 wezterm.on("update-right-status", function(window, _)
-	local prefix = window:leader_is_active() and " 🐉 " or ""
-
-	window:set_left_status(wezterm.format({
-		{ Background = { Color = "#000000" } },
-		{ Text = prefix },
+	local leader_status = ""
+	if window:leader_is_active() then
+		leader_status = " 🐉"
+	end
+	window:set_right_status(wezterm.format({
+		{ Text = wezterm.nerdfonts.oct_flame .. leader_status },
 	}))
 end)
 
