@@ -47,9 +47,12 @@ BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
 def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
     try:
         return subprocess.check_output(
-            cmd, text=True, timeout=timeout, env={"LC_ALL": "C.UTF-8", **os.environ}
+            cmd,
+            text=True,
+            timeout=timeout,
+            env={"LC_ALL": "C.UTF-8", **os.environ},
         ).strip()
-    except Exception:
+    except (subprocess.SubprocessError, FileNotFoundError):
         return None
 
 
@@ -84,7 +87,7 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             state = self._read("status").lower()
             mins = self._estimate_time(state)
             return pct, state, mins
-        except Exception:
+        except (OSError, ValueError):
             return None
 
     def _read(self, name: str) -> str:
@@ -105,7 +108,7 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
                     "current_now" if prefix == "charge" else "power_now"
                 )
                 return int((now / rate) * 60) if rate > 0 else None
-            except Exception:
+            except (OSError, ValueError):
                 continue
         return None
 
@@ -122,7 +125,7 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
                 h, m = map(int, parts[2].split(":")[:2])
                 mins = h * 60 + m
             return pct, state, mins
-        except Exception:
+        except (IndexError, ValueError):
             return None
 
     def _icon(self, pct: int, state: str) -> Tuple[str, str]:
