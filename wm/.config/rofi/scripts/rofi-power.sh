@@ -39,12 +39,8 @@ confirm_action() {
 logout_session() {
 	if pgrep -x qtile &>/dev/null; then
 		qtile cmd-obj -o cmd -f logout
-	elif pgrep -x i3 &>/dev/null; then
-		i3-msg exit
-	elif [[ -n "${XDG_SESSION_ID:-}" ]]; then
-		loginctl terminate-session "$XDG_SESSION_ID"
-	else
-		loginctl terminate-user "$USER"
+	elif pgrep -x dwm &>/dev/null; then
+		pkill dwm
 	fi
 }
 
@@ -53,14 +49,8 @@ lock_system() {
 	i3lock)
 		i3lock -c 000000
 		;;
-	betterlockscreen)
-		betterlockscreen -l
-		;;
-	xlock | swaylock)
-		"$LOCK_CMD"
-		;;
 	*)
-		notify-send "Power Menu " "No valid lock command found in PATH."
+		notify-send "Power Menu " "i3lock command not found in PATH."
 		;;
 	esac
 }
