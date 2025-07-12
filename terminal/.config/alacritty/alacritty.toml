@@ -11,7 +11,7 @@ history = 10000
 multiplier = 3
 
 [font]
-normal = { family = "JetBrainsMonoNL Nerd Font", style = "Medium" }
+normal = { family = "JetBrainsMonoNL Nerd Font", style = "SemiBold" }
 size = 12
 
 [cursor]
