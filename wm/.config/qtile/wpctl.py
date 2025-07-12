@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 
+import logging
 import os
 import shutil
 import subprocess
@@ -29,19 +30,37 @@ from typing import Any, List, Optional, Tuple
 from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
 
+logger = logging.getLogger(__name__)
+
 
 def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
     try:
         return subprocess.check_output(
             cmd, text=True, timeout=timeout, env={"LC_ALL": "C.UTF-8", **os.environ}
         ).strip()
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except (subprocess.SubprocessError, FileNotFoundError) as e:
+        logger.warning(f"Command failed: {' '.join(cmd)} -> {e}")
         return None
 
 
 def require(command: str) -> None:
     if shutil.which(command) is None:
         raise RuntimeError(f"Missing dependency: {command}")
+
+
+def resolve_default_device(is_input: bool = False) -> Optional[str]:
+    output = run(["wpctl", "status"])
+    if not output:
+        return None
+    lines = output.splitlines()
+    category = "Sources:" if is_input else "Sinks:"
+    found = False
+    for line in lines:
+        if category in line:
+            found = True
+        elif found and line.strip().startswith("*"):
+            return line.split()[1]
+    return None
 
 
 class AudioWidget(GenPollText):  # type: ignore[misc]
@@ -56,7 +75,7 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 
     def __init__(
         self,
-        device: str = "@DEFAULT_AUDIO_SINK@",
+        device: Optional[str] = None,
         step: int = 5,
         max_volume: int = 100,
         update_interval: float = 9999.0,
@@ -64,10 +83,22 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
         **config: Any,
     ):
         require("wpctl")
-        self.device = device
+
+        if device is None:
+            default_sink = "@DEFAULT_AUDIO_SINK@"
+            if run(["wpctl", "get-volume", default_sink]):
+                device = default_sink
+            else:
+                device = resolve_default_device(False)
+
+        if device is None:
+            raise RuntimeError("Could not resolve a valid audio sink device.")
+
+        self.device: str = device
         self.step = max(1, min(step, 25))
         self.max_volume = max(50, min(max_volume, 150))
         self.show_icon = show_icon
+
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _poll(self) -> str:
@@ -86,7 +117,8 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
         try:
             vol_float = float(parts[1])
             volume = min(150, max(0, int(vol_float * 100)))
-        except (IndexError, ValueError):
+        except (IndexError, ValueError) as e:
+            logger.warning(f"Volume parse error: {output} -> {e}")
             volume = 0
         return volume, muted
 
@@ -134,13 +166,15 @@ class AudioWidget(GenPollText):  # type: ignore[misc]
 
     @expose_command()
     def refresh_device(self) -> None:
-        if "@DEFAULT_AUDIO" in self.device:
-            self.force_update()
+        default_sink = "@DEFAULT_AUDIO_SINK@"
+        if run(["wpctl", "get-volume", default_sink]):
+            self.device = default_sink
+        else:
+            self.device = resolve_default_device(False) or self.device
+        self.force_update()
 
 
 class MicWidget(AudioWidget):
-    """Suckless PipeWire microphone widget using wpctl."""
-
     LEVELS: Tuple[Tuple[int, str, str], ...] = (
         (75, "salmon", "󰍬"),
         (50, "mediumpurple", "󰍬"),
@@ -150,5 +184,16 @@ class MicWidget(AudioWidget):
     MUTED: Tuple[str, str] = ("grey", "󰍭")
 
     def __init__(self, **config: Any) -> None:
-        config.setdefault("device", "@DEFAULT_AUDIO_SOURCE@")
+        device = config.get("device")
+        if device is None:
+            default_source = "@DEFAULT_AUDIO_SOURCE@"
+            if run(["wpctl", "get-volume", default_source]):
+                device = default_source
+            else:
+                device = resolve_default_device(True)
+
+        if device is None:
+            raise RuntimeError("Could not resolve a valid microphone device.")
+
+        config["device"] = device
         super().__init__(**config)
