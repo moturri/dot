@@ -169,6 +169,14 @@ return {
 				Snacks.picker.recent()
 			end, "Recent Files"),
 
+			-- Obsidian
+			map("<leader>oo", function()
+				local vault = vim.fn.expand("/mnt/dm-2/Library/Obsidian")
+				Snacks.picker.files({
+					cwd = vault,
+				})
+			end, "Open Obsidian vault"),
+
 			-- Git
 			map("<leader>gs", function()
 				Snacks.picker.git_status()
