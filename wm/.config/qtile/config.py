@@ -28,8 +28,7 @@ import os
 import subprocess
 from typing import Any, List
 
-from bars import main, misc
-from colors import theme
+from bars import main, misc, theme
 from groups import groups  # noqa: F401
 from keys import keys, mouse  # noqa: F401
 from libqtile import bar, hook, layout

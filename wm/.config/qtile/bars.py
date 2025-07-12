@@ -2,11 +2,23 @@ from typing import Any, List
 
 from acpi import AcpiWidget
 from brightctl import BrightctlWidget
-from colors import theme
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
 from wpctl import AudioWidget, MicWidget
+
+theme = {
+    "accent": "#6f3aea",
+    "alert": "#ff5555",
+    "bfg": "#ffffff",
+    "bbg": "#0b0b0b",
+    "padding": 6,
+    "lbg": "#282a36",
+    "lfg": "#f8f8f2",
+    "active": "#ff79c6",
+    "inactive": "#6272a4",
+    "transparent": "#00000000",
+}
 
 
 def decorated_widget(widget_class: Any, **config: Any) -> Any:
