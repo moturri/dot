@@ -3,8 +3,8 @@ from libqtile.config import DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
 group_definitions = [
-    ("1", "󰞷", ["org.wezfurlong.wezterm", "code-oss"]),
-    ("2", "󰣇", ["discord"]),
+    ("1", "󰣇", ["discord"]),
+    ("2", "󰞷", ["org.wezfurlong.wezterm", "code-oss"]),
     ("3", "󰆋", ["firefox", "zen"]),
     ("4", "󰊠", ["octopi", "qbittorrent", "wireshark"]),
     (
