@@ -50,7 +50,7 @@ lock_system() {
 		i3lock -c 000000
 		;;
 	*)
-		notify-send "Power Menu " "i3lock command not found in PATH."
+		notify-send "Power Menu " " i3lock command not found in PATH."
 		;;
 	esac
 }

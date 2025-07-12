@@ -10,35 +10,37 @@ ENV_FILE="$HOME/.config/create_ap/env_$PROFILE"
 
 for cmd in tmux rofi notify-send sudo-rs create_ap iw alacritty; do
 	command -v "$cmd" >/dev/null || {
-		notify-send "❌ Missing Dependency" "Required command not found: $cmd"
+		notify-send "Missing Dependency" " Missing required command: $cmd"
 		exit 1
 	}
 done
 
 if [[ ! -f "$ENV_FILE" ]]; then
-	notify-send "❌ Missing Profile" "Could not find env file:\n$ENV_FILE"
+	notify-send "Missing Profile" " Could not find env file:\n$ENV_FILE"
 	exit 1
 fi
 
 if [[ $(stat -c "%a" "$ENV_FILE") -gt 600 ]]; then
-	notify-send "⚠️ Insecure Permissions" \
-		"Environment file is too permissive:\n$ENV_FILE\nRun: chmod 600 \"$ENV_FILE\""
+	notify-send "Insecure Permissions" \
+		" Environment file is too permissive:\n$ENV_FILE\nRun: chmod 600 \"$ENV_FILE\""
 fi
+
 
 . "$ENV_FILE"
 
 if [[ -z "${SSID:-}" || -z "${PASSWORD:-}" ]]; then
-	notify-send "❌ Missing Variables" \
-		"SSID or PASSWORD not set in:\n$ENV_FILE"
+	notify-send "Missing Variables" \
+		" SSID or PASSWORD not set in:\n$ENV_FILE"
 	exit 1
 fi
+
 
 get_channel() {
 	iw dev "$WIFI_INTERFACE" info 2>/dev/null | grep -oE 'channel [0-9]+' | awk '{print $2}' || true
 }
 
 notify_err() {
-	notify-send "❌ AP Error" "$1"
+	notify-send "AP Error" " $1"
 	exit 1
 }
 
