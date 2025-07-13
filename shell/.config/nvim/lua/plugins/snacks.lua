@@ -110,7 +110,7 @@ return {
 		},
 		scroll = { enabled = true },
 		words = { enabled = true },
-		-- image = { enabled = true },
+		image = { enabled = true },
 		styles = {
 			notification = {
 				wo = { wrap = true },

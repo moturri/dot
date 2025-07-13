@@ -35,7 +35,6 @@ return {
 					"clangd",
 					"marksman",
 					"markdownlint",
-					"glow",
 					"cbfmt",
 					"taplo",
 					"stylua",
