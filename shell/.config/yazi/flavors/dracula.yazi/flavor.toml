@@ -17,7 +17,7 @@ marker_marked = { fg = "#8be9fd", bg = "#8be9fd" }
 marker_selected = { fg = "#f1fa8c", bg = "#f1fa8c" }
 # Tab
 tab_active = { reversed = true }
-tab_inactive = {  }
+tab_inactive = {}
 tab_width = 1
 # Count
 count_copied = { fg = "#282a36", bg = "#50fa7b" }
@@ -72,7 +72,7 @@ progress_error = { fg = "#ff5555", bg = "#63667d" }
 [pick]
 border = { fg = "#bd93f9" }
 active = { fg = "#ff79c6", bold = true }
-inactive = {  }
+inactive = {}
 
 # : }}}
 
@@ -80,8 +80,8 @@ inactive = {  }
 
 [input]
 border = { fg = "#bd93f9" }
-title = {  }
-value = {  }
+title = {}
+value = {}
 selected = { reversed = true }
 
 # : }}}
@@ -97,7 +97,7 @@ border = { fg = "#bd93f9" }
 
 [tasks]
 border = { fg = "#bd93f9" }
-title = {  }
+title = {}
 hovered = { fg = "#ff79c6", underline = true }
 
 # : }}}
