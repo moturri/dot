@@ -37,7 +37,7 @@ return {
 					"markdownlint",
 					"glow",
 					"cbfmt",
-					"tombi",
+					"taplo",
 					"stylua",
 					"black",
 					"isort",
@@ -85,9 +85,7 @@ return {
 
 			vim.lsp.set_log_level("off")
 
-			
-
-				local function on_attach(client, bufnr)
+			local function on_attach(client, bufnr)
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then
 					navic.attach(client, bufnr)
@@ -148,6 +146,7 @@ return {
 					json = { "prettier" },
 					yaml = { "prettier" },
 					markdown = { "prettier" },
+					toml = { "taplo" }
 				},
 				format_on_save = false,
 			})
