@@ -1,6 +1,6 @@
 return {
 	"hrsh7th/nvim-cmp",
-	event = "InsertEnter",
+	event = { "InsertEnter", "CmdlineEnter" },
 	dependencies = {
 		"hrsh7th/cmp-nvim-lsp",
 		"hrsh7th/cmp-buffer",
@@ -17,8 +17,6 @@ return {
 		local luasnip = require("luasnip")
 
 		require("luasnip.loaders.from_vscode").lazy_load()
-
-		vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
 		cmp.setup({
 			performance = {
