@@ -9,7 +9,14 @@ return {
 		"nvim-treesitter/playground",
 	},
 	config = function()
-		require("nvim-treesitter.configs").setup({
+		local status_ok, configs = pcall(require, "nvim-treesitter.configs")
+		if not status_ok then
+			vim.notify("Failed to load Treesitter configs", vim.log.levels.ERROR)
+			return
+		end
+
+		---@diagnostic disable-next-line: missing-fields
+		configs.setup({
 			ensure_installed = {
 				"html",
 				"css",
@@ -30,29 +37,36 @@ return {
 				"yaml",
 				"python",
 				"latex",
-				"typst",
-				"norg",
 			},
+
 			auto_install = true,
-			ignore_install = { "phpdoc" }, -- optional
+
+			ignore_install = { "phpdoc" },
+
 			highlight = {
 				enable = true,
 				disable = function(_, bufnr)
-					local max = 100 * 1024
+					local max_size = 100 * 1024 -- 100 KB
 					local ok, stat = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
-					return ok and stat and stat.size > max
+					return ok and stat and stat.size > max_size
 				end,
+				additional_vim_regex_highlighting = false,
 			},
+
 			indent = { enable = true },
+
 			incremental_selection = {
 				enable = true,
 				keymaps = {
 					init_selection = "gnn",
 					node_incremental = "grn",
 					node_decremental = "grm",
+					scope_incremental = "grc",
 				},
 			},
+
 			autotag = { enable = true },
+
 			textobjects = {
 				select = {
 					enable = true,
@@ -78,14 +92,19 @@ return {
 					swap_previous = { ["<leader>sp"] = "@parameter.inner" },
 				},
 			},
+
 			playground = {
 				enable = true,
-				disable = {},
-				updatetime = 25,
+				updatetime = 50,
 				persist_queries = false,
 			},
 		})
 
-		require("ts_context_commentstring").setup()
+		-- Safe context-commentstring setup
+		pcall(function()
+			require("ts_context_commentstring").setup({
+				enable_autocmd = false,
+			})
+		end)
 	end,
 }
