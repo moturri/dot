@@ -133,7 +133,7 @@ return {
 			map("<leader><space>", function()
 				Snacks.picker.smart()
 			end, "Smart Find Files"),
-			map("<leader>,", function()
+			map("<leader>bb", function()
 				Snacks.picker.buffers()
 			end, "Buffers"),
 			map("<leader>/", function()
@@ -210,32 +210,32 @@ return {
 			map("<leader>sd", function()
 				Snacks.picker.diagnostics()
 			end, "Workspace Diagnostics"),
-			map("<leader>sD", function()
+			map("<leader>bD", function()
 				Snacks.picker.diagnostics_buffer()
 			end, "Buffer Diagnostics"),
 
 			-- LSP
-			map("gd", function()
+			map("ld", function()
 				Snacks.picker.lsp_definitions()
 			end, "Goto Definition"),
-			map("gD", function()
+			map("lD", function()
 				Snacks.picker.lsp_declarations()
 			end, "Goto Declaration"),
-			map("gr", function()
+			map("lr", function()
 				Snacks.picker.lsp_references()
 			end, "LSP References", { nowait = true }),
-			map("gy", function()
+			map("ly", function()
 				Snacks.picker.lsp_type_definitions()
 			end, "Type Definition"),
-			map("gI", function()
+			map("lI", function()
 				Snacks.picker.lsp_implementations()
 			end, "Goto Implementation"),
 
 			-- Grep/Search
-			map("<leader>sb", function()
+			map("<leader>bl", function()
 				Snacks.picker.lines()
 			end, "Buffer Lines"),
-			map("<leader>sB", function()
+			map("<leader>bB", function()
 				Snacks.picker.grep_buffers()
 			end, "Grep Open Buffers"),
 			map("<leader>sw", function()
@@ -297,7 +297,7 @@ return {
 			map("<leader>Z", function()
 				Snacks.zen.zoom()
 			end, "Toggle Zoom"),
-			map("<leader>.", function()
+			map("<leader>b.", function()
 				Snacks.scratch()
 			end, "Scratch Buffer"),
 			map("<C-t>", function()
@@ -318,7 +318,7 @@ return {
 			map("<leader>un", function()
 				Snacks.notifier.hide()
 			end, "Dismiss Notifications"),
-			map("<leader>S", function()
+			map("<leader>bS", function()
 				Snacks.scratch.select()
 			end, "Select Scratch Buffer"),
 			map("<leader>N", function()
@@ -345,6 +345,7 @@ return {
 	end)(),
 
 	init = function()
+		require("snacks")
 		vim.api.nvim_create_autocmd("User", {
 			pattern = "VeryLazy",
 			callback = function()

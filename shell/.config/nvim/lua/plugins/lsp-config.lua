@@ -1,30 +1,25 @@
 return {
+	-- Core LSP Manager
 	{
 		"williamboman/mason.nvim",
-		cmd = {
-			"Mason",
-			"MasonInstall",
-			"MasonInstallAll",
-			"MasonUpdate",
-			"MasonUpdateAll",
-			"MasonUninstall",
-			"MasonUninstallAll",
-			"MasonLog",
-		},
+		cmd = { "Mason", "MasonInstall", "MasonUpdate", "MasonUninstall", "MasonLog" },
 		opts = {
 			ui = { border = "rounded" },
 		},
 	},
 
+	-- Bridge between Mason and lspconfig
 	{
 		"williamboman/mason-lspconfig.nvim",
 		event = { "BufReadPre", "BufNewFile" },
 		dependencies = { "williamboman/mason.nvim" },
 		opts = {
 			automatic_installation = true,
+			automatic_enable = true,
 		},
 	},
 
+	-- Auto installer for tools (formatters/linters)
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		cmd = { "MasonToolsInstall", "MasonToolsUpdate", "MasonToolsUninstall" },
@@ -32,28 +27,42 @@ return {
 		config = function()
 			require("mason-tool-installer").setup({
 				ensure_installed = {
+					-- LSPs
 					"clangd",
+					"ts_ls",
+					"bashls",
+					"pyright",
+					"lua_ls",
+					"jsonls",
 					"marksman",
-					"markdownlint",
-					"cbfmt",
 					"taplo",
+
+					-- Formatters
 					"stylua",
 					"black",
 					"isort",
 					"clang-format",
 					"shfmt",
 					"prettier",
+					"cbfmt",
+
+					-- Linters
 					"flake8",
 					"eslint_d",
+					"markdownlint",
 					"luacheck",
 					"shellcheck",
 					"jsonlint",
-					"pyright",
 				},
+				auto_update = true,
+				run_on_start = true,
+				start_delay = 3000,
+				debounce_hours = 12,
 			})
 		end,
 	},
 
+	-- Neovim-native LSP configurations
 	{
 		"neovim/nvim-lspconfig",
 		event = { "BufReadPre", "BufNewFile" },
@@ -90,26 +99,21 @@ return {
 					navic.attach(client, bufnr)
 				end
 
+				-- Disable formatting in favor of Conform
 				client.server_capabilities.documentFormattingProvider = false
 				client.server_capabilities.documentRangeFormattingProvider = false
 
 				vim.notify("LSP attached: " .. client.name, vim.log.levels.INFO, { title = "LSP" })
 			end
 
-			local default_providers = {
-				"node",
-				"perl",
-				"python",
-				"python3",
-				"ruby",
-			}
-
-			for _, provider in ipairs(default_providers) do
+			-- Disable default script providers
+			for _, provider in ipairs({ "node", "perl", "python", "python3", "ruby" }) do
 				vim.g["loaded_" .. provider .. "_provider"] = 0
 			end
 
-			local ignore = { tombi = true }
+			-- Setup all mason-installed servers
 			local mason_lspconfig = require("mason-lspconfig")
+			local ignore = { tombi = true }
 
 			for _, server in ipairs(mason_lspconfig.get_installed_servers()) do
 				if not ignore[server] then
@@ -127,6 +131,7 @@ return {
 		end,
 	},
 
+	-- Format on demand (with Conform)
 	{
 		"stevearc/conform.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -145,17 +150,18 @@ return {
 					json = { "prettier" },
 					yaml = { "prettier" },
 					markdown = { "prettier" },
-					toml = { "taplo" }
+					toml = { "taplo" },
 				},
 				format_on_save = false,
 			})
 
-			vim.keymap.set("n", "<leader>fm", function()
+			vim.keymap.set("n", "<leader>bf", function()
 				conform.format({ async = true, lsp_fallback = true })
 			end, { desc = "Format buffer" })
 		end,
 	},
 
+	-- Linting with virtual diagnostics
 	{
 		"mfussenegger/nvim-lint",
 		event = { "BufReadPre", "BufNewFile" },
@@ -171,8 +177,8 @@ return {
 				json = { "jsonlint" },
 			}
 
-			vim.keymap.set("n", "<leader>ge", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
-			vim.keymap.set("n", "<leader>ll", function()
+			vim.keymap.set("n", "<leader>be", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
+			vim.keymap.set("n", "<leader>bL", function()
 				lint.try_lint()
 			end, { desc = "Manually lint current buffer" })
 		end,

@@ -6,6 +6,7 @@ return {
 		"nvim-treesitter/nvim-treesitter-textobjects",
 		"windwp/nvim-ts-autotag",
 		"JoosepAlviste/nvim-ts-context-commentstring",
+		"nvim-treesitter/playground",
 	},
 	config = function()
 		require("nvim-treesitter.configs").setup({
@@ -33,6 +34,7 @@ return {
 				"norg",
 			},
 			auto_install = true,
+			ignore_install = { "phpdoc" }, -- optional
 			highlight = {
 				enable = true,
 				disable = function(_, bufnr)
@@ -42,7 +44,6 @@ return {
 				end,
 			},
 			indent = { enable = true },
-
 			incremental_selection = {
 				enable = true,
 				keymaps = {
@@ -51,21 +52,11 @@ return {
 					node_decremental = "grm",
 				},
 			},
-
 			autotag = { enable = true },
-
 			textobjects = {
 				select = {
 					enable = true,
 					lookahead = true,
-					keymaps = {
-						["af"] = "@function.outer",
-						["if"] = "@function.inner",
-						["ac"] = "@class.outer",
-						["ic"] = "@class.inner",
-						["aa"] = "@parameter.outer",
-						["ia"] = "@parameter.inner",
-					},
 				},
 				move = {
 					enable = true,
@@ -86,6 +77,12 @@ return {
 					swap_next = { ["<leader>sn"] = "@parameter.inner" },
 					swap_previous = { ["<leader>sp"] = "@parameter.inner" },
 				},
+			},
+			playground = {
+				enable = true,
+				disable = {},
+				updatetime = 25,
+				persist_queries = false,
 			},
 		})
 

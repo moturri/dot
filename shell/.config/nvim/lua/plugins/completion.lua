@@ -11,20 +11,19 @@ return {
 		"rafamadriz/friendly-snippets",
 		"onsails/lspkind.nvim",
 	},
-
 	config = function()
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 
+		-- Lazy load snippets from friendly-snippets
 		require("luasnip.loaders.from_vscode").lazy_load()
 
 		cmp.setup({
 			performance = {
 				max_view_entries = 50,
-				debounce = 100,
-				throttle = 100,
-				fetching_timeout = 500,
+				fetching_timeout = 500, -- sensible default
 			},
+
 			snippet = {
 				expand = function(args)
 					luasnip.lsp_expand(args.body)
@@ -100,6 +99,7 @@ return {
 			}),
 		})
 
+		-- Command-line mode (:) completion
 		cmp.setup.cmdline(":", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = cmp.config.sources({
@@ -108,6 +108,7 @@ return {
 			}),
 		})
 
+		-- Search mode (/) completion
 		cmp.setup.cmdline("/", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = {

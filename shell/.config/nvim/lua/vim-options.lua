@@ -11,7 +11,7 @@ opt.timeoutlen = 300
 opt.updatetime = 200
 opt.scrolloff = 8
 opt.showmode = false
-opt.cursorline = true
+opt.cursorline = false
 
 local undodir = vim.fn.stdpath("cache") .. "/undo"
 vim.fn.mkdir(undodir, "p")

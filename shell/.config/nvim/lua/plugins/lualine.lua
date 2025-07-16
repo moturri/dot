@@ -2,12 +2,12 @@ return {
 	"nvim-lualine/lualine.nvim",
 	enabled = true,
 	event = "BufEnter",
-
 	opts = function()
+		local theme_ok, sequoia = pcall(require, "lualine.themes.sequoia")
 		return {
 			options = {
 				icons_enabled = true,
-				theme = "sequoia",
+				theme = theme_ok and sequoia or "auto",
 				component_separators = { left = "", right = "" },
 				section_separators = { left = "", right = "" },
 				disabled_filetypes = {
@@ -18,15 +18,15 @@ return {
 			},
 
 			sections = {
-				lualine_a = { { "mode", icon = "" } },
+				lualine_a = { { "mode", icon = "" } },
 				lualine_b = {
-					{ "branch", icon = "" },
+					{ "branch", icon = "" },
 					{
 						"diff",
 						symbols = {
-							added = "󰐗 ",
-							modified = "󰛿 ",
-							removed = "󰍶 ",
+							added = " ",
+							modified = " ",
+							removed = " ",
 						},
 						colored = true,
 					},
@@ -58,12 +58,10 @@ return {
 					{
 						"encoding",
 						cond = function()
-							return vim.bo.fileencoding ~= "utf-8"
+							return vim.bo.fileencoding and vim.bo.fileencoding ~= "utf-8"
 						end,
 					},
 					"fileformat",
-					python_env,
-					node_version,
 				},
 				lualine_y = { "progress" },
 				lualine_z = { "location" },
@@ -110,7 +108,6 @@ return {
 			},
 		}
 	end,
-
 	config = function(_, opts)
 		require("lualine").setup(opts)
 	end,

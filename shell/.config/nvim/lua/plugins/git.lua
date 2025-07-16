@@ -35,13 +35,6 @@ return {
 			word_diff = false,
 			max_file_length = 40000,
 			update_debounce = 100,
-
-			-- Disable all default keymaps here
-			on_attach = function(bufnr)
-				local gs = package.loaded.gitsigns
-				-- You can optionally add minimal keymaps here if needed
-				-- but keep empty or minimal to avoid overriding snacks
-			end,
 		},
 	},
 }
