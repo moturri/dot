@@ -26,7 +26,8 @@ class Dracula(ColorScheme):
 
     progress_bar_color = 135
 
-    def use(self, context):
+    @staticmethod
+    def use(context):
         """Using the Dracula theme."""
         fg, bg, attr = default_colors
 
@@ -116,7 +117,7 @@ class Dracula(ColorScheme):
                     attr |= bold
                     fg = 203
             if context.loaded:
-                bg = self.progress_bar_color
+                bg = Dracula.progress_bar_color
             if context.vcsinfo:
                 fg = 141
                 attr &= ~bold
@@ -137,9 +138,9 @@ class Dracula(ColorScheme):
 
             if context.loaded:
                 if context.selected:
-                    bg = self.progress_bar_color
+                    bg = Dracula.progress_bar_color
                 else:
-                    bg = self.progress_bar_color
+                    bg = Dracula.progress_bar_color
 
         if context.vcsfile and not context.selected:
             attr &= ~bold
@@ -170,4 +171,3 @@ class Dracula(ColorScheme):
                 fg = 203
 
         return fg, bg, attr
-
