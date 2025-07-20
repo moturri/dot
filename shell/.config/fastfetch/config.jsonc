@@ -1,42 +1,90 @@
 {
-  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
-  "logo": {
-    "padding": {
-      "top": 1,
-      "left": 1,
-      "right": 1,
-    },
-    "color": {
-      "1": "magenta",
-      "2": "cyan",
-      "3": "white",
-    },
-  },
-  "display": {
-    "separator": "  ",
-  },
-  "modules": [
-    { "type": "custom", "content": "" },
-    { "type": "custom", "content": "" },
-    { "type": "custom", "content": "" },
-
-    { "type": "os", "key": "  OS" },
-    { "type": "kernel", "key": "  Kernel" },
-    { "type": "uptime", "key": " 󰅐 Uptime" },
-
-    { "type": "packages", "key": "  Packages", "format": "{all}" },
-    { "type": "shell", "key": "  Shell" },
-
-    { "type": "de", "key": "  DE" },
-    { "type": "wm", "key": "  WM" },
-    { "type": "wmtheme", "key": "  Theme" },
-    { "type": "display", "key": " 󰹑 Resolution" },
-
-    { "type": "cpu", "key": "  CPU" },
-    { "type": "gpu", "key": "  GPU" },
-    { "type": "memory", "key": "  Memory" },
-    { "type": "disk", "key": "  Disk (/)", "folders": "/" },
-
-    { "type": "colors", "key": "{#1}", "symbol": "circle" },
-  ],
+	"logo": {
+		"padding": {
+			"top": 1,
+			"left": 1,
+			"right": 1
+		},
+		"color": {
+			"1": "magenta",
+			"2": "cyan",
+			"3": "white"
+		}
+	},
+	"display": {
+		"separator": "  "
+	},
+	"modules": [
+		{
+			"type": "custom",
+			"content": ""
+		},
+		{
+			"type": "custom",
+			"content": ""
+		},
+		{
+			"type": "custom",
+			"content": ""
+		},
+		{
+			"type": "os",
+			"key": "  OS"
+		},
+		{
+			"type": "kernel",
+			"key": "  Kernel"
+		},
+		{
+			"type": "uptime",
+			"key": " 󰅐 Uptime"
+		},
+		{
+			"type": "packages",
+			"key": "  Packages",
+			"format": "{all}"
+		},
+		{
+			"type": "shell",
+			"key": "  Shell"
+		},
+		{
+			"type": "de",
+			"key": "  DE"
+		},
+		{
+			"type": "wm",
+			"key": "  WM"
+		},
+		{
+			"type": "wmtheme",
+			"key": "  Theme"
+		},
+		{
+			"type": "display",
+			"key": " 󰹑 Resolution"
+		},
+		{
+			"type": "cpu",
+			"key": "  CPU"
+		},
+		{
+			"type": "gpu",
+			"key": "  GPU"
+		},
+		{
+			"type": "memory",
+			"key": "  Memory"
+		},
+		{
+			"type": "disk",
+			"key": "  Disk (/)",
+			"folders": "/"
+		},
+		{
+			"type": "colors",
+			"key": "{#1}",
+			"symbol": "circle"
+		}
+	]
 }
