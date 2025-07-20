@@ -16,6 +16,7 @@ size = 12
 
 [cursor]
 style = { shape = "Block", blinking = "Off" }
+vi_mode_style = "None"
 unfocused_hollow = true
 
 [mouse]
