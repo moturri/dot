@@ -20,7 +20,7 @@ return {
 			sections = {
 				lualine_a = { { "mode", icon = "" } },
 				lualine_b = {
-					{ "branch", icon = "" },
+					{ "branch", icon = "" },
 					{
 						"diff",
 						symbols = {

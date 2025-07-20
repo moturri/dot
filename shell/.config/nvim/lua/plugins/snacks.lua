@@ -94,7 +94,7 @@ return {
 		},
 		notifier = {
 			enabled = true,
-			timeout = 3000,
+			timeout = 5000,
 		},
 		picker = {
 			enabled = true,
@@ -168,9 +168,7 @@ return {
 			map("<leader>fr", function()
 				Snacks.picker.recent()
 			end, "Recent Files"),
-
-			-- Obsidian
-			map("<leader>oo", function()
+			map("<leader>fo", function()
 				local vault = vim.fn.expand("/mnt/dm-2/Library/Obsidian")
 				Snacks.picker.files({
 					cwd = vault,
@@ -291,10 +289,10 @@ return {
 			end, "Colorschemes"),
 
 			-- Toggle Zen, Scratch, Terminal
-			map("<leader>z", function()
+			map("<leader>bz", function()
 				Snacks.zen()
 			end, "Toggle Zen Mode"),
-			map("<leader>Z", function()
+			map("<leader>bZ", function()
 				Snacks.zen.zoom()
 			end, "Toggle Zoom"),
 			map("<leader>b.", function()
@@ -307,7 +305,7 @@ return {
 			map("<leader>bd", function()
 				Snacks.bufdelete()
 			end, "Delete Buffer"),
-			map("<leader>cR", function()
+			map("<leader>bR", function()
 				Snacks.rename.rename_file()
 			end, "Rename File"),
 
