@@ -4,7 +4,7 @@ from libqtile.lazy import lazy
 
 group_definitions = [
     ("1", "󰣇", ["discord"]),
-    ("2", "󰞷", ["org.wezfurlong.wezterm", "code-oss"]),
+    ("2", "", ["org.wezfurlong.wezterm", "code-oss"]),
     ("3", "󰆋", ["firefox", "zen"]),
     ("4", "󰊠", ["octopi", "qbittorrent", "wireshark"]),
     (
@@ -104,8 +104,8 @@ scratchpad = ScratchPad(
         #     opacity=1,
         # ),
         DropDown(
-            "alacritty",
-            "alacritty",
+            "kitty",
+            "kitty",
             width=0.8,
             height=0.8,
             x=0.1,
@@ -159,7 +159,7 @@ scratch_keys = {
     "arandr": "a",
     "bluetui": "b",
     # "impala": "i",
-    "alacritty": "x",
+    "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
     "pavucontrol-qt": "v",

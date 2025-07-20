@@ -137,6 +137,8 @@ export VISUAL=nvim
 
 alias ls="eza --icons=always"
 alias vi="nvim"
+alias cd="z"
+alias http="xh"
 alias lta="eza -lTag --icons"
 alias lta2="eza -lTag --level=2 --icons"
 alias lta3="eza -lTag --level=3 --icons"

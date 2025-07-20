@@ -25,7 +25,7 @@ if [[ $(stat -c "%a" "$ENV_FILE") -gt 600 ]]; then
 		" Environment file is too permissive:\n$ENV_FILE\nRun: chmod 600 \"$ENV_FILE\""
 fi
 
-
+# shellcheck source=/dev/null
 . "$ENV_FILE"
 
 if [[ -z "${SSID:-}" || -z "${PASSWORD:-}" ]]; then
@@ -33,7 +33,6 @@ if [[ -z "${SSID:-}" || -z "${PASSWORD:-}" ]]; then
 		" SSID or PASSWORD not set in:\n$ENV_FILE"
 	exit 1
 fi
-
 
 get_channel() {
 	iw dev "$WIFI_INTERFACE" info 2>/dev/null | grep -oE 'channel [0-9]+' | awk '{print $2}' || true

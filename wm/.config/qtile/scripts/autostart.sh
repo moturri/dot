@@ -10,7 +10,7 @@ function run() {
 
 xset b off
 
-setxkbmap -option ctrl:nocaps
+# setxkbmap -option ctrl:nocaps
 
 run greenclip daemon
 run /usr/bin/lxqt-policykit-agent

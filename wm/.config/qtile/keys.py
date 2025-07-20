@@ -5,7 +5,7 @@ from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.lazy import lazy
 
 mod = "mod4"
-terminal = "alacritty"
+terminal = "kitty"
 
 
 def rofi_script(script_name: str) -> str:
@@ -38,6 +38,7 @@ keys: List[Union[Key, KeyChord]] = [
     Key([mod, "shift"], "space", lazy.layout.flip()),
     Key([mod, "shift"], "Return", lazy.layout.toggle_split()),
     Key([mod], "Tab", lazy.next_layout()),
+    Key([mod, "shift"], "Tab", lazy.prev_layout()),
     Key([mod], "Return", lazy.spawn(terminal)),
     Key([mod], "r", lazy.spawn(rofi_drun)),
     Key([mod], "z", lazy.spawn(rofi_window)),
