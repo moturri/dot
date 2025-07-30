@@ -3,14 +3,45 @@ from libqtile.config import DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
 group_definitions = [
-    ("1", "󰣇", ["discord"]),
-    ("2", "", ["org.wezfurlong.wezterm", "code-oss"]),
-    ("3", "󰆋", ["firefox", "zen"]),
+    (
+        "1",
+        "󰣇",
+        [
+            "discord",
+            "steam_app_291550",
+            "steam_app_2281730",
+        ],
+    ),
+    (
+        "2",
+        "",
+        [
+            "org.wezfurlong.wezterm",
+            "code-oss",
+            "alacritty",
+        ],
+    ),
+    (
+        "3",
+        "󰆋",
+        [
+            "firefox",
+            "zen",
+            "brave-browser",
+            "Brave-browser",
+        ],
+    ),
     ("4", "󰊠", ["octopi", "qbittorrent", "wireshark"]),
     (
         "5",
         "󱚣",
-        ["VirtualBox Manager", "virt-manager", "brave-browser", "Brave-browser"],
+        [
+            "VirtualBox Manager",
+            "virt-manager",
+            "steam",
+            "heroic",
+            "Lutris",
+        ],
     ),
     (
         "6",

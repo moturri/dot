@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 return {
 	-- Core LSP Manager
 	{
@@ -36,6 +38,7 @@ return {
 					"jsonls",
 					"marksman",
 					"taplo",
+					"codespell",
 
 					-- Formatters
 					"stylua",
@@ -47,10 +50,7 @@ return {
 					"cbfmt",
 
 					-- Linters
-					"flake8",
 					"eslint_d",
-					"markdownlint",
-					"luacheck",
 					"shellcheck",
 					"jsonlint",
 				},
@@ -58,6 +58,9 @@ return {
 				run_on_start = true,
 				start_delay = 3000,
 				debounce_hours = 12,
+				integrations = {
+					["mason-lspconfig"] = true,
+				},
 			})
 		end,
 	},
@@ -170,9 +173,6 @@ return {
 
 			lint.linters_by_ft = {
 				sh = { "shellcheck" },
-				python = { "flake8" },
-				markdown = { "markdownlint" },
-				lua = { "luacheck" },
 				javascript = { "eslint_d" },
 				json = { "jsonlint" },
 			}

@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 return {
 	"hrsh7th/nvim-cmp",
 	event = { "InsertEnter", "CmdlineEnter" },
@@ -15,13 +17,12 @@ return {
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 
-		-- Lazy load snippets from friendly-snippets
 		require("luasnip.loaders.from_vscode").lazy_load()
 
 		cmp.setup({
 			performance = {
 				max_view_entries = 50,
-				fetching_timeout = 500, -- sensible default
+				fetching_timeout = 500,
 			},
 
 			snippet = {

@@ -1,11 +1,11 @@
 return {
-	-- Vim Fugitive (Git CLI) — no keymaps, just load on demand
+	-- Git wrapper (no keymaps, use :Git manually)
 	{
 		"tpope/vim-fugitive",
 		cmd = { "Git", "G" },
 	},
 
-	-- Git signs, but no keymaps to avoid overriding snacks
+	-- Git diff and blame signs in the gutter
 	{
 		"lewis6991/gitsigns.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -18,6 +18,23 @@ return {
 				changedelete = { text = "󰐕 " },
 				untracked = { text = " " },
 			},
+			signcolumn = true,
+			numhl = false,
+			linehl = false,
+			word_diff = false,
+
+			attach_to_untracked = true,
+			max_file_length = 40000,
+			update_debounce = 100,
+
+			current_line_blame = false,
+			current_line_blame_opts = {
+				virt_text = true,
+				virt_text_pos = "eol",
+				delay = 500,
+				ignore_whitespace = true,
+			},
+
 			preview_config = {
 				border = "rounded",
 				style = "minimal",
@@ -25,16 +42,6 @@ return {
 				row = 0,
 				col = 1,
 			},
-			current_line_blame = false,
-			current_line_blame_opts = {
-				virt_text = true,
-				virt_text_pos = "eol",
-				delay = 500,
-			},
-			attach_to_untracked = true,
-			word_diff = false,
-			max_file_length = 40000,
-			update_debounce = 100,
 		},
 	},
 }

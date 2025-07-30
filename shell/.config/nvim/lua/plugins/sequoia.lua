@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 return {
 	{
 		"forest-nvim/sequoia.nvim",

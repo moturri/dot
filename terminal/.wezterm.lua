@@ -5,9 +5,10 @@ config.font = wezterm.font_with_fallback({
 	"JetBrainsMonoNL Nerd Font",
 	"Symbols Nerd Font",
 	"Noto Color Emoji",
-})
+}, { weight = "Regular" })
 config.font_size = 12.0
 config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
+config.font_hinting = "Full"
 
 config.window_background_opacity = 0.9
 config.window_decorations = "NONE"

@@ -1,58 +1,70 @@
-local opt = vim.opt
-local g = vim.g
+---@diagnostic disable: undefined-global
 
-g.mapleader = " "
+vim.g.mapleader = " "
 
 vim.scriptencoding = "utf-8"
-opt.encoding = "utf-8"
-opt.fileencoding = "utf-8"
-g.have_nerd_font = true
-opt.background = "dark"
-opt.termguicolors = true
-opt.mouse = "a"
-opt.showmode = false
-opt.cursorline = false
-opt.colorcolumn = "100"
-opt.cmdheight = 1
-opt.showtabline = 2
-opt.showmatch = true
-opt.number = true
-opt.relativenumber = true
-opt.scrolloff = 10
-opt.signcolumn = "yes"
+vim.opt.encoding = "utf-8"
+vim.opt.fileencoding = "utf-8"
 
-opt.hlsearch = true
-opt.incsearch = true
-opt.ignorecase = true
-opt.smartcase = true
-opt.inccommand = "nosplit"
+vim.g.have_nerd_font = true
+vim.opt.background = "dark"
+vim.opt.termguicolors = true
+vim.opt.mouse = "a"
+vim.opt.showmode = false
+vim.opt.cursorline = false
+vim.opt.colorcolumn = "100"
+vim.opt.cmdheight = 0
+vim.opt.showtabline = 2
+vim.opt.showmatch = true
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.scrolloff = 10
+vim.opt.signcolumn = "yes"
 
-opt.timeoutlen = 500
-opt.updatetime = 300
+vim.opt.smartindent = true
+vim.opt.autoindent = true
+vim.opt.shiftround = true
+vim.opt.breakindent = true
 
-opt.clipboard = "unnamedplus"
+vim.opt.hlsearch = true
+vim.opt.incsearch = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.inccommand = "nosplit"
 
-opt.splitright = true
-opt.splitbelow = true
+vim.opt.timeoutlen = 500
+vim.opt.updatetime = 300
 
-opt.foldmethod = "expr"
-opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-opt.foldenable = true
-opt.foldlevel = 99
-opt.foldlevelstart = 6
+vim.opt.clipboard = "unnamedplus"
 
-opt.wildmenu = true
-opt.wildmode = { "longest:full", "full" }
+vim.opt.splitright = true
+vim.opt.splitbelow = true
 
-opt.list = true
-opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldenable = true
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 6
+
+vim.opt.wildmenu = true
+vim.opt.wildmode = { "longest:full", "full" }
+
+vim.opt.list = true
+vim.opt.listchars = {
+	tab = "» ",
+	trail = "·",
+	nbsp = "␣",
+}
 
 local undodir = vim.fn.stdpath("cache") .. "/undo"
 vim.fn.mkdir(undodir, "p")
-opt.undodir = undodir
-opt.undofile = true
+vim.opt.undodir = undodir
+vim.opt.undofile = true
 
-vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlights", silent = true })
+vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", {
+	desc = "Clear search highlights",
+	silent = true,
+})
 
 vim.api.nvim_create_autocmd("BufReadPost", {
 	desc = "Restore cursor to last position",

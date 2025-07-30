@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 return {
 	"nvim-treesitter/nvim-treesitter",
 	lazy = false,

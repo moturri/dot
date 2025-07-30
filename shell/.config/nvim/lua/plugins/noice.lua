@@ -1,4 +1,6 @@
-return({
+---@diagnostic disable: undefined-global
+
+return {
 	{
 		"folke/noice.nvim",
 		event = "VeryLazy",
@@ -88,7 +90,7 @@ return({
 
 				notify = {
 					enabled = true,
-					background = "#0000000",
+					bg = "#0000000",
 					view = "notify",
 				},
 
@@ -101,9 +103,9 @@ return({
 						view = "mini",
 					},
 					override = {
-						["vim.lsp.util.convert_input_to_markdown_lines"] = false,
-						["vim.lsp.util.stylize_markdown"] = false,
-						["cmp.entry.get_documentation"] = false,
+						["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+						["vim.lsp.util.stylize_markdown"] = true,
+						["cmp.entry.get_documentation"] = true,
 					},
 					hover = {
 						enabled = true,
@@ -154,7 +156,7 @@ return({
 				},
 
 				health = {
-					checker = false, -- turn off health check if unnecessary
+					checker = false,
 				},
 
 				presets = {
@@ -165,12 +167,12 @@ return({
 					lsp_doc_border = false,
 				},
 
-				throttle = 33, -- same as 1000 / 30
+				throttle = 33,
 
-				views = {}, -- can be used to override individual view configs
-				routes = {}, -- custom routing of messages
-				status = {}, -- optional statusline integrations
-				format = {}, -- formatting options
+				views = {},
+				routes = {},
+				status = {},
+				format = {},
 			}
 		end,
 		dependencies = {
@@ -178,4 +180,4 @@ return({
 			"rcarriga/nvim-notify",
 		},
 	},
-})
+}

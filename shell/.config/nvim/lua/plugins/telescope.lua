@@ -100,7 +100,7 @@ return {
 			telescope.setup({
 				defaults = {
 					prompt_prefix = "󰡦 ",
-					selection_caret = "󰧚 ",
+					selection_caret = " ",
 					entry_prefix = "  ",
 					initial_mode = "insert",
 					sorting_strategy = "ascending",
@@ -141,11 +141,11 @@ return {
 					},
 				},
 				pickers = {
-					find_files = { theme = "dropdown", previewer = false, hidden = true },
-					buffers = { theme = "dropdown", previewer = false, sort_lastused = true },
+					find_files = { theme = "dropdown", previewer = true, hidden = true },
+					buffers = { theme = "dropdown", previewer = true, sort_lastused = true },
 					help_tags = { theme = "dropdown" },
-					oldfiles = { theme = "dropdown", previewer = false },
-					search_history = { theme = "dropdown", previewer = false },
+					oldfiles = { theme = "dropdown", previewer = true },
+					search_history = { theme = "dropdown", previewer = true },
 				},
 				extensions = {
 					["ui-select"] = require("telescope.themes").get_dropdown({}),

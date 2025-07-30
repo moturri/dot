@@ -3,7 +3,7 @@
 // Appearance and Theme Tweaks
 user_pref("zen.theme.border-radius", 0);
 user_pref("zen.theme.content-element-separation", 0);
-user_pref("zen.theme.accent-color", "#6f67e0");
+user_pref("zen.theme.accent-color", "#000000");
 user_pref("widget.gtk.rounded-bottom-corners.enabled", false);
 user_pref("browser.tabs.inTitlebar", 0);
 

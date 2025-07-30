@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 return {
 	"folke/snacks.nvim",
 	priority = 1000,
@@ -29,21 +31,34 @@ return {
 		},
 		dashboard = {
 			enabled = true,
+			preset = {
+				header = [[
+         	                                             
+         	      ████ ██████           █████      ██
+         	     ███████████             █████ 
+         	     █████████ ███████████████████ ███   ███████████
+         	    █████████  ███    █████████████ █████ ██████████████
+         	   █████████ ██████████ █████████ █████ █████ ████ █████
+         	 ███████████ ███    ███ █████████ █████ █████ ████ █████
+         	██████  █████████████████████ ████ █████ █████ ████ ██████
+      	]],
+			},
 			sections = {
-				{ section = "header" },
+				-- { section = "header" },
+				{ section = "terminal", cmd = "fortune -s | lolcat", hl = "header", padding = 2, indent = 2 },
+				{ section = "keys", padding = 1, indent = 2 },
 				{
 					pane = 2,
-					section = "terminal",
-					cmd = "colorscript -e square",
-					height = 5,
+					icon = " ",
+					title = "Recent Files",
+					section = "recent_files",
 					padding = 1,
+					indent = 2,
 				},
-				{ section = "keys", gap = 1, padding = 1 },
-				{ pane = 2, icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
-				{ pane = 2, icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
+				{ pane = 2, icon = " ", title = "Projects", section = "projects", padding = 1, indent = 2 },
 				{
 					pane = 2,
-					icon = " ",
+					icon = " ",
 					title = "Git Status",
 					section = "terminal",
 					enabled = function()
@@ -52,8 +67,8 @@ return {
 					cmd = "git status --short --branch --renames",
 					height = 5,
 					padding = 1,
+					indent = 2,
 					ttl = 5 * 60,
-					indent = 3,
 				},
 				{ section = "startup" },
 			},
@@ -119,7 +134,7 @@ return {
 	},
 
 	keys = (function()
-		local map = function(lhs, rhs, desc, extra)
+		local function map(lhs, rhs, desc, extra)
 			local opts = vim.tbl_extend("force", extra or {}, {
 				desc = desc,
 				[1] = lhs,
