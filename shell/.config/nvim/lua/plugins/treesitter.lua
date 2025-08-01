@@ -39,6 +39,8 @@ return {
 				"yaml",
 				"python",
 				"latex",
+				"norg",
+				"typst",
 			},
 
 			auto_install = true,
