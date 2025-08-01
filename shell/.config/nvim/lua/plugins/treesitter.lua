@@ -11,13 +11,12 @@ return {
 		"nvim-treesitter/playground",
 	},
 	config = function()
-		local status_ok, configs = pcall(require, "nvim-treesitter.configs")
-		if not status_ok then
-			vim.notify("Failed to load Treesitter configs", vim.log.levels.ERROR)
+		local ok, configs = pcall(require, "nvim-treesitter.configs")
+		if not ok then
+			vim.notify("nvim-treesitter: failed to load configs", vim.log.levels.ERROR)
 			return
 		end
 
-		---@diagnostic disable-next-line: missing-fields
 		configs.setup({
 			ensure_installed = {
 				"html",
@@ -42,17 +41,15 @@ return {
 				"norg",
 				"typst",
 			},
-
 			auto_install = true,
-
 			ignore_install = { "phpdoc" },
 
 			highlight = {
 				enable = true,
 				disable = function(_, bufnr)
-					local max_size = 100 * 1024 -- 100 KB
-					local ok, stat = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
-					return ok and stat and stat.size > max_size
+					local max_size = 100 * 1024 -- 100KB
+					local stat_ok, stat = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(bufnr))
+					return stat_ok and stat and stat.size > max_size
 				end,
 				additional_vim_regex_highlighting = false,
 			},

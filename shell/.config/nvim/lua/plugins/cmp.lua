@@ -18,6 +18,8 @@ return {
 		local luasnip = require("luasnip")
 
 		require("luasnip.loaders.from_vscode").lazy_load()
+		-- Optional: custom LuaSnip paths (modular snippet management)
+		-- require("luasnip.loaders.from_lua").lazy_load({ paths = "~/.config/nvim/snippets" })
 
 		cmp.setup({
 			performance = {
@@ -60,7 +62,13 @@ return {
 				["<C-b>"] = cmp.mapping.scroll_docs(-4),
 				["<C-f>"] = cmp.mapping.scroll_docs(4),
 				["<C-Space>"] = cmp.mapping.complete(),
-				["<C-e>"] = cmp.mapping.abort(),
+				["<C-e>"] = cmp.mapping(function(fallback)
+					if cmp.visible() then
+						cmp.abort()
+					else
+						fallback()
+					end
+				end, { "i", "s" }),
 				["<CR>"] = cmp.mapping.confirm({ select = true }),
 
 				["<Tab>"] = cmp.mapping(function(fallback)
@@ -92,7 +100,14 @@ return {
 					name = "buffer",
 					option = {
 						get_bufnrs = function()
-							return vim.api.nvim_list_bufs()
+							-- avoid sluggishness on very large files
+							local bufs = {}
+							for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+								if vim.api.nvim_buf_line_count(buf) < 10000 then
+									table.insert(bufs, buf)
+								end
+							end
+							return bufs
 						end,
 					},
 				},
@@ -100,7 +115,7 @@ return {
 			}),
 		})
 
-		-- Command-line mode (:) completion
+		-- Cmdline (:) completion
 		cmp.setup.cmdline(":", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = cmp.config.sources({
@@ -109,7 +124,7 @@ return {
 			}),
 		})
 
-		-- Search mode (/) completion
+		-- Search (/) completion
 		cmp.setup.cmdline("/", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = {

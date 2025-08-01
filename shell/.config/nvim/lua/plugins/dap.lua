@@ -10,7 +10,7 @@ return {
 			"jay-babu/mason-nvim-dap.nvim",
 			config = function()
 				require("mason-nvim-dap").setup({
-					ensure_installed = { "python", "codelldb", "delve" },
+					ensure_installed = { "debugpy", "codelldb", "delve" },
 					automatic_installation = true,
 				})
 			end,
@@ -23,6 +23,11 @@ return {
 		require("nvim-dap-virtual-text").setup()
 		dapui.setup()
 
+		-- Define clean breakpoint signs
+		vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticSignError" })
+		vim.fn.sign_define("DapStopped", { text = "→", texthl = "DiagnosticSignInfo" })
+
+		-- Auto toggle UI on session start/end
 		dap.listeners.after.event_initialized["dapui_config"] = function()
 			dapui.open()
 		end
@@ -32,6 +37,13 @@ return {
 		dap.listeners.before.event_exited["dapui_config"] = function()
 			dapui.close()
 		end
+
+		-- Optional: define adapter manually for Python if needed
+		-- dap.adapters.python = {
+		-- 	type = "executable",
+		-- 	command = os.getenv("VIRTUAL_ENV") and os.getenv("VIRTUAL_ENV") .. "/bin/python" or "python",
+		-- 	args = { "-m", "debugpy.adapter" },
+		-- }
 
 		local map = vim.keymap.set
 		map("n", "<Leader>db", dap.toggle_breakpoint, { desc = "Toggle Breakpoint" })

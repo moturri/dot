@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 return {
 	{
 		"nvim-telescope/telescope.nvim",
@@ -141,10 +143,9 @@ return {
 					},
 				},
 				pickers = {
-					find_files = { theme = "dropdown", previewer = true, hidden = true },
-					buffers = { theme = "dropdown", previewer = true, sort_lastused = true },
-					help_tags = { theme = "dropdown" },
-					oldfiles = { theme = "dropdown", previewer = true },
+					find_files = { hidden = true },
+					buffers = { previewer = true, sort_lastused = true },
+					oldfiles = { previewer = true },
 					search_history = { theme = "dropdown", previewer = true },
 				},
 				extensions = {
@@ -153,6 +154,14 @@ return {
 			})
 
 			telescope.load_extension("ui-select")
+		end,
+	},
+	{
+		"nvim-telescope/telescope-fzf-native.nvim",
+		build = "make",
+		cond = vim.fn.executable("make") == 1,
+		config = function()
+			require("telescope").load_extension("fzf")
 		end,
 	},
 }

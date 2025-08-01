@@ -4,7 +4,6 @@ return {
 	-- Mason (Core)
 	{
 		"williamboman/mason.nvim",
-		cmd = { "Mason", "MasonInstall", "MasonUpdate", "MasonUninstall", "MasonLog" },
 		opts = {
 			ui = { border = "rounded" },
 		},
@@ -23,17 +22,15 @@ return {
 	-- Auto install LSPs, formatters, linters, debuggers
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
-		cmd = { "MasonToolsInstall", "MasonToolsUpdate", "MasonToolsUninstall" },
-		dependencies = { "williamboman/mason.nvim" },
 		config = function()
 			require("mason-tool-installer").setup({
 				ensure_installed = {
 					-- LSPs
 					"clangd",
-					"tsserver",
 					"bashls",
 					"pyright",
 					"lua_ls",
+					"ts_ls",
 					"jsonls",
 					"marksman",
 					"taplo",
@@ -54,13 +51,14 @@ return {
 					"jsonlint",
 					"codespell",
 				},
-				automatic_installation = true,
 				auto_update = true,
 				run_on_start = true,
 				start_delay = 3000,
 				debounce_hours = 12,
 				integrations = {
 					["mason-lspconfig"] = true,
+					['mason-nvim-dap'] = true,
+					['mason'] = true,
 				},
 			})
 		end,
