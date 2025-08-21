@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# xset b off
+xset b off
 # setxkbmap -option ctrl:nocaps
 
 # xrandr --newmode "1800x1012_60.00" 150.50 1800 1912 2096 2392 1012 1015 1025 1050 -hsync +vsync
