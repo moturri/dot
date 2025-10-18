@@ -137,7 +137,9 @@ class BaseAudioWidget(base.ThreadPoolText):
                 if not line.strip():
                     continue
                 if "default-node" in line or "volume" in line:
-                    qtile.call_soon_threadsafe(self._update_text)
+                    # Avoid _UndefinedQtile error during qtile check
+                    if hasattr(qtile, "call_soon_threadsafe"):
+                        qtile.call_soon_threadsafe(self._update_text)
         except Exception as e:
             logger.error("wpctl subscribe failed: %s", e)
 
