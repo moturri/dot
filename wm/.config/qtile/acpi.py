@@ -136,6 +136,9 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         if state == "full":
             return FULL_ICON, "lime"
 
+        if state in ("unknown", "not charging"):
+            return BATTERY_ICONS[0][1], "grey"
+
         if pct <= self.critical:
             return EMPTY_ICON, "red" if pct <= 5 else "orange"
 

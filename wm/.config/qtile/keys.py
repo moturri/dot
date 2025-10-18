@@ -59,11 +59,10 @@ keys: List[Union[Key, KeyChord]] = [
     Key([mod], "comma", lazy.prev_screen()),
     Key([mod], "F3", lazy.hide_show_bar("top")),
     Key([mod], "F1", lazy.spawn("i3lock -c 000000")),
-    Key([mod], "Print", lazy.spawn("screengrab")),
+    Key([mod], "Print", lazy.spawn("flameshot")),
     Key([], "XF86MonBrightnessUp", lazy.widget["brightctl"].increase()),
     Key([], "XF86MonBrightnessDown", lazy.widget["brightctl"].decrease()),
     Key([], "XF86AudioRaiseVolume", lazy.widget["audio"].volume_up()),
-
     Key([], "XF86AudioLowerVolume", lazy.widget["audio"].volume_down()),
     Key([], "XF86AudioMute", lazy.widget["audio"].toggle_mute()),
     Key([], "XF86AudioMicMute", lazy.widget["mic"].toggle_mute()),

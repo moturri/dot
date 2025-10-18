@@ -4,6 +4,7 @@ return {
 	-- Mason (Core)
 	{
 		"williamboman/mason.nvim",
+		cmd = { "Mason", "MasonInstall", "MasonUpdate", "MasonUninstall", "MasonLog" },
 		opts = {
 			ui = { border = "rounded" },
 		},
@@ -22,6 +23,8 @@ return {
 	-- Auto install LSPs, formatters, linters, debuggers
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		cmd = { "MasonToolsInstall", "MasonToolsUpdate", "MasonToolsUninstall" },
+		dependencies = { "williamboman/mason.nvim" },
 		config = function()
 			require("mason-tool-installer").setup({
 				ensure_installed = {
@@ -43,22 +46,26 @@ return {
 					"clang-format",
 					"shfmt",
 					"prettier",
-					"cbfmt",
 
 					-- Linters
 					"eslint_d",
 					"shellcheck",
 					"jsonlint",
 					"codespell",
+
+					-- Dap
+					"debugpy",
+					"codelldb",
+					"delve",
 				},
 				auto_update = true,
 				run_on_start = true,
 				start_delay = 3000,
-				debounce_hours = 12,
+				debounce_hours = 2,
 				integrations = {
 					["mason-lspconfig"] = true,
-					['mason-nvim-dap'] = true,
-					['mason'] = true,
+					["mason-nvim-dap"] = true,
+					["mason"] = true,
 				},
 			})
 		end,
@@ -68,8 +75,8 @@ return {
 	{
 		"neovim/nvim-lspconfig",
 		event = { "BufReadPre", "BufNewFile" },
+		dependencies = { "williamboman/mason-lspconfig.nvim" },
 		config = function()
-			local lspconfig = require("lspconfig")
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 
 			local ok_cmp, cmp_lsp = pcall(require, "cmp_nvim_lsp")
@@ -111,18 +118,16 @@ return {
 				vim.g["loaded_" .. provider .. "_provider"] = 0
 			end
 
-			local mason_lspconfig = require("mason-lspconfig")
-			for _, server in ipairs(mason_lspconfig.get_installed_servers() or {}) do
-				local ok, server_module = pcall(function()
-					return lspconfig[server]
-				end)
-				if ok and server_module then
-					server_module.setup({
-						capabilities = capabilities,
-						on_attach = on_attach,
-					})
-				end
-			end
+			require("mason-lspconfig").setup({
+				handlers = {
+					function(server_name)
+						require("lspconfig")[server_name].setup({
+							capabilities = capabilities,
+							on_attach = on_attach,
+						})
+					end,
+				},
+			})
 		end,
 	},
 }

@@ -7,18 +7,17 @@ group_definitions = [
         "1",
         "󰣇",
         [
-            "discord",
-            "steam_app_291550",
-            "steam_app_2281730",
+            "octopi",
+            "alacritty",
+            "code-oss",
         ],
     ),
     (
         "2",
-        "",
+        "󰚩",
         [
-            "org.wezfurlong.wezterm",
-            "code-oss",
-            "alacritty",
+            "lm studio",
+            "upscayl",
         ],
     ),
     (
@@ -27,20 +26,28 @@ group_definitions = [
         [
             "firefox",
             "zen",
+            "qbittorrent",
             "brave-browser",
-            "Brave-browser",
+            "qutebrowser",
         ],
     ),
-    ("4", "󰊠", ["octopi", "qbittorrent", "wireshark"]),
+    (
+        "4",
+        "󰖺",
+        [
+            "steam_app_291550",
+            "CombatMaster.x86_64",
+            "steam_app_2281730",
+        ],
+    ),
     (
         "5",
-        "󱚣",
+        "",
         [
             "VirtualBox Manager",
             "virt-manager",
+            "discord",
             "steam",
-            "heroic",
-            "Lutris",
         ],
     ),
     (
@@ -55,12 +62,21 @@ group_definitions = [
             "xournalpp",
         ],
     ),
-    ("7", "󰟴", ["stremio", "mpv"]),
+    (
+        "7",
+        "󰔂",
+        [
+            "stremio",
+            "mpv",
+            "mpvk",
+        ],
+    ),
     (
         "8",
         "󰒃",
         [
             "bitwarden",
+            "Bleachbit",
             "firewall-config",
             "timeshift-gtk",
             "kapitano",
@@ -68,11 +84,12 @@ group_definitions = [
             "GParted",
             "org.gnome.DiskUtility",
             "stacer",
+            "wireshark",
         ],
     ),
     (
         "9",
-        "󰎆",
+        "󰝚",
         [
             "cider",
             "easyeffects",

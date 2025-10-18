@@ -12,7 +12,7 @@ return {
 				python = { "isort", "black" },
 				javascript = { "prettier" },
 				typescript = { "prettier" },
-				c = { "cbfmt", "clang_format" },
+				c = { "clang_format" },
 				cpp = { "clang_format" },
 				sh = { "shfmt" },
 				json = { "prettier" },

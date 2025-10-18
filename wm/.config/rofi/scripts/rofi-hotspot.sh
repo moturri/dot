@@ -8,39 +8,41 @@ DEFAULT_PROFILE="default"
 PROFILE="${2:-$DEFAULT_PROFILE}"
 ENV_FILE="$HOME/.config/create_ap/env_$PROFILE"
 
-for cmd in tmux rofi notify-send sudo-rs create_ap iw alacritty; do
-	command -v "$cmd" >/dev/null || {
-		notify-send "Missing Dependency" " Missing required command: $cmd"
-		exit 1
-	}
+# --- rofi-based errors ---
+rofi_err() {
+	rofi -dmenu -p " $1" <<<"" >/dev/null
+	exit 1
+}
+
+# --- passive warnings ---
+notify_warn() {
+	notify-send "AP Warning" " $1"
+}
+
+# --- dependency check ---
+for cmd in tmux rofi sudo-rs create_ap iw kitty; do
+	command -v "$cmd" >/dev/null || rofi_err "Missing required command: $cmd"
 done
 
+# --- env file checks ---
 if [[ ! -f "$ENV_FILE" ]]; then
-	notify-send "Missing Profile" " Could not find env file:\n$ENV_FILE"
-	exit 1
+	rofi_err "Missing profile env file:\n$ENV_FILE"
 fi
 
 if [[ $(stat -c "%a" "$ENV_FILE") -gt 600 ]]; then
-	notify-send "Insecure Permissions" \
-		" Environment file is too permissive:\n$ENV_FILE\nRun: chmod 600 \"$ENV_FILE\""
+	notify_warn "Env file too permissive:\n$ENV_FILE\nRun: chmod 600 \"$ENV_FILE\""
 fi
 
 # shellcheck source=/dev/null
 . "$ENV_FILE"
 
 if [[ -z "${SSID:-}" || -z "${PASSWORD:-}" ]]; then
-	notify-send "Missing Variables" \
-		" SSID or PASSWORD not set in:\n$ENV_FILE"
-	exit 1
+	rofi_err "SSID or PASSWORD not set in:\n$ENV_FILE"
 fi
 
+# --- functions ---
 get_channel() {
 	iw dev "$WIFI_INTERFACE" info 2>/dev/null | grep -oE 'channel [0-9]+' | awk '{print $2}' || true
-}
-
-notify_err() {
-	notify-send "AP Error" " $1"
-	exit 1
 }
 
 create_ap_tmux() {
@@ -48,8 +50,8 @@ create_ap_tmux() {
 	channel=$(get_channel)
 
 	if [[ -z "$channel" ]]; then
-		channel=$(rofi -dmenu -p "No channel detected. Enter manually (e.g. 1,6,11):")
-		[[ -z "$channel" ]] && notify_err "No channel provided."
+		channel=$(rofi -dmenu -p "󰖩 No channel detected. Enter manually (1,6,11):")
+		[[ -z "$channel" ]] && rofi_err "No channel provided."
 	fi
 
 	if ! tmux has-session -t "$SESSION" 2>/dev/null; then
@@ -62,14 +64,15 @@ create_ap_tmux() {
 }
 
 attach_tmux_session() {
-	tmux attach-session -t "$SESSION" || notify_err "No tmux session '$SESSION' found."
+	tmux attach-session -t "$SESSION" || rofi_err "No tmux session '$SESSION' found."
 }
 
-launch_tmux_alacritty() {
+launch_tmux_kitty() {
 	tmux has-session -t "$SESSION" 2>/dev/null || tmux new-session -d -s "$SESSION"
-	alacritty -e tmux attach-session -t "$SESSION" &
+	kitty -e tmux attach-session -t "$SESSION" &
 }
 
+# --- main menu ---
 main() {
 	local options=("󰖩  Create Hotspot" "  Attach to Session" "󰯅  Launch Session Only")
 	local choice
@@ -84,7 +87,7 @@ main() {
 		attach_tmux_session
 		;;
 	"󰯅  Launch Session Only")
-		launch_tmux_alacritty
+		launch_tmux_kitty
 		;;
 	*)
 		exit 0

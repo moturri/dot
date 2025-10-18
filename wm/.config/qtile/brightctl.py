@@ -77,15 +77,15 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
             base_cmd += ["-d", self.device]
         return run(base_cmd + list(args))
 
-    def _get_brightness(self) -> int:
+    def _get_brightness(self) -> Optional[int]:
         current = self._run_brightctl("get")
         maximum = self._run_brightctl("max")
         try:
             cur = int(current) if current else 0
             max_ = int(maximum) if maximum and int(maximum) > 0 else 1
             return min(100, (cur * 100) // max_)
-        except ValueError:
-            return 0
+        except (ValueError, TypeError):
+            return None
 
     def _set_brightness(self, percent: int) -> None:
         pct = max(self.min_brightness, min(100, percent))
@@ -94,6 +94,8 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
 
     def _poll(self) -> str:
         brightness = self._get_brightness()
+        if brightness is None:
+            return '<span foreground="grey">󰃜 N/A</span>'
         color, icon = next(
             ((c, i) for t, c, i in self.icons if brightness >= t),
             ("grey", "󰃜"),
@@ -102,11 +104,15 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
 
     @expose_command()
     def increase(self) -> None:
-        self._set_brightness(self._get_brightness() + self.step)
+        b = self._get_brightness()
+        if b is not None:
+            self._set_brightness(b + self.step)
 
     @expose_command()
     def decrease(self) -> None:
-        self._set_brightness(self._get_brightness() - self.step)
+        b = self._get_brightness()
+        if b is not None:
+            self._set_brightness(b - self.step)
 
     @expose_command()
     def refresh(self) -> None:

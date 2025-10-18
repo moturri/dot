@@ -6,15 +6,6 @@ return {
 		"rcarriga/nvim-dap-ui",
 		"nvim-neotest/nvim-nio",
 		"theHamsta/nvim-dap-virtual-text",
-		{
-			"jay-babu/mason-nvim-dap.nvim",
-			config = function()
-				require("mason-nvim-dap").setup({
-					ensure_installed = { "debugpy", "codelldb", "delve" },
-					automatic_installation = true,
-				})
-			end,
-		},
 	},
 	config = function()
 		local dap = require("dap")
@@ -39,11 +30,11 @@ return {
 		end
 
 		-- Optional: define adapter manually for Python if needed
-		-- dap.adapters.python = {
-		-- 	type = "executable",
-		-- 	command = os.getenv("VIRTUAL_ENV") and os.getenv("VIRTUAL_ENV") .. "/bin/python" or "python",
-		-- 	args = { "-m", "debugpy.adapter" },
-		-- }
+		dap.adapters.python = {
+			type = "executable",
+			command = os.getenv("VIRTUAL_ENV") and os.getenv("VIRTUAL_ENV") .. "/bin/python" or "python",
+			args = { "-m", "debugpy.adapter" },
+		}
 
 		local map = vim.keymap.set
 		map("n", "<Leader>db", dap.toggle_breakpoint, { desc = "Toggle Breakpoint" })

@@ -45,7 +45,7 @@ return {
 			},
 			sections = {
 				-- { section = "header" },
-				{ section = "terminal", cmd = "fortune -s | lolcat", hl = "header", padding = 2, indent = 2 },
+				{ section = "terminal", cmd = "fortune -s | lolcat", hl = "header" },
 				{ section = "keys", padding = 1, indent = 2 },
 				{
 					pane = 2,
@@ -81,9 +81,9 @@ return {
 			supports_live = true,
 			follow_file = true,
 			focus = "list",
-			auto_close = false,
-			jump = { close = false },
-			layout = { preset = "sidebar", preview = false },
+			auto_close = true,
+			jump = { close = true },
+			layout = { preset = "sidebar", preview = true },
 			formatters = { files = { filename_only = true } },
 			matcher = { sort_empty = true },
 			config = function(opts)

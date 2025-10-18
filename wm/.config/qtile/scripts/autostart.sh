@@ -8,12 +8,11 @@ function run() {
 	fi
 }
 
-xset b off
-
 # setxkbmap -option ctrl:nocaps
 
 run greenclip daemon
 run /usr/bin/lxqt-policykit-agent
 run dunst
 run nm-applet
+# run cbatticon
 # run picom -b

@@ -111,7 +111,7 @@ auto_minimize = True
 wl_input_rules = None
 wl_xcursor_theme = None
 wl_xcursor_size = 24
-wmname = "LG3D"
+wmname = "qtile"
 
 
 @hook.subscribe.startup_once

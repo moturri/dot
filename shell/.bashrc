@@ -155,3 +155,8 @@ fi
 if [ -f ~/.fzf.bash ]; then
 	source ~/.fzf.bash
 fi
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/m/.lmstudio/bin"
+# End of LM Studio CLI section
+

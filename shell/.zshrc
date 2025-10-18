@@ -130,9 +130,16 @@ unset key
 # }}} End configuration added by Zim install
 
 
-export TERMINAL=alacritty
+export TERMINAL=kitty
+export TERM=kitty
 export EDITOR=nvim
 export VISUAL=nvim
+
+
+# follow XDG base dir specification
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
 
 
 alias ls="eza --icons=always"
@@ -199,3 +206,8 @@ yayfz-widget() {
 }
 zle -N yayfz-widget
 bindkey '^Y' yayfz-widget
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/m/.lmstudio/bin"
+# End of LM Studio CLI section
+
