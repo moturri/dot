@@ -1,16 +1,24 @@
 ---@diagnostic disable: undefined-global
 
 return {
+
 	-- Mason (Core)
 	{
 		"williamboman/mason.nvim",
 		cmd = { "Mason", "MasonInstall", "MasonUpdate", "MasonUninstall", "MasonLog" },
 		opts = {
-			ui = { border = "rounded" },
+			ui = {
+				border = "rounded",
+				icons = {
+					package_installed = "",
+					package_pending = "",
+					package_uninstalled = "",
+				},
+			},
 		},
 	},
 
-	-- Mason ↔ LSP bridge
+	-- Bridge Mason ↔ LSPConfig
 	{
 		"williamboman/mason-lspconfig.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -20,7 +28,7 @@ return {
 		},
 	},
 
-	-- Auto install LSPs, formatters, linters, debuggers
+	-- Mason Tool Installer (LSPs, formatters, linters, DAPs)
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		cmd = { "MasonToolsInstall", "MasonToolsUpdate", "MasonToolsUninstall" },
@@ -53,81 +61,97 @@ return {
 					"jsonlint",
 					"codespell",
 
-					-- Dap
+					-- Debuggers
 					"debugpy",
 					"codelldb",
 					"delve",
 				},
 				auto_update = true,
 				run_on_start = true,
-				start_delay = 3000,
-				debounce_hours = 2,
+				start_delay = 2000,
+				debounce_hours = 3,
 				integrations = {
 					["mason-lspconfig"] = true,
 					["mason-nvim-dap"] = true,
-					["mason"] = true,
 				},
 			})
 		end,
 	},
 
-	-- LSP setup
+	-- LSP Configuration
 	{
 		"neovim/nvim-lspconfig",
 		event = { "BufReadPre", "BufNewFile" },
 		dependencies = { "williamboman/mason-lspconfig.nvim" },
 		config = function()
-			local capabilities = vim.lsp.protocol.make_client_capabilities()
+			local lspconfig = require("lspconfig")
 
+			-- Capabilities for autocompletion
+			local capabilities = vim.lsp.protocol.make_client_capabilities()
 			local ok_cmp, cmp_lsp = pcall(require, "cmp_nvim_lsp")
 			if ok_cmp then
 				capabilities = cmp_lsp.default_capabilities(capabilities)
 			end
 
+			-- Modern diagnostic UI
 			vim.diagnostic.config({
-				virtual_text = true,
+				virtual_text = { spacing = 4, prefix = "●" },
 				underline = true,
 				severity_sort = true,
 				update_in_insert = false,
-				float = { border = "rounded" },
-				signs = {
-					text = {
-						[vim.diagnostic.severity.ERROR] = "",
-						[vim.diagnostic.severity.WARN] = "",
-						[vim.diagnostic.severity.HINT] = "",
-						[vim.diagnostic.severity.INFO] = "",
-					},
-				},
+				float = { border = "rounded", source = "always" },
+				signs = true,
 			})
 
-			vim.lsp.set_log_level("off")
+			-- Disable legacy providers to improve startup
+			for _, provider in ipairs({ "node", "perl", "python", "ruby" }) do
+				vim.g["loaded_" .. provider .. "_provider"] = 0
+			end
 
+			-- Attach behaviour
 			local function on_attach(client, bufnr)
 				local ok_navic, navic = pcall(require, "nvim-navic")
 				if ok_navic and client.server_capabilities.documentSymbolProvider then
 					navic.attach(client, bufnr)
 				end
 
+				-- Disable inbuilt formatting to delegate to null-ls/formatters
 				client.server_capabilities.documentFormattingProvider = false
 				client.server_capabilities.documentRangeFormattingProvider = false
 
-				vim.notify("LSP attached: " .. client.name, vim.log.levels.INFO, { title = "LSP" })
+				vim.notify("LSP Attached: " .. client.name, vim.log.levels.INFO, { title = "LSP" })
 			end
 
-			for _, provider in ipairs({ "node", "perl", "python", "python3", "ruby" }) do
-				vim.g["loaded_" .. provider .. "_provider"] = 0
-			end
-
+			-- Load Mason LSPs dynamically
 			require("mason-lspconfig").setup({
 				handlers = {
-					function(server_name)
-						require("lspconfig")[server_name].setup({
-							capabilities = capabilities,
+					function(server)
+						lspconfig[server].setup({
 							on_attach = on_attach,
+							capabilities = capabilities,
+							flags = { debounce_text_changes = 150 },
+						})
+					end,
+
+					-- Custom configs for specific servers
+					["lua_ls"] = function()
+						lspconfig.lua_ls.setup({
+							on_attach = on_attach,
+							capabilities = capabilities,
+							settings = {
+								Lua = {
+									runtime = { version = "LuaJIT" },
+									diagnostics = { globals = { "vim" } },
+									workspace = { checkThirdParty = false },
+									telemetry = { enable = false },
+								},
+							},
 						})
 					end,
 				},
 			})
+
+			vim.lsp.set_log_level("off")
 		end,
 	},
 }
