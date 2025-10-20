@@ -11,40 +11,40 @@ return {
 	},
 
 	opts = {
-		bigfile = {
+		bigfile = { enabled = true },
+		explorer = { enabled = true },
+		indent = { enabled = true },
+		input = { enabled = true },
+		statuscolumn = { enabled = true },
+		quickfile = { enabled = true },
+		scope = { enabled = true },
+		zen = { enabled = true },
+		git = { enabled = true },
+		scroll = { enabled = true },
+		words = { enabled = true },
+		image = { enabled = true },
+		debug = { enabled = true },
+		profiler = { enabled = true },
+		lazygit = { enabled = true },
+		notifier = {
 			enabled = true,
-			notify = true,
-			size = 1.5 * 1024 * 1024,
-			line_length = 1000,
-			setup = function(ctx)
-				if vim.fn.exists(":NoMatchParen") ~= 0 then
-					vim.cmd([[NoMatchParen]])
-				end
-				Snacks.util.wo(0, { foldmethod = "manual", statuscolumn = "", conceallevel = 0 })
-				vim.b.minianimate_disable = true
-				vim.schedule(function()
-					if vim.api.nvim_buf_is_valid(ctx.buf) then
-						vim.bo[ctx.buf].syntax = ctx.ft
-					end
-				end)
-			end,
+			timeout = 5000,
+			style = "compact",
+		},
+		picker = {
+			enabled = true,
+			tree = true,
+			hidden = true,
+			follow_file = true,
+		},
+		styles = {
+			notification = {
+				wo = { wrap = false },
+			},
 		},
 		dashboard = {
 			enabled = true,
-			preset = {
-				header = [[
-         	                                             
-         	      ████ ██████           █████      ██
-         	     ███████████             █████ 
-         	     █████████ ███████████████████ ███   ███████████
-         	    █████████  ███    █████████████ █████ ██████████████
-         	   █████████ ██████████ █████████ █████ █████ ████ █████
-         	 ███████████ ███    ███ █████████ █████ █████ ████ █████
-         	██████  █████████████████████ ████ █████ █████ ████ ██████
-      	]],
-			},
 			sections = {
-				-- { section = "header" },
 				{ section = "terminal", cmd = "fortune -s | lolcat", hl = "header" },
 				{ section = "keys", padding = 1, indent = 2 },
 				{
@@ -55,7 +55,14 @@ return {
 					padding = 1,
 					indent = 2,
 				},
-				{ pane = 2, icon = " ", title = "Projects", section = "projects", padding = 1, indent = 2 },
+				{
+					pane = 2,
+					icon = " ",
+					title = "Projects",
+					section = "projects",
+					padding = 1,
+					indent = 2,
+				},
 				{
 					pane = 2,
 					icon = " ",
@@ -68,67 +75,9 @@ return {
 					height = 5,
 					padding = 1,
 					indent = 2,
-					ttl = 5 * 60,
+					ttl = 300,
 				},
 				{ section = "startup" },
-			},
-		},
-		explorer = {
-			enabled = true,
-			finder = "explorer",
-			sort = { fields = { "sort" } },
-			tree = true,
-			supports_live = true,
-			follow_file = true,
-			focus = "list",
-			auto_close = true,
-			jump = { close = true },
-			layout = { preset = "sidebar", preview = true },
-			formatters = { files = { filename_only = true } },
-			matcher = { sort_empty = true },
-			config = function(opts)
-				return require("snacks.picker.source.explorer").setup(opts)
-			end,
-		},
-		indent = {
-			enabled = true,
-		},
-		input = { enabled = true },
-		statuscolumn = {
-			enabled = true,
-			left = { "mark", "sign" },
-			right = { "fold", "git" },
-			folds = {
-				open = false,
-				git_hl = false,
-			},
-			git = {
-				patterns = { "GitSign", "MiniDiffSign" },
-			},
-			refresh = 50,
-		},
-		notifier = {
-			enabled = true,
-			timeout = 5000,
-		},
-		picker = {
-			enabled = true,
-			tree = true,
-			hidden = true,
-			follow_file = true,
-		},
-		quickfile = {
-			enabled = true,
-		},
-		scope = {
-			enabled = true,
-		},
-		scroll = { enabled = true },
-		words = { enabled = true },
-		image = { enabled = true },
-		styles = {
-			notification = {
-				wo = { wrap = true },
 			},
 		},
 	},
@@ -359,6 +308,7 @@ return {
 
 	init = function()
 		require("snacks")
+
 		vim.api.nvim_create_autocmd("User", {
 			pattern = "VeryLazy",
 			callback = function()
@@ -366,27 +316,43 @@ return {
 				_G.dd = function(...)
 					Snacks.debug.inspect(...)
 				end
+
 				_G.bt = function()
 					Snacks.debug.backtrace()
 				end
+
+				-- Redirect print() to Snacks debugger for consistency
 				vim.print = _G.dd
 
-				-- Toggles
-				Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
-				Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader>uw")
-				Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map("<leader>uL")
-				Snacks.toggle.diagnostics():map("<leader>ud")
-				Snacks.toggle.line_number():map("<leader>ul")
-				Snacks.toggle
-					.option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 })
+				-- Toggle definitions
+				local toggle = Snacks.toggle
+
+				toggle.option("spell", { name = "Spelling" }):map("<leader>us")
+				toggle.option("wrap", { name = "Wrap" }):map("<leader>uw")
+				toggle.option("relativenumber", { name = "Relative Number" }):map("<leader>uL")
+				toggle.diagnostics():map("<leader>ud")
+				toggle.line_number():map("<leader>ul")
+
+				toggle
+					.option("conceallevel", {
+						off = 0,
+						on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2,
+						name = "Conceal Level",
+					})
 					:map("<leader>uc")
-				Snacks.toggle.treesitter():map("<leader>uT")
-				Snacks.toggle
-					.option("background", { off = "light", on = "dark", name = "Dark Background" })
+
+				toggle.treesitter():map("<leader>uT")
+				toggle
+					.option("background", {
+						off = "light",
+						on = "dark",
+						name = "Dark Background",
+					})
 					:map("<leader>ub")
-				Snacks.toggle.inlay_hints():map("<leader>uh")
-				Snacks.toggle.indent():map("<leader>ug")
-				Snacks.toggle.dim():map("<leader>uD")
+
+				toggle.inlay_hints():map("<leader>uh")
+				toggle.indent():map("<leader>ug")
+				toggle.dim():map("<leader>uD")
 			end,
 		})
 	end,
