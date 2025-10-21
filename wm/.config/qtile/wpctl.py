@@ -73,7 +73,7 @@ def resolve_default_device(is_input: bool = False) -> Optional[str]:
 
 
 class BaseAudioWidget(base._TextBox):
-    """Purely event-driven PipeWire audio widget using wpctl subscribe."""
+    """Event-driven PipeWire audio widget using wpctl subscribe."""
 
     orientations = base.ORIENTATION_HORIZONTAL
 
@@ -90,7 +90,6 @@ class BaseAudioWidget(base._TextBox):
     ) -> None:
         require("wpctl")
 
-        # Determine device
         if device is None:
             default = "@DEFAULT_AUDIO_SOURCE@" if is_input else "@DEFAULT_AUDIO_SINK@"
             if run(["wpctl", "get-volume", default]):
@@ -114,47 +113,54 @@ class BaseAudioWidget(base._TextBox):
         )
         self.MUTED: Tuple[str, str] = muted or ("grey", "󰝟")
 
-        # Initialise the widget text box
         super().__init__("", **config)  # type: ignore[no-untyped-call]
 
-        # Control flag for graceful thread shutdown
         self._stop_event = threading.Event()
+        self._last_volume: int = -1
+        self._last_muted: bool = False
 
-        # Launch the PipeWire event listener
+        # Skip launching threads when qtile check/import stage
+        if not hasattr(qtile, "call_soon_threadsafe"):
+            self._update_text()
+            return
+
+        # Spawn PipeWire event listener
         self._thread = threading.Thread(target=self._subscribe, daemon=True)
         self._thread.start()
 
-        # Populate the initial display
-        self._update_text()
+        qtile.call_soon_threadsafe(self._update_text)
 
     def finalize(self) -> None:
-        """Terminate background subscription thread on shutdown."""
+        """Terminate background subscription thread safely on shutdown."""
         self._stop_event.set()
         super().finalize()  # type: ignore[no-untyped-call]
 
     def _subscribe(self) -> None:
-        """Listen for PipeWire events and update immediately when relevant."""
+        """Listen for PipeWire events and update on volume or node changes."""
         proc: Optional[subprocess.Popen[str]] = None
         try:
             proc = subprocess.Popen(
                 ["wpctl", "subscribe"],
                 stdout=subprocess.PIPE,
                 text=True,
+                bufsize=1,
             )
             assert proc.stdout is not None
             for line in cast(TextIO, proc.stdout):
                 if self._stop_event.is_set():
                     break
-                line = line.strip()
                 if not line or not ("default-node" in line or "volume" in line):
                     continue
-                if hasattr(qtile, "call_soon_threadsafe"):
-                    qtile.call_soon_threadsafe(self._update_text)
+                qtile.call_soon_threadsafe(self._update_text)
         except Exception as e:
             logger.error("wpctl subscribe failed: %s", e)
         finally:
             if proc and proc.poll() is None:
                 proc.terminate()
+                try:
+                    proc.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
 
     def _get_state(self) -> Tuple[int, bool]:
         """Return (volume, muted) state."""
@@ -162,17 +168,13 @@ class BaseAudioWidget(base._TextBox):
         return self._parse_state(output) if output else (0, True)
 
     def _parse_state(self, output: str) -> Tuple[int, bool]:
-        parts = output.strip().split()
+        """Extract volume percentage and mute flag from wpctl output."""
         muted = "[MUTED]" in output
+        tokens = [
+            t for t in output.replace("%", "").split() if any(c.isdigit() for c in t)
+        ]
         try:
-            vol_token: Optional[str] = None
-            for token in parts:
-                if any(c.isdigit() for c in token):
-                    vol_token = token
-                    break
-            if vol_token is None:
-                raise ValueError("No numeric token found")
-            vol_float = float(vol_token)
+            vol_float = float(tokens[0]) if tokens else 0.0
             volume = min(150, max(0, int(vol_float * 100)))
         except Exception as e:
             logger.warning("Volume parse error: %s -> %s", output, e)
@@ -190,12 +192,14 @@ class BaseAudioWidget(base._TextBox):
     def _update_text(self) -> None:
         """Recompute and render the widget label."""
         volume, muted = self._get_state()
+        if volume == self._last_volume and muted == self._last_muted:
+            return
+        self._last_volume, self._last_muted = volume, muted
         color, icon = self._icon(volume, muted)
         text = f"{icon}  {volume}%" if self.show_icon else f"{volume}%"
         self.update(f'<span foreground="{color}">{text}</span>')  # type: ignore[no-untyped-call]
 
     def _set_volume(self, vol: int) -> None:
-        """Clamp and apply new volume, then refresh display."""
         clamped = max(0, min(vol, self.max_volume))
         run(["wpctl", "set-volume", self.device, f"{clamped}%"])
         self._update_text()
