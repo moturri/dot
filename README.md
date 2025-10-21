@@ -34,10 +34,10 @@ The Qtile configurations and some other scripts within this repository rely
 on the following tools:
 
 - [brightnessctl](https://github.com/Hummer12007/brightnessctl) — for screen
-  brightness control
-- [acpi](https://sourceforge.net/projects/acpiclient/) — for battery and
-  temperature readings
+  brightness control (`BrightctlWidget`)
+- [acpi](https://sourceforge.net/projects/acpiclient/) — for battery status and time estimates (`AcpiWidget`)
+- [pyudev](https://github.com/pyudev/pyudev) — for monitoring ACPI battery events (`AcpiWidget`)
 - [pipewire](https://pipewire.org) — for low-latency audio/video
-- [wireplumber](https://gitlab.freedesktop.org/pipewire/wireplumber) — wpctl
+- [wireplumber](https://gitlab.freedesktop.org/pipewire/wireplumber) — for managing audio devices via `wpctl`
 - [stow](https://www.gnu.org/software/stow/) — for managing symlinks and
   maintaining clean dotfile deployment
