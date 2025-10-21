@@ -130,42 +130,38 @@ def systemWidgets(
             },
         ),
         spacer(),
-        *(
-            [
-                decorated_widget(
-                    BrightctlWidget,
-                    name="brightctl",
-                    mouse_callbacks={
-                        "Button4": lazy.widget["brightctl"].increase(),
-                        "Button5": lazy.widget["brightctl"].decrease(),
-                    },
-                ),
-                spacer(),
-            ]
-            if show_brightness
-            else []
-        ),
-        *(
-            [
-                decorated_widget(
-                    AcpiWidget,
-                    name="acpi",
-                    mouse_callbacks={
-                        "Button2": lazy.widget["acpi"].refresh(),
-                    },
-                )
-            ]
-            if show_battery
-            else []
-        ),
     ]
+
+    if show_brightness:
+        widgets += [
+            decorated_widget(
+                BrightctlWidget,
+                name="brightctl",
+                mouse_callbacks={
+                    "Button4": lazy.widget["brightctl"].increase(),
+                    "Button5": lazy.widget["brightctl"].decrease(),
+                },
+            ),
+            spacer(),
+        ]
+
+    if show_battery:
+        widgets += [
+            decorated_widget(
+                AcpiWidget,
+                name="acpi",
+                mouse_callbacks={"Button2": lazy.widget["acpi"].refresh()},
+            ),
+        ]
 
     return widgets
 
 
 def main() -> List[Any]:
+    """Primary bar setup for the main screen."""
     return clockWidget() + groupWidgets() + systemWidgets() + systemTray()
 
 
 def misc() -> List[Any]:
+    """Fallback or secondary bar setup."""
     return clockWidget() + groupWidgets()

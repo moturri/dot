@@ -9,6 +9,7 @@ terminal = "kitty"
 
 
 def rofi_script(script_name: str) -> str:
+    """Returns full path to a Rofi helper script."""
     return os.path.expanduser(f"~/.config/rofi/scripts/{script_name}")
 
 
@@ -17,6 +18,7 @@ rofi_emoji = "rofi -modi emoji -show emoji"
 rofi_clipboard = "rofi -modi 'clipboard:greenclip print' -show clipboard"
 rofi_drun = "rofi -show drun"
 rofi_window = "rofi -show window"
+
 
 keys: List[Union[Key, KeyChord]] = [
     Key([mod], "h", lazy.layout.left()),
@@ -70,7 +72,10 @@ keys: List[Union[Key, KeyChord]] = [
     Key([mod], "bracketleft", lazy.widget["mpris"].previous()),
     Key([mod], "space", lazy.widget["mpris"].play_pause()),
     Key([mod], "bracketright", lazy.widget["mpris"].next()),
-] + [
+]
+
+
+keys += [
     KeyChord(
         [mod],
         "b",
@@ -88,6 +93,7 @@ keys: List[Union[Key, KeyChord]] = [
     )
 ]
 
+
 mouse = [
     Drag(
         [mod],
@@ -96,7 +102,10 @@ mouse = [
         start=lazy.window.get_position(),
     ),
     Drag(
-        [mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()
+        [mod],
+        "Button3",
+        lazy.window.set_size_floating(),
+        start=lazy.window.get_size(),
     ),
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
