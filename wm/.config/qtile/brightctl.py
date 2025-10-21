@@ -62,7 +62,7 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
 
     This widget performs no periodic polling. It updates only when explicitly
     triggered (e.g., via keybinding or command). It’s ideal for event-driven
-    setups under X11Libre, ensuring no background CPU use.
+    setups ensuring no background CPU use.
     """
 
     def __init__(
