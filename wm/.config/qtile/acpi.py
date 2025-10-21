@@ -43,6 +43,7 @@ BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
 
 
 def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
+    """Run a shell command and return stripped stdout, or None on error."""
     try:
         return subprocess.check_output(
             cmd,
@@ -50,11 +51,19 @@ def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
             timeout=timeout,
             env={"LC_ALL": "C.UTF-8", **os.environ},
         ).strip()
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except (subprocess.SubprocessError, FileNotFoundError, subprocess.TimeoutExpired):
         return None
 
 
 class AcpiWidget(GenPollText):  # type: ignore[misc]
+    """
+    Lightweight battery status widget using /sys/class/power_supply or acpi.
+
+    It uses direct kernel data where possible and gracefully falls back to
+    `acpi -b` output if /sys is unavailable. The widget is designed for
+    event-driven Qtile setups (e.g., X11Libre) with long update intervals
+    to minimize system overhead.
+    """
 
     def __init__(
         self,
@@ -70,6 +79,7 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         super().__init__(func=self._poll, update_interval=update_interval, **config)
 
     def _poll(self) -> str:
+        """Generate widget text for the current battery state."""
         status = self._from_sys() or self._from_acpi()
         if not status:
             return f'<span foreground="grey">{EMPTY_ICON} N/A</span>'
@@ -80,12 +90,13 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         return f'<span foreground="{color}">{icon} {pct}%{time_str}</span>'
 
     def _from_sys(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        """Try reading battery info directly from /sys/class/power_supply."""
         try:
             pct = self._read_int("capacity")
             state = self._read("status").lower()
             mins = self._estimate_time(state)
             return pct, state, mins
-        except (OSError, ValueError):
+        except (OSError, ValueError, FileNotFoundError):
             return None
 
     def _read(self, name: str) -> str:
@@ -97,20 +108,22 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         return int(self._read(name))
 
     def _estimate_time(self, state: str) -> Optional[int]:
+        """Estimate remaining minutes when discharging."""
         if state != "discharging":
             return None
-        for prefix in ["charge", "energy"]:
+        for prefix in ("charge", "energy"):
             try:
                 now = self._read_int(f"{prefix}_now")
                 rate = self._read_int(
                     "current_now" if prefix == "charge" else "power_now"
                 )
                 return int((now / rate) * 60) if rate > 0 else None
-            except (OSError, ValueError):
+            except (OSError, ValueError, FileNotFoundError):
                 continue
         return None
 
     def _from_acpi(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        """Fallback parser for `acpi -b` output."""
         output = run(["acpi", "-b"])
         if not output:
             return None
@@ -127,6 +140,7 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             return None
 
     def _icon(self, pct: int, state: str) -> Tuple[str, str]:
+        """Select appropriate icon and color for given percentage and state."""
         if state == "charging":
             for threshold, icon, color in BATTERY_ICONS:
                 if pct >= threshold:
@@ -150,9 +164,11 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
 
     @staticmethod
     def _format_time(mins: int) -> str:
+        """Convert minutes to human-readable format."""
         h, m = divmod(mins, 60)
         return f" ({h}h {m:02d}m)" if h else f" ({m}m)"
 
     @expose_command()
     def refresh(self) -> None:
+        """Manually refresh the battery display."""
         self.force_update()
