@@ -1,11 +1,13 @@
+---@diagnostic disable: undefined-global
+
 return {
-	-- Git wrapper (no keymaps, use :Git manually)
+	-- Git integration (manual command usage)
 	{
 		"tpope/vim-fugitive",
 		cmd = { "Git", "G" },
 	},
 
-	-- Git diff and blame signs in the gutter
+	-- Git signs and inline diff indicators
 	{
 		"lewis6991/gitsigns.nvim",
 		event = { "BufReadPre", "BufNewFile" },
@@ -34,6 +36,7 @@ return {
 				delay = 500,
 				ignore_whitespace = true,
 			},
+			current_line_blame_formatter = "<author>, <author_time:%R> - <summary>",
 
 			preview_config = {
 				border = "rounded",
@@ -43,5 +46,13 @@ return {
 				col = 1,
 			},
 		},
+		config = function(_, opts)
+			local ok, gitsigns = pcall(require, "gitsigns")
+			if ok then
+				gitsigns.setup(opts)
+			else
+				vim.notify("Failed to load gitsigns.nvim", vim.log.levels.ERROR)
+			end
+		end,
 	},
 }

@@ -14,8 +14,14 @@ return {
 		"onsails/lspkind.nvim",
 	},
 	config = function()
-		local cmp = require("cmp")
-		local luasnip = require("luasnip")
+		local ok_cmp, cmp = pcall(require, "cmp")
+		local ok_snip, luasnip = pcall(require, "luasnip")
+		local ok_kind, lspkind = pcall(require, "lspkind")
+
+		if not (ok_cmp and ok_snip and ok_kind) then
+			vim.notify("CMP setup failed to load dependencies", vim.log.levels.ERROR)
+			return
+		end
 
 		require("luasnip.loaders.from_vscode").lazy_load()
 
@@ -23,6 +29,7 @@ return {
 			performance = {
 				max_view_entries = 50,
 				fetching_timeout = 500,
+				debounce = 60,
 			},
 
 			snippet = {
@@ -33,10 +40,11 @@ return {
 
 			completion = {
 				keyword_length = 2,
+				completeopt = "menu,menuone,noselect",
 			},
 
 			formatting = {
-				format = require("lspkind").cmp_format({
+				format = lspkind.cmp_format({
 					mode = "symbol_text",
 					maxwidth = 50,
 					ellipsis_char = "…",
@@ -60,15 +68,8 @@ return {
 				["<C-b>"] = cmp.mapping.scroll_docs(-4),
 				["<C-f>"] = cmp.mapping.scroll_docs(4),
 				["<C-Space>"] = cmp.mapping.complete(),
-				["<C-e>"] = cmp.mapping(function(fallback)
-					if cmp.visible() then
-						cmp.abort()
-					else
-						fallback()
-					end
-				end, { "i", "s" }),
+				["<C-e>"] = cmp.mapping.abort(),
 				["<CR>"] = cmp.mapping.confirm({ select = true }),
-
 				["<Tab>"] = cmp.mapping(function(fallback)
 					if cmp.visible() then
 						cmp.select_next_item()
@@ -78,7 +79,6 @@ return {
 						fallback()
 					end
 				end, { "i", "s" }),
-
 				["<S-Tab>"] = cmp.mapping(function(fallback)
 					if cmp.visible() then
 						cmp.select_prev_item()
@@ -98,10 +98,9 @@ return {
 					name = "buffer",
 					option = {
 						get_bufnrs = function()
-							-- avoid sluggishness on very large files
 							local bufs = {}
 							for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-								if vim.api.nvim_buf_line_count(buf) < 10000 then
+								if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_line_count(buf) < 10000 then
 									table.insert(bufs, buf)
 								end
 							end
@@ -113,7 +112,7 @@ return {
 			}),
 		})
 
-		-- Cmdline (:) completion
+		-- Cmdline completion (:)
 		cmp.setup.cmdline(":", {
 			mapping = cmp.mapping.preset.cmdline(),
 			sources = cmp.config.sources({
@@ -122,12 +121,10 @@ return {
 			}),
 		})
 
-		-- Search (/) completion
+		-- Search completion (/)
 		cmp.setup.cmdline("/", {
 			mapping = cmp.mapping.preset.cmdline(),
-			sources = {
-				{ name = "buffer" },
-			},
+			sources = { { name = "buffer" } },
 		})
 	end,
 }
