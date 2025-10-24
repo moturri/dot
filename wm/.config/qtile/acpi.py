@@ -24,14 +24,19 @@ import os
 import subprocess
 import threading
 import time
-from typing import Any, Optional, Tuple
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 import pyudev  # type: ignore[import-untyped]
 from libqtile.command.base import expose_command
 from qtile_extras.widget import GenPollText
 
+if TYPE_CHECKING:
+    from pyudev import Monitor
+
 logger = logging.getLogger(__name__)
 
+# Icons and colors
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
 EMPTY_ICON = "󰁺"
@@ -47,22 +52,30 @@ BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
     (0, EMPTY_ICON, "darkred"),
 )
 
+# Timing
+DEBOUNCE_SECONDS = 1.0
+ERROR_RETRY_SECONDS = 3.0
+COMMAND_TIMEOUT = 0.5
+FALLBACK_POLL_INTERVAL = 9999.0
 
-def run(cmd: list[str], timeout: float = 0.5) -> Optional[str]:
-    """Run a command safely with short timeout."""
+
+def run_command(cmd: list[str], timeout: float = COMMAND_TIMEOUT) -> Optional[str]:
+    """Run external command safely."""
     try:
-        return subprocess.check_output(
+        out = subprocess.check_output(
             cmd,
             text=True,
             timeout=timeout,
+            stderr=subprocess.DEVNULL,
             env={"LC_ALL": "C.UTF-8", **os.environ},
-        ).strip()
-    except (subprocess.SubprocessError, FileNotFoundError):
+        )
+        return out.strip() if out else None
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
         return None
 
 
 class AcpiWidget(GenPollText):  # type: ignore[misc]
-    """Battery widget with pyudev event monitoring and fallback polling."""
+    """Battery widget using udev events with fallback polling."""
 
     def __init__(
         self,
@@ -71,125 +84,143 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         battery_path: str = "/sys/class/power_supply/BAT0",
         **config: Any,
     ) -> None:
-        self.path = battery_path
+        self.battery_path = Path(battery_path)
+        self.battery_name = self.battery_path.name
         self.show_time = show_time
         self.critical = max(5, min(critical_threshold, 25))
+
         self._stop_event = threading.Event()
+        self._update_lock = threading.Lock()
         self._last_update = 0.0
+        self._battery_exists: Optional[bool] = None
+        self._monitor: Optional["Monitor"] = None
 
-        # Polling interval acts as fallback when events fail
-        super().__init__(func=self._poll, update_interval=60.0, **config)
+        super().__init__(
+            func=self._poll, update_interval=FALLBACK_POLL_INTERVAL, **config
+        )
 
-        self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
-        self._monitor_thread.start()
+        self._thread = threading.Thread(
+            target=self._monitor_loop, daemon=True, name="acpi-monitor"
+        )
+        self._thread.start()
 
     def finalize(self) -> None:
-        """Ensure background thread stops when widget is destroyed."""
+        """Graceful shutdown."""
         self._stop_event.set()
-        super().finalize()  # type: ignore[no-untyped-call]
+        if self._monitor is not None:
+            send_stop = getattr(self._monitor, "send_stop_event", None)
+            if callable(send_stop):
+                try:
+                    send_stop()
+                except Exception:
+                    pass
+        if self._thread.is_alive():
+            self._thread.join(timeout=1.0)
+        super().finalize()
 
     def _monitor_loop(self) -> None:
-        """Monitor udev events and trigger updates."""
+        """Listen to udev events and trigger updates."""
         while not self._stop_event.is_set():
             try:
-                self._listen_once()
+                self._udev_listen()
             except Exception as e:
                 logger.warning("Battery monitor error: %s", e)
-                time.sleep(3.0)  # brief pause before retry
+                if self._stop_event.wait(ERROR_RETRY_SECONDS):
+                    break
 
-    def _listen_once(self) -> None:
-        """Attach one monitor session to pyudev (auto-reconnects if lost)."""
+    def _udev_listen(self) -> None:
         context = pyudev.Context()
         monitor = pyudev.Monitor.from_netlink(context)
         monitor.filter_by(subsystem="power_supply")
+        self._monitor = monitor
 
         for device in iter(monitor.poll, None):
             if self._stop_event.is_set():
                 break
             if not isinstance(device, pyudev.Device):
                 continue
-            if device.sys_name != os.path.basename(self.path):
-                continue
+            if self.battery_path and device.sys_name == self.battery_path.name:
+                with self._update_lock:
+                    now = time.monotonic()
+                    if now - self._last_update < DEBOUNCE_SECONDS:
+                        continue
+                    self._last_update = now
+                self._schedule_update()
 
-            # Debounce: ignore if events come too fast
-            now = time.monotonic()
-            if now - self._last_update < 1.0:
-                continue
-            self._last_update = now
-
-            if hasattr(self.qtile, "call_soon_threadsafe"):
-                self.qtile.call_soon_threadsafe(self.force_update)
+    def _schedule_update(self) -> None:
+        """Thread-safe UI update."""
+        if hasattr(self.qtile, "call_soon_threadsafe"):
+            self.qtile.call_soon_threadsafe(self.force_update)
+        else:
+            self.force_update()
 
     def _poll(self) -> str:
-        """Main display method: combines sysfs and acpi sources."""
-        status = self._from_sys() or self._from_acpi()
+        """Read and render battery data."""
+        status = self._get_status()
         if not status:
             return f'<span foreground="grey">{EMPTY_ICON} N/A</span>'
         pct, state, mins = status
-        icon, color = self._icon(pct, state)
-        time_str = self._format_time(mins) if self.show_time and mins else ""
-        return f'<span foreground="{color}">{icon} {pct}%{time_str}</span>'
+        icon, color = self._icon_for(pct, state)
+        t = self._fmt_time(mins) if (self.show_time and mins) else ""
+        return f'<span foreground="{color}">{icon} {pct}%{t}</span>'
+
+    def _get_status(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        if self._battery_exists is not False:
+            s = self._from_sys()
+            if s:
+                return s
+        return self._from_acpi()
 
     def _from_sys(self) -> Optional[Tuple[int, str, Optional[int]]]:
-        """Read battery data from sysfs (preferred)."""
         try:
-            pct = self._read_int("capacity")
+            pct = max(0, min(100, self._read_int("capacity")))
             state = self._read("status").lower()
             mins = self._estimate_time(state)
+            self._battery_exists = True
             return pct, state, mins
-        except (OSError, ValueError, PermissionError):
+        except Exception:
+            self._battery_exists = None
             return None
 
     def _read(self, name: str) -> str:
-        with open(os.path.join(self.path, name), "r", encoding="utf-8") as f:
+        with open(self.battery_path / name, "r", encoding="utf-8") as f:
             return f.read().strip()
 
     def _read_int(self, name: str) -> int:
         return int(self._read(name))
 
     def _estimate_time(self, state: str) -> Optional[int]:
-        """Roughly estimate remaining time in minutes when discharging."""
         if state != "discharging":
             return None
         for prefix in ("charge", "energy"):
             try:
                 now = self._read_int(f"{prefix}_now")
-                rate = self._read_int(
-                    "current_now" if prefix == "charge" else "power_now"
-                )
+                rate_key = "current_now" if prefix == "charge" else "power_now"
+                rate = self._read_int(rate_key)
                 if rate > 0:
                     return int((now / rate) * 60)
-            except (OSError, ValueError):
+            except Exception:
                 continue
         return None
 
     def _from_acpi(self) -> Optional[Tuple[int, str, Optional[int]]]:
-        """Fallback: parse output from acpi -b."""
-        output = run(["acpi", "-b"])
-        if not output:
+        out = run_command(["acpi", "-b"])
+        if not out:
             return None
         try:
-            after_colon = output.split(":", 1)[1].strip()
-            parts = [p.strip() for p in after_colon.split(",")]
+            _, info = out.split(":", 1)
+            parts = [p.strip() for p in info.split(",")]
             state = parts[0].lower()
             pct = int(parts[1].rstrip("%"))
             mins = None
-            if len(parts) > 2:
-                time_field = parts[2]
-                if ":" in time_field:
-                    h, m = map(int, time_field.split(":")[:2])
-                    mins = h * 60 + m
+            if len(parts) > 2 and ":" in parts[2]:
+                h, m = map(int, parts[2].split(":")[:2])
+                mins = h * 60 + m
             return pct, state, mins
-        except (IndexError, ValueError):
+        except Exception:
             return None
 
-    def _icon(self, pct: int, state: str) -> Tuple[str, str]:
-        """Return icon and color based on charge level and state."""
-        if state == "charging":
-            for threshold, icon, color in BATTERY_ICONS:
-                if pct >= threshold:
-                    return f"{CHARGING_ICON} {icon}", color
-            return f"{CHARGING_ICON} {EMPTY_ICON}", "darkgreen"
+    def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
         if state == "full":
             return FULL_ICON, "lime"
         if state in ("unknown", "not charging"):
@@ -198,16 +229,22 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             return EMPTY_ICON, "red" if pct <= 5 else "orange"
         for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
+                if state == "charging":
+                    return f"{CHARGING_ICON} {icon}", color
                 return icon, color
-        return EMPTY_ICON, "grey"
+        prefix = f"{CHARGING_ICON} " if state == "charging" else ""
+        return f"{prefix}{EMPTY_ICON}", "grey"
 
     @staticmethod
-    def _format_time(mins: int) -> str:
-        """Convert minutes to formatted (h m) string."""
+    def _fmt_time(mins: int) -> str:
+        if mins <= 0:
+            return ""
         h, m = divmod(mins, 60)
         return f" ({h}h {m:02d}m)" if h else f" ({m}m)"
 
     @expose_command()
     def refresh(self) -> None:
         """Manual update trigger."""
+        with self._update_lock:
+            self._last_update = 0.0
         self.force_update()
