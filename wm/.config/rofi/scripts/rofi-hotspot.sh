@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# -------------------------------------------------------------------
-# Rofi Hotspot Manager – Secure Pro Edition
-# Author: Mr. Elton Moturi
-# Environment: Arch Linux / Qtile
-# -------------------------------------------------------------------
 
 set -euo pipefail
 
@@ -16,7 +11,6 @@ SESSION="${1:-${DEFAULTS[session]}}"
 PROFILE="${2:-${DEFAULTS[profile]}}"
 ENV_FILE="$HOME/.config/create_ap/env_$PROFILE"
 
-# ---------------- Error & warning handling ----------------
 rofi_err() {
 	rofi -dmenu -p " $1" <<<"" >/dev/null
 	exit 1
@@ -26,13 +20,11 @@ notify_warn() {
 	notify-send "AP Warning" " $1"
 }
 
-# ---------------- Locale enforcement ----------------
 if ! locale | grep -q "UTF-8"; then
 	export LANG="en_US.UTF-8"
 	notify_warn "Locale forced to UTF-8 for proper icon rendering."
 fi
 
-# ---------------- Dependency checks ----------------
 deps=(tmux rofi create_ap iw kitty)
 SUDO_CMD="sudo-rs"
 if ! command -v "$SUDO_CMD" &>/dev/null; then
@@ -44,14 +36,12 @@ for cmd in "${deps[@]}"; do
 	command -v "$cmd" >/dev/null || rofi_err "Missing required command: $cmd"
 done
 
-# ---------------- Interface auto-detection ----------------
 detect_iface() {
 	iw dev 2>/dev/null | awk '/Interface/ {print $2; exit}'
 }
 WIFI_INTERFACE="$(detect_iface || true)"
 [[ -z "$WIFI_INTERFACE" ]] && rofi_err "No wireless interface detected via iw dev."
 
-# ---------------- Profile environment validation ----------------
 if [[ ! -f "$ENV_FILE" ]]; then
 	rofi_err "Missing profile env file:\n$ENV_FILE"
 fi
@@ -76,13 +66,11 @@ if [[ -z "$SSID" || -z "$PASSWORD" ]]; then
 	rofi_err "SSID or PASSWORD not set in:\n$ENV_FILE"
 fi
 
-# ---------------- Graceful cleanup ----------------
 cleanup() {
 	trap - INT TERM EXIT
 }
 trap cleanup INT TERM EXIT
 
-# ---------------- Core functions ----------------
 get_channel() {
 	iw dev "$WIFI_INTERFACE" info 2>/dev/null | grep -oE 'channel [0-9]+' | awk '{print $2}' || true
 }
@@ -114,7 +102,6 @@ launch_tmux_kitty() {
 	kitty -e tmux attach-session -t "$SESSION" &
 }
 
-# ---------------- Main menu ----------------
 main() {
 	local options=("󰖩  Create Hotspot" "  Attach to Session" "󰯅  Launch Session Only")
 	local choice

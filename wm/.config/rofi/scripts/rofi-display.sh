@@ -5,7 +5,6 @@ EXTERNAL_DISPLAY="${1:-DP-1}"
 INTERNAL_DISPLAY="${2:-${INTERNAL_DISPLAY:-eDP-1}}"
 ROFI_CMD="rofi -dmenu -i -p"
 
-# --- dependency check ---
 for cmd in xrandr notify-send rofi qtile; do
 	command -v "$cmd" >/dev/null || {
 		notify-send "Display Setup" "Missing required command: $cmd" -u critical
@@ -13,7 +12,6 @@ for cmd in xrandr notify-send rofi qtile; do
 	}
 done
 
-# --- helper ---
 is_connected() {
 	xrandr | grep -qE "^${EXTERNAL_DISPLAY} connected"
 }
@@ -53,7 +51,6 @@ main() {
 		;;
 	esac
 
-	# allow xrandr changes to settle before refreshing qtile
 	sleep 1
 	if ! qtile cmd-obj -o cmd -f restart >/dev/null 2>&1; then
 		notify-send "Display Setup" "  qtile restart failed; restart manually if needed." -t 6000
