@@ -1,11 +1,11 @@
 from typing import Any, List
 
-from acpi import AcpiWidget
-from brightctl import BrightctlWidget
+from widgets.acpi import AcpiWidget
+from widgets.brightctl import BrightctlWidget
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
-from wpctl import AudioWidget, MicWidget
+from widgets.wpctl import AudioWidget, MicWidget
 
 theme = {
     "accent": "#6f3aea",

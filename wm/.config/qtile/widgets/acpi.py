@@ -35,8 +35,17 @@ if TYPE_CHECKING:
     from pyudev import Monitor
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-# Icons and colors
+# Optional persistent logging
+if not logger.handlers:
+    handler = logging.FileHandler("/tmp/acpiwidget.log", encoding="utf-8")
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(threadName)s: %(message)s")
+    )
+    logger.addHandler(handler)
+
+# Icons and colours
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
 EMPTY_ICON = "󰁺"
@@ -75,7 +84,7 @@ def run_command(cmd: list[str], timeout: float = COMMAND_TIMEOUT) -> Optional[st
 
 
 class AcpiWidget(GenPollText):  # type: ignore[misc]
-    """Battery widget using udev events with fallback polling."""
+    """Battery widget using udev monitoring with AC detection."""
 
     def __init__(
         self,
@@ -103,9 +112,11 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             target=self._monitor_loop, daemon=True, name="acpi-monitor"
         )
         self._thread.start()
+        logger.debug("AcpiWidget initialised with path=%s", self.battery_path)
 
     def finalize(self) -> None:
         """Graceful shutdown."""
+        logger.debug("Finalising AcpiWidget")
         self._stop_event.set()
         if self._monitor is not None:
             send_stop = getattr(self._monitor, "send_stop_event", None)
@@ -113,13 +124,14 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
                 try:
                     send_stop()
                 except Exception:
-                    pass
+                    logger.exception("Error stopping pyudev monitor")
         if self._thread.is_alive():
             self._thread.join(timeout=1.0)
         super().finalize()
 
     def _monitor_loop(self) -> None:
         """Listen to udev events and trigger updates."""
+        logger.debug("Starting pyudev monitor loop")
         while not self._stop_event.is_set():
             try:
                 self._udev_listen()
@@ -127,42 +139,63 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
                 logger.warning("Battery monitor error: %s", e)
                 if self._stop_event.wait(ERROR_RETRY_SECONDS):
                     break
+        logger.debug("Exiting pyudev monitor loop")
 
     def _udev_listen(self) -> None:
+        """Monitor both AC and battery devices for state changes."""
         context = pyudev.Context()
         monitor = pyudev.Monitor.from_netlink(context)
         monitor.filter_by(subsystem="power_supply")
         self._monitor = monitor
+
+        battery_names = {self.battery_path.name, "AC", "AC0", "ACAD", "ACPI0003:00"}
+        logger.debug("Listening for power_supply events: %s", battery_names)
 
         for device in iter(monitor.poll, None):
             if self._stop_event.is_set():
                 break
             if not isinstance(device, pyudev.Device):
                 continue
-            if self.battery_path and device.sys_name == self.battery_path.name:
+
+            name = device.sys_name
+            logger.debug(
+                "udev event received: %s (action=%s)",
+                name,
+                getattr(device, "action", None),
+            )
+
+            if name in battery_names:
                 with self._update_lock:
                     now = time.monotonic()
                     if now - self._last_update < DEBOUNCE_SECONDS:
                         continue
                     self._last_update = now
+                logger.debug("Scheduling update for device: %s", name)
                 self._schedule_update()
 
     def _schedule_update(self) -> None:
         """Thread-safe UI update."""
-        if hasattr(self.qtile, "call_soon_threadsafe"):
-            self.qtile.call_soon_threadsafe(self.force_update)
-        else:
-            self.force_update()
+        try:
+            if hasattr(self.qtile, "call_soon_threadsafe"):
+                self.qtile.call_soon_threadsafe(self.force_update)
+            else:
+                self.force_update()
+            logger.debug("UI update scheduled/executed")
+        except Exception:
+            logger.exception("Error scheduling update")
 
     def _poll(self) -> str:
         """Read and render battery data."""
         status = self._get_status()
+        logger.debug("Polling battery status: %s", status)
         if not status:
             return f'<span foreground="grey">{EMPTY_ICON} N/A</span>'
         pct, state, mins = status
         icon, color = self._icon_for(pct, state)
         t = self._fmt_time(mins) if (self.show_time and mins) else ""
-        return f'<span foreground="{color}">{icon} {pct}%{t}</span>'
+        result = f'<span foreground="{color}">{icon} {pct}%{t}</span>'
+        logger.debug("Rendered widget text: %s", result)
+        return result
 
     def _get_status(self) -> Optional[Tuple[int, str, Optional[int]]]:
         if self._battery_exists is not False:
@@ -180,6 +213,7 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             return pct, state, mins
         except Exception:
             self._battery_exists = None
+            logger.exception("Error reading sysfs battery data")
             return None
 
     def _read(self, name: str) -> str:
@@ -218,6 +252,7 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
                 mins = h * 60 + m
             return pct, state, mins
         except Exception:
+            logger.exception("Error parsing ACPI output: %s", out)
             return None
 
     def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
@@ -247,4 +282,5 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         """Manual update trigger."""
         with self._update_lock:
             self._last_update = 0.0
+        logger.debug("Manual refresh invoked")
         self.force_update()

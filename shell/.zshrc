@@ -206,8 +206,3 @@ yayfz-widget() {
 }
 zle -N yayfz-widget
 bindkey '^Y' yayfz-widget
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/m/.lmstudio/bin"
-# End of LM Studio CLI section
-

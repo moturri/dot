@@ -8,8 +8,6 @@ function run() {
 	fi
 }
 
-# setxkbmap -option ctrl:nocaps
-
 run greenclip daemon
 run /usr/bin/lxqt-policykit-agent
 run dunst
