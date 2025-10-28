@@ -1,10 +1,10 @@
 from typing import Any, List
 
-from widgets.acpi import AcpiWidget
-from widgets.brightctl import BrightctlWidget
 from libqtile.lazy import lazy
 from qtile_extras import widget
 from qtile_extras.widget.decorations import RectDecoration
+from widgets.battery import BatteryWidget
+from widgets.brightctl import BrightctlWidget
 from widgets.wpctl import AudioWidget, MicWidget
 
 theme = {
@@ -148,7 +148,7 @@ def systemWidgets(
     if show_battery:
         widgets += [
             decorated_widget(
-                AcpiWidget,
+                BatteryWidget,
                 name="acpi",
                 mouse_callbacks={"Button2": lazy.widget["acpi"].refresh()},
             ),

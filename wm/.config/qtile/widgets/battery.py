@@ -83,7 +83,7 @@ def run_command(cmd: list[str], timeout: float = COMMAND_TIMEOUT) -> Optional[st
         return None
 
 
-class AcpiWidget(GenPollText):  # type: ignore[misc]
+class BatteryWidget(GenPollText):  # type: ignore[misc]
     """Battery widget using udev monitoring with AC detection."""
 
     def __init__(
@@ -198,13 +198,29 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         return result
 
     def _get_status(self) -> Optional[Tuple[int, str, Optional[int]]]:
-        if self._battery_exists is not False:
-            s = self._from_sys()
-            if s:
-                return s
-        return self._from_acpi()
+        """
+        Get battery status from sysfs, falling back to acpi command.
+
+        Returns:
+            A tuple of (percentage, status, time remaining in minutes) or None.
+        """
+        if self._battery_exists is False:
+            return self._from_acpi()
+
+        status = self._from_sys()
+        if status is None:
+            # sysfs failed, so try acpi
+            return self._from_acpi()
+
+        return status
 
     def _from_sys(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        """
+        Get battery status from sysfs.
+
+        Returns:
+            A tuple of (percentage, status, time remaining in minutes) or None.
+        """
         try:
             pct = max(0, min(100, self._read_int("capacity")))
             state = self._read("status").lower()
@@ -217,13 +233,40 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             return None
 
     def _read(self, name: str) -> str:
+        """
+        Read a value from a file in the battery's sysfs directory.
+
+        Args:
+            name: The name of the file to read.
+
+        Returns:
+            The content of the file.
+        """
         with open(self.battery_path / name, "r", encoding="utf-8") as f:
             return f.read().strip()
 
     def _read_int(self, name: str) -> int:
+        """
+        Read an integer value from a file in the battery's sysfs directory.
+
+        Args:
+            name: The name of the file to read.
+
+        Returns:
+            The integer value from the file.
+        """
         return int(self._read(name))
 
     def _estimate_time(self, state: str) -> Optional[int]:
+        """
+        Estimate the remaining time for the battery.
+
+        Args:
+            state: The current state of the battery (e.g., "discharging").
+
+        Returns:
+            The estimated time in minutes, or None if not discharging or unable to estimate.
+        """
         if state != "discharging":
             return None
         for prefix in ("charge", "energy"):
@@ -238,6 +281,12 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
         return None
 
     def _from_acpi(self) -> Optional[Tuple[int, str, Optional[int]]]:
+        """
+        Get battery status from the acpi command.
+
+        Returns:
+            A tuple of (percentage, status, time remaining in minutes) or None.
+        """
         out = run_command(["acpi", "-b"])
         if not out:
             return None
@@ -256,22 +305,46 @@ class AcpiWidget(GenPollText):  # type: ignore[misc]
             return None
 
     def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
+        """
+        Get the icon and color for the current battery state.
+
+        Args:
+            pct: The battery percentage.
+            state: The current state of the battery.
+
+        Returns:
+            A tuple of (icon, color).
+        """
         if state == "full":
             return FULL_ICON, "lime"
         if state in ("unknown", "not charging"):
             return BATTERY_ICONS[0][1], "grey"
-        if pct <= self.critical:
-            return EMPTY_ICON, "red" if pct <= 5 else "orange"
-        for threshold, icon, color in BATTERY_ICONS:
+
+        icon, color = EMPTY_ICON, "grey"
+        for threshold, i, c in BATTERY_ICONS:
             if pct >= threshold:
-                if state == "charging":
-                    return f"{CHARGING_ICON} {icon}", color
-                return icon, color
-        prefix = f"{CHARGING_ICON} " if state == "charging" else ""
-        return f"{prefix}{EMPTY_ICON}", "grey"
+                icon, color = i, c
+                break
+
+        if state == "charging":
+            icon = f"{CHARGING_ICON} {icon}"
+
+        if pct <= self.critical:
+            icon, color = EMPTY_ICON, "red" if pct <= 5 else "orange"
+
+        return icon, color
 
     @staticmethod
     def _fmt_time(mins: int) -> str:
+        """
+        Format the remaining time into a human-readable string.
+
+        Args:
+            mins: The time in minutes.
+
+        Returns:
+            A formatted string (e.g., "(1h 30m)").
+        """
         if mins <= 0:
             return ""
         h, m = divmod(mins, 60)
