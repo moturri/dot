@@ -11,7 +11,7 @@ a streamlined and personalized experience across my Linux setup.
 - **Terminal ([Kitty](https://sw.kovidgoyal.net/kitty/)):** [Kitty](terminal/.config/kitty/kitty.conf) is the primary terminal emulator, configured with "JetBrainsMonoNL Nerd Font," a powerline-style tab bar, and custom keybindings for a streamlined workflow.
 - **Shell ([Zsh](https://www.zsh.org/)):** The [Zsh configuration](shell/.zshrc) is managed by `zim` and includes numerous aliases, `fzf`-integrated functions, and a customized `starship` prompt.
 - **Editor ([Neovim](https://neovim.io/)):** The [Neovim configuration](shell/.config/nvim/init.lua) is managed in Lua and uses `lazy.nvim` for plugin management.
-- **Browser ([Zen Browser](https://github.com/zen-browser/zen)):** [Zen Browser](browser/.zen/m.Default%20(release)/user.js) is configured for a minimal and privacy-focused experience, with a dark mode, GTK theme integration, and various performance and privacy enhancements.
+- **Browser ([Zen Browser](https://github.com/zen-browser/desktop)):** [Zen Browser](browser/.zen/m.Default%20(release)/user.js) is configured for a minimal and privacy-focused experience, with a dark mode, GTK theme integration, and various performance and privacy enhancements.
 
 ### Theming
 
@@ -41,7 +41,6 @@ on the following tools:
 
 - [brightnessctl](https://github.com/Hummer12007/brightnessctl) — for screen
   brightness control (`BrightctlWidget`)
-
 - [pyudev](https://github.com/pyudev/pyudev) — for monitoring ACPI battery events (`BatteryWidget`)
 - [pipewire](https://pipewire.org) — for low-latency audio/video
 - [wireplumber](https://gitlab.freedesktop.org/pipewire/wireplumber) — for managing audio devices via `wpctl`
