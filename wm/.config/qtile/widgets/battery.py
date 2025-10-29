@@ -32,7 +32,7 @@ from qtile_extras.widget import GenPollText
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 if not logger.handlers:
-    handler = logging.FileHandler("/tmp/acpiwidget.log", encoding="utf-8")
+    handler = logging.FileHandler("/tmp/batterywidget.log", encoding="utf-8")
     handler.setFormatter(
         logging.Formatter("%(asctime)s [%(levelname)s] %(threadName)s: %(message)s")
     )
@@ -57,7 +57,7 @@ DEBOUNCE_SECONDS = 0.25
 
 
 class BatteryWidget(GenPollText):  # type: ignore[misc]
-    """Battery widget using pure pyudev monitoring (no polling, no acpi)."""
+    """Battery widget using pure pyudev monitoring (no polling)."""
 
     def __init__(
         self,
