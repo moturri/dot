@@ -1,0 +1,5 @@
+- **Refactoring:**
+  - Refined `battery.py` by improving docstrings, and consolidating icon logic.
+  - Refactored `battery.py` to remove duplicated code in `acpid` listener.
+- **Documentation:**
+  - Updated `README.md` to add `acpid` as a dependency.

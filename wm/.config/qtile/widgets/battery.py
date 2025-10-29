@@ -21,6 +21,8 @@
 
 import logging
 import os
+import select
+import socket
 import subprocess
 import threading
 import time
@@ -37,7 +39,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# Optional persistent logging
 if not logger.handlers:
     handler = logging.FileHandler("/tmp/acpiwidget.log", encoding="utf-8")
     handler.setFormatter(
@@ -45,7 +46,6 @@ if not logger.handlers:
     )
     logger.addHandler(handler)
 
-# Icons and colours
 CHARGING_ICON = "󱐋"
 FULL_ICON = "󰂄"
 EMPTY_ICON = "󰁺"
@@ -61,7 +61,6 @@ BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
     (0, EMPTY_ICON, "darkred"),
 )
 
-# Timing
 DEBOUNCE_SECONDS = 1.0
 ERROR_RETRY_SECONDS = 3.0
 COMMAND_TIMEOUT = 0.5
@@ -69,7 +68,7 @@ FALLBACK_POLL_INTERVAL = 9999.0
 
 
 def run_command(cmd: list[str], timeout: float = COMMAND_TIMEOUT) -> Optional[str]:
-    """Run external command safely."""
+    """Run an external command safely and return its stdout or None on failure."""
     try:
         out = subprocess.check_output(
             cmd,
@@ -84,7 +83,7 @@ def run_command(cmd: list[str], timeout: float = COMMAND_TIMEOUT) -> Optional[st
 
 
 class BatteryWidget(GenPollText):  # type: ignore[misc]
-    """Battery widget using udev monitoring with AC detection."""
+    """Battery widget using udev monitoring with acpid socket fallback."""
 
     def __init__(
         self,
@@ -108,16 +107,23 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
             func=self._poll, update_interval=FALLBACK_POLL_INTERVAL, **config
         )
 
-        self._thread = threading.Thread(
-            target=self._monitor_loop, daemon=True, name="acpi-monitor"
+        self._udev_thread = threading.Thread(
+            target=self._monitor_loop, daemon=True, name="udev-monitor"
         )
-        self._thread.start()
-        logger.debug("AcpiWidget initialised with path=%s", self.battery_path)
+        self._acpid_thread = threading.Thread(
+            target=self._acpid_listener, daemon=True, name="acpid-listener"
+        )
+
+        self._udev_thread.start()
+        self._acpid_thread.start()
+
+        logger.debug("BatteryWidget initialised with path=%s", self.battery_path)
 
     def finalize(self) -> None:
         """Graceful shutdown."""
-        logger.debug("Finalising AcpiWidget")
+        logger.debug("Finalising BatteryWidget")
         self._stop_event.set()
+
         if self._monitor is not None:
             send_stop = getattr(self._monitor, "send_stop_event", None)
             if callable(send_stop):
@@ -125,8 +131,13 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
                     send_stop()
                 except Exception:
                     logger.exception("Error stopping pyudev monitor")
-        if self._thread.is_alive():
-            self._thread.join(timeout=1.0)
+
+        if self._udev_thread.is_alive():
+            self._udev_thread.join(timeout=1.0)
+
+        if self._acpid_thread.is_alive():
+            self._acpid_thread.join(timeout=1.0)
+
         super().finalize()
 
     def _monitor_loop(self) -> None:
@@ -136,13 +147,12 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
             try:
                 self._udev_listen()
             except Exception as e:
-                logger.warning("Battery monitor error: %s", e)
-                if self._stop_event.wait(ERROR_RETRY_SECONDS):
-                    break
+                logger.warning("Battery monitor error: %s, retrying in 5s", e)
+                time.sleep(5)  # Wait before retrying
         logger.debug("Exiting pyudev monitor loop")
 
     def _udev_listen(self) -> None:
-        """Monitor both AC and battery devices for state changes."""
+        """Monitor power_supply subsystem for changes."""
         context = pyudev.Context()
         monitor = pyudev.Monitor.from_netlink(context)
         monitor.filter_by(subsystem="power_supply")
@@ -173,8 +183,55 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
                 logger.debug("Scheduling update for device: %s", name)
                 self._schedule_update()
 
+    def _acpid_listener(self) -> None:
+        """Listen to /run/acpid.socket for power events as fallback."""
+        sock_path = "/run/acpid.socket"
+        if not os.path.exists(sock_path):
+            logger.warning("acpid socket not found at %s", sock_path)
+            return
+
+        logger.debug("Starting acpid socket listener on %s", sock_path)
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                s.connect(sock_path)
+                s.setblocking(False)
+                poller = select.poll()
+                poller.register(s, select.POLLIN)
+
+                while not self._stop_event.is_set():
+                    events = poller.poll(1000)  # 1s timeout to allow graceful exit
+                    for _, flag in events:
+                        if flag & select.POLLIN:
+                            # read and split lines since acpid may send multiple events
+                            try:
+                                raw = s.recv(4096)
+                            except BlockingIOError:
+                                continue
+                            if not raw:
+                                continue
+                            for line in raw.decode(errors="ignore").splitlines():
+                                data = line.strip()
+                                if not data:
+                                    continue
+                                # Typical acpid event lines contain these tokens
+                                if (
+                                    "battery" in data
+                                    or "ac_adapter" in data
+                                ):
+                                    logger.debug("acpid event: %s", data)
+                                    with self._update_lock:
+                                        now = time.monotonic()
+                                        if now - self._last_update < DEBOUNCE_SECONDS:
+                                            continue
+                                        self._last_update = now
+                                    self._schedule_update()
+        except Exception:
+            logger.exception("Error in acpid listener loop")
+
+        logger.debug("Exiting acpid listener")
+
     def _schedule_update(self) -> None:
-        """Thread-safe UI update."""
+        """Thread-safe UI update trigger."""
         try:
             if hasattr(self.qtile, "call_soon_threadsafe"):
                 self.qtile.call_soon_threadsafe(self.force_update)
@@ -185,7 +242,7 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
             logger.exception("Error scheduling update")
 
     def _poll(self) -> str:
-        """Read and render battery data."""
+        """Read and render battery data for the widget."""
         status = self._get_status()
         logger.debug("Polling battery status: %s", status)
         if not status:
@@ -200,27 +257,18 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
     def _get_status(self) -> Optional[Tuple[int, str, Optional[int]]]:
         """
         Get battery status from sysfs, falling back to acpi command.
-
-        Returns:
-            A tuple of (percentage, status, time remaining in minutes) or None.
+        Keeping _from_acpi() as a last-resort fallback in case socket and udev fail.
         """
         if self._battery_exists is False:
             return self._from_acpi()
 
         status = self._from_sys()
         if status is None:
-            # sysfs failed, so try acpi
             return self._from_acpi()
-
         return status
 
     def _from_sys(self) -> Optional[Tuple[int, str, Optional[int]]]:
-        """
-        Get battery status from sysfs.
-
-        Returns:
-            A tuple of (percentage, status, time remaining in minutes) or None.
-        """
+        """Get battery status from sysfs (preferred)."""
         try:
             pct = max(0, min(100, self._read_int("capacity")))
             state = self._read("status").lower()
@@ -233,40 +281,15 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
             return None
 
     def _read(self, name: str) -> str:
-        """
-        Read a value from a file in the battery's sysfs directory.
-
-        Args:
-            name: The name of the file to read.
-
-        Returns:
-            The content of the file.
-        """
+        """Read a sysfs value for the battery."""
         with open(self.battery_path / name, "r", encoding="utf-8") as f:
             return f.read().strip()
 
     def _read_int(self, name: str) -> int:
-        """
-        Read an integer value from a file in the battery's sysfs directory.
-
-        Args:
-            name: The name of the file to read.
-
-        Returns:
-            The integer value from the file.
-        """
         return int(self._read(name))
 
     def _estimate_time(self, state: str) -> Optional[int]:
-        """
-        Estimate the remaining time for the battery.
-
-        Args:
-            state: The current state of the battery (e.g., "discharging").
-
-        Returns:
-            The estimated time in minutes, or None if not discharging or unable to estimate.
-        """
+        """Estimate remaining time in minutes when discharging."""
         if state != "discharging":
             return None
         for prefix in ("charge", "energy"):
@@ -281,12 +304,7 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
         return None
 
     def _from_acpi(self) -> Optional[Tuple[int, str, Optional[int]]]:
-        """
-        Get battery status from the acpi command.
-
-        Returns:
-            A tuple of (percentage, status, time remaining in minutes) or None.
-        """
+        """Fallback that uses the acpi command if socket/udev/sysfs are unavailable."""
         out = run_command(["acpi", "-b"])
         if not out:
             return None
@@ -305,16 +323,7 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
             return None
 
     def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
-        """
-        Get the icon and color for the current battery state.
-
-        Args:
-            pct: The battery percentage.
-            state: The current state of the battery.
-
-        Returns:
-            A tuple of (icon, color).
-        """
+        """Select icon and colour according to battery percentage and state."""
         if state == "full":
             return FULL_ICON, "lime"
         if state in ("unknown", "not charging"):
@@ -336,15 +345,7 @@ class BatteryWidget(GenPollText):  # type: ignore[misc]
 
     @staticmethod
     def _fmt_time(mins: int) -> str:
-        """
-        Format the remaining time into a human-readable string.
-
-        Args:
-            mins: The time in minutes.
-
-        Returns:
-            A formatted string (e.g., "(1h 30m)").
-        """
+        """Format minutes into human-readable time string."""
         if mins <= 0:
             return ""
         h, m = divmod(mins, 60)
