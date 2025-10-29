@@ -41,8 +41,7 @@ on the following tools:
 
 - [brightnessctl](https://github.com/Hummer12007/brightnessctl) — for screen
   brightness control (`BrightctlWidget`)
-- [acpi](https://sourceforge.net/projects/acpiclient/) — for battery status and time estimates (`BatteryWidget`)
-- [acpid](https://archlinux.org/packages/community/x86_64/acpid/) — for listening to ACPI events as a fallback (`BatteryWidget`)
+
 - [pyudev](https://github.com/pyudev/pyudev) — for monitoring ACPI battery events (`BatteryWidget`)
 - [pipewire](https://pipewire.org) — for low-latency audio/video
 - [wireplumber](https://gitlab.freedesktop.org/pipewire/wireplumber) — for managing audio devices via `wpctl`
