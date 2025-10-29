@@ -18,14 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 import os
 import shutil
 import subprocess
 from typing import Any, List, Optional, Tuple
 
 from libqtile.command.base import expose_command
-from qtile_extras.widget import GenPollText
+from libqtile.widget.textbox import TextBox
 
 # Thresholds: (percentage, color, icon)
 DEFAULT_ICONS: Tuple[Tuple[int, str, str], ...] = (
@@ -56,21 +55,13 @@ def require(command: str) -> None:
         raise RuntimeError(f"Missing dependency: {command}")
 
 
-class BrightctlWidget(GenPollText):  # type: ignore[misc]
-    """
-    Minimalist brightness widget using brightnessctl.
-
-    This widget performs no periodic polling. It updates only when explicitly
-    triggered (e.g., via keybinding or command). It’s ideal for event-driven
-    setups ensuring no background CPU use.
-    """
+class BrightctlWidget(TextBox):
 
     def __init__(
         self,
         step: int = 5,
         min_brightness: int = 1,
         device: Optional[str] = None,
-        update_interval: float = 9999.0,
         icons: Tuple[Tuple[int, str, str], ...] = DEFAULT_ICONS,
         **config: Any,
     ):
@@ -79,7 +70,7 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
         self.min_brightness = max(1, min(min_brightness, 100))
         self.device = device
         self.icons = icons
-        super().__init__(func=self._poll, update_interval=update_interval, **config)
+        super().__init__(text=self._generate_text(), **config)  # type: ignore[no-untyped-call]
 
     def _run_brightctl(self, *args: str) -> Optional[str]:
         """Run brightnessctl with optional device argument."""
@@ -105,9 +96,9 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
         """Clamp brightness and apply immediately."""
         pct = max(self.min_brightness, min(100, percent))
         self._run_brightctl("set", f"{pct}%")
-        self.force_update()
+        self.update_display()
 
-    def _poll(self) -> str:
+    def _generate_text(self) -> str:
         """Generate the displayed widget text."""
         brightness = self._get_brightness()
         if brightness is None:
@@ -118,6 +109,10 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
             ("grey", "󰃜"),
         )
         return f'<span foreground="{color}">{icon}  {brightness}%</span>'
+
+    def update_display(self) -> None:
+        """Manually refresh widget display."""
+        self.update(self._generate_text())
 
     @expose_command()
     def increase(self) -> None:
@@ -136,4 +131,4 @@ class BrightctlWidget(GenPollText):  # type: ignore[misc]
     @expose_command()
     def refresh(self) -> None:
         """Manually refresh widget display."""
-        self.force_update()
+        self.update_display()

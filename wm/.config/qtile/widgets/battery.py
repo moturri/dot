@@ -19,162 +19,151 @@
 # SOFTWARE.
 
 
-import logging
+import subprocess
 import threading
 import time
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pyudev  # type: ignore[import-untyped]
 from libqtile.command.base import expose_command
+from libqtile.log_utils import logger
 from qtile_extras.widget import GenPollText
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-if not logger.handlers:
-    handler = logging.FileHandler("/tmp/batterywidget.log", encoding="utf-8")
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s [%(levelname)s] %(threadName)s: %(message)s")
-    )
-    logger.addHandler(handler)
-
-CHARGING_ICON = "󱐋"
-FULL_ICON = "󰂄"
-EMPTY_ICON = "󰁺"
-
 BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
-    (95, "󰂂", "limegreen"),
-    (80, "󰂁", "palegreen"),
-    (60, "󰂀", "khaki"),
-    (40, "󰁿", "tan"),
-    (20, "󰁻", "lightsalmon"),
-    (10, "󰁻", "orange"),
-    (5, "󰁻", "red"),
-    (0, EMPTY_ICON, "darkred"),
+    (90, "󰁹", "limegreen"),
+    (80, "󰁹", "palegreen"),
+    (60, "󰂀", "yellow"),
+    (40, "󰁿", "gold"),
+    (20, "󰁾", "orange"),
+    (0, "󰁻", "indianred"),
 )
 
-DEBOUNCE_SECONDS = 0.25
+CHARGING_ICON = "󱐋"
 
 
 class BatteryWidget(GenPollText):  # type: ignore[misc]
-    """Battery widget using pure pyudev monitoring (no polling)."""
 
     def __init__(
         self,
-        show_time: bool = False,
-        critical_threshold: int = 20,
-        battery_path: str = "/sys/class/power_supply/BAT0",
+        critical: int = 15,
+        debounce_s: float = 0.25,
+        battery_path: Optional[str] = None,
+        colors: Optional[Dict[str, str]] = None,
+        enable_alert: bool = True,
+        log_path: str = "/tmp/batterywidget.log",
         **config: Any,
-    ) -> None:
-        self.battery_path = Path(battery_path)
-        self.battery_name = self.battery_path.name
-        self.show_time = show_time
-        self.critical = max(5, min(critical_threshold, 25))
-
+    ):
+        self.critical = max(1, min(critical, 100))
+        self.debounce_ns = int(debounce_s * 1e9)
+        self.enable_alert = enable_alert
+        self.colors = colors or {}
+        self.log_path = Path(log_path)
         self._stop_event = threading.Event()
-        self._update_lock = threading.Lock()
-        self._last_update = 0.0
-        self._last_status: Optional[Tuple[int, str]] = None
-        self._monitor_thread = threading.Thread(
-            target=self._udev_loop, daemon=True, name="udev-monitor"
-        )
+        self._last_update = 0
+        self._last_alert_time = 0.0
+
+        self.battery_paths = self._detect_batteries(battery_path)
+        if not self.battery_paths:
+            text = '<span foreground="grey">󰁺 No Battery</span>'
+        else:
+            text = self._poll()
 
         super().__init__(func=self._poll, update_interval=9999.0, **config)
-        self._monitor_thread.start()
+        self.text = text
+        self._thread = threading.Thread(target=self._monitor_battery, daemon=True)
+        self._thread.start()
+        logger.info("BatteryWidget started with %d batteries", len(self.battery_paths))
 
-        logger.debug("BatteryWidget initialized: path=%s", self.battery_path)
+    @staticmethod
+    def _detect_batteries(manual: Optional[str]) -> List[Path]:
+        if manual:
+            path = Path(manual)
+            return [path] if path.exists() else []
+        return [p for p in Path("/sys/class/power_supply").glob("BAT*") if p.is_dir()]
+
+    def _monitor_battery(self) -> None:
+        """Listen for udev battery events and trigger redraws."""
+        try:
+            context = pyudev.Context()
+            monitor = pyudev.Monitor.from_netlink(context)
+            monitor.filter_by(subsystem="power_supply")
+        except Exception as e:
+            logger.error("Failed to start udev monitor: %s", e)
+            return
+
+        for device in iter(lambda: monitor.poll(timeout=1000), None):
+            if self._stop_event.is_set():
+                break
+            if not device or "BAT" not in device.sys_name:
+                continue
+            now = time.monotonic_ns()
+            if now - self._last_update < self.debounce_ns:
+                continue
+            self._last_update = now
+            try:
+                self.qtile.call_soon_threadsafe(self.force_update)
+            except Exception:
+                logger.exception("Failed to trigger redraw")
 
     def finalize(self) -> None:
         """Graceful shutdown."""
-        logger.debug("Finalizing BatteryWidget")
         self._stop_event.set()
-        if self._monitor_thread.is_alive():
-            self._monitor_thread.join(timeout=1.0)
+        if self._thread.is_alive():
+            self._thread.join(timeout=2.0)
         super().finalize()
+        logger.info("BatteryWidget stopped cleanly")
 
-    def _udev_loop(self) -> None:
-        """Listen for udev power events and trigger redraws."""
-        context = pyudev.Context()
-        monitor = pyudev.Monitor.from_netlink(context)
-        monitor.filter_by(subsystem="power_supply")
-        logger.debug("udev monitor started for power_supply events")
-
-        for device in iter(monitor.poll, None):
-            if self._stop_event.is_set():
-                break
-            if not isinstance(device, pyudev.Device):
-                continue
-            name = device.sys_name
-            if name not in {self.battery_name, "AC", "AC0", "ACAD", "ACPI0003:00"}:
-                continue
-            with self._update_lock:
-                now = time.monotonic()
-                if now - self._last_update < DEBOUNCE_SECONDS:
-                    continue
-                self._last_update = now
-            logger.debug("udev event received: %s (action=%s)", name, device.action)
-            self._schedule_update()
-
-    def _schedule_update(self) -> None:
-        """Thread-safe immediate UI update."""
+    def _read_int(self, path: Path, name: str) -> Optional[int]:
         try:
+            return int((path / name).read_text().strip())
+        except (FileNotFoundError, ValueError):
+            return None
 
-            def redraw() -> None:
-                new_text = self._poll()
-                if new_text != getattr(self, "text", None):
-                    self.text = new_text
-                    self.bar.draw()
-                    logger.debug("BatteryWidget redrawn")
+    def _get_battery_percentage(self) -> Optional[int]:
+        values = [self._read_int(p, "capacity") for p in self.battery_paths]
+        valid = [v for v in values if v is not None]
+        return sum(valid) // len(valid) if valid else None
 
-            self.qtile.call_soon_threadsafe(redraw)
-        except Exception:
-            logger.exception("Error scheduling update")
-
-    def _poll(self) -> str:
-        """Read and render battery data."""
-        try:
-            pct = max(0, min(100, self._read_int("capacity")))
-            state = self._read("status").lower()
-        except Exception:
-            logger.exception("Error reading battery sysfs data")
-            return f'<span foreground="grey">{EMPTY_ICON} N/A</span>'
-
-        icon, color = self._icon_for(pct, state)
-        text = f'<span foreground="{color}">{icon} {pct}%</span>'
-        return text
-
-    def _read(self, name: str) -> str:
-        """Read a sysfs attribute value."""
-        with open(self.battery_path / name, "r", encoding="utf-8") as f:
-            return f.read().strip()
-
-    def _read_int(self, name: str) -> int:
-        """Read an integer sysfs attribute."""
-        return int(self._read(name))
+    def _get_battery_state(self) -> str:
+        for p in self.battery_paths:
+            try:
+                state = (p / "status").read_text().strip().lower()
+                if state in ("charging", "discharging"):
+                    return state
+            except FileNotFoundError:
+                continue
+        return "unknown"
 
     def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
-        """Select icon and colour according to battery percentage and state."""
-        if state == "full":
-            return FULL_ICON, "lime"
-        if state in ("unknown", "not charging"):
-            return BATTERY_ICONS[0][1], "grey"
-
-        icon, color = EMPTY_ICON, "grey"
-        for threshold, i, c in BATTERY_ICONS:
+        for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
-                icon, color = i, c
-                break
+                if state == "charging":
+                    icon = f"{CHARGING_ICON} {icon}"
+                return icon, self.colors.get(color, color)
+        return "󰁻", self.colors.get("grey", "grey")
 
-        if state == "charging":
-            icon = f"{CHARGING_ICON} {icon}"
+    def _maybe_alert(self, pct: int) -> None:
+        if not self.enable_alert or pct > self.critical:
+            return
+        if time.monotonic() - self._last_alert_time < 300:
+            return
+        self._last_alert_time = time.monotonic()
+        subprocess.Popen(
+            ["notify-send", "Low Battery", f"{pct}% remaining"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
-        if pct <= self.critical:
-            icon, color = EMPTY_ICON, "red" if pct <= 5 else "orange"
-
-        return icon, color
+    def _poll(self) -> str:
+        pct = self._get_battery_percentage()
+        if pct is None:
+            return '<span foreground="grey">󰁺 N/A</span>'
+        state = self._get_battery_state()
+        icon, color = self._icon_for(pct, state)
+        self._maybe_alert(pct)
+        return f'<span foreground="{color}">{icon} {pct}%</span>'
 
     @expose_command()
     def refresh(self) -> None:
-        """Manual refresh trigger."""
-        logger.debug("Manual refresh triggered")
-        self._schedule_update()
+        self.force_update()
