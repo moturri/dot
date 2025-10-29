@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 def run(cmd: List[str]) -> Optional[str]:
-    """Run a shell command and return stdout, or None on error."""
+    """Run a shell command and return stripped stdout, or None on failure."""
     try:
         return subprocess.check_output(
             cmd, text=True, env={"LC_ALL": "C.UTF-8", **os.environ}
@@ -48,7 +48,7 @@ def run(cmd: List[str]) -> Optional[str]:
 
 
 def require(command: str) -> None:
-    """Raise if the required binary is not available."""
+    """Ensure the required binary is available."""
     if shutil.which(command) is None:
         raise RuntimeError(f"Missing dependency: {command}")
 
@@ -114,15 +114,17 @@ class BaseAudioWidget(base._TextBox):
         self._stop_event = threading.Event()
         self._thread = threading.Thread(target=self._subscribe_loop, daemon=True)
         self._thread.start()
-
         self._update_text()
 
     def finalize(self) -> None:
+        """Gracefully stop background thread when widget is unloaded."""
         self._stop_event.set()
+        if self._thread.is_alive():
+            self._thread.join(timeout=1.0)
         super().finalize()  # type: ignore[no-untyped-call]
 
     def _subscribe_loop(self) -> None:
-        """Listen for PipeWire events, reconnect automatically if needed."""
+        """Continuously listen for PipeWire events and reconnect on failure."""
         while not self._stop_event.is_set():
             try:
                 self._listen_events()
@@ -133,7 +135,7 @@ class BaseAudioWidget(base._TextBox):
                 time.sleep(3)
 
     def _listen_events(self) -> None:
-        """Block on wpctl subscribe and handle relevant events."""
+        """Block on wpctl subscribe and refresh on relevant events."""
         proc: Optional[subprocess.Popen[str]] = None
         try:
             proc = subprocess.Popen(
@@ -144,7 +146,6 @@ class BaseAudioWidget(base._TextBox):
                 if self._stop_event.is_set():
                     break
                 line = line.strip()
-                # Filter only relevant events
                 if not line or not any(
                     key in line for key in ("default-node", "volume", "mute")
                 ):
@@ -154,15 +155,20 @@ class BaseAudioWidget(base._TextBox):
         finally:
             if proc and proc.poll() is None:
                 proc.terminate()
-                proc.wait(timeout=1)
+                try:
+                    proc.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
 
     def _get_state(self) -> Tuple[int, bool]:
+        """Return current volume (0–150) and mute state."""
         if not self.device:
             return 0, True
         output = run(["wpctl", "get-volume", self.device])
         return self._parse_state(output or "")
 
     def _parse_state(self, output: str) -> Tuple[int, bool]:
+        """Parse wpctl output into (volume, muted)."""
         parts = output.strip().split()
         muted = "[MUTED]" in output
         vol_token: Optional[str] = None
@@ -178,20 +184,25 @@ class BaseAudioWidget(base._TextBox):
         return volume, muted
 
     def _icon(self, vol: int, muted: bool) -> Tuple[str, str]:
+        """Select icon and colour for current volume."""
         if muted:
             return self.MUTED
         for threshold, color, icon in self.LEVELS:
             if vol >= threshold:
-                return color, icon
+                # Distinguish overdrive volumes
+                adj_color = "gold" if vol > 100 else color
+                return adj_color, icon
         return self.LEVELS[-1][1], self.LEVELS[-1][2]
 
     def _update_text(self) -> None:
+        """Update widget text in the Qtile bar."""
         volume, muted = self._get_state()
         color, icon = self._icon(volume, muted)
         text = f"{icon}  {volume}%" if self.show_icon else f"{volume}%"
         self.update(f'<span foreground="{color}">{text}</span>')  # type: ignore[no-untyped-call]
 
     def _set_volume(self, vol: int) -> None:
+        """Clamp and apply new volume immediately."""
         if not self.device:
             return
         clamped = max(0, min(vol, self.max_volume))
