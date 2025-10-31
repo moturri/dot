@@ -1,3 +1,11 @@
+- **2025-10-31**: feat(widgets): Finalized and reviewed event-driven widgets
+
+  Completed the implementation and review of the new event-driven widgets for battery, brightness, and audio control.
+
+  - **Battery Widget (`battery.py`):** Confirmed the stability and correctness of the `pyudev`-based event monitoring. The widget is now fully event-driven, thread-safe, and includes features like debouncing and low-battery alerts.
+  - **Brightness Widget (`brightctl.py`):** The widget is now a `TextBox` subclass, and updates are triggered by user commands, eliminating polling.
+  - **Audio Widget (`wpctl.py`):** The `wpctl`-based audio widget is event-driven, using `wpctl subscribe` to monitor for changes. It supports both audio output and input devices and has a robust implementation with a reconnect loop.
+
 - **2025-10-29**: feat(widgets): refactor battery and brightctl widgets
 
   Refactors the battery and brightness control widgets for improved stability, performance, and adherence to event-driven principles.
