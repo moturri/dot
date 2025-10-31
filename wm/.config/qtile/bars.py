@@ -149,8 +149,6 @@ def systemWidgets(
         widgets += [
             decorated_widget(
                 BatteryWidget,
-                name="acpi",
-                mouse_callbacks={"Button2": lazy.widget["acpi"].refresh()},
             ),
         ]
 
