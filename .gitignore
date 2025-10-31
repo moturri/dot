@@ -181,3 +181,7 @@ shell/.config/nvim/lazy-lock.json
 
 # Ranger
 shell/.config/ranger/plugins/ranger_devicons/
+
+# Gemini-related files
+GEMINI.md
+PROJECT_LOG.md
