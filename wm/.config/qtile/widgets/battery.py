@@ -26,19 +26,21 @@ import subprocess
 import threading
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pyudev  # type: ignore[import-untyped]
 from libqtile.log_utils import logger
 from qtile_extras import widget
 
 BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
-    (90, "󰁹", "limegreen"),
-    (80, "󰁹", "palegreen"),
-    (60, "󰂀", "cyan"),
-    (40, "󰁿", "gold"),
-    (20, "󰁾", "tomato"),
-    (0, "󰁻", "indianred"),
+    (90, "󰂁", "limegreen"),
+    (80, "󰂀", "palegreen"),
+    (70, "󰁿", "peru"),
+    (60, "󰁾", "tan"),
+    (40, "󰁽", "moccasin"),
+    (30, "󰁻", "goldenrod"),
+    (20, "󰁺", "tomato"),
+    (0, "󰁹", "indianred"),
 )
 
 CHARGING_ICON = "󱐋"
@@ -126,7 +128,7 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
             # Alerting may update _last_alert_time; call outside lock if desired,
             # but we keep it inside to avoid races with multiple threads.
             self._maybe_alert(pct)
-            return f'<span foreground="{color}">{icon} {pct}%</span>'
+            return f'<span foreground="{color}">{icon}  {pct}%</span>'
 
     @staticmethod
     def _detect_batteries(manual: Optional[str]) -> List[Path]:
@@ -198,13 +200,14 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
         try:
             super().finalize()
         except Exception:
-            # Some versions of Qtile may raise on finalize; swallow to be robust
             pass
         logger.info("BatteryWidget stopped cleanly")
 
-    def _read_int(self, path: Path, name: str) -> Optional[int]:
+    def _read_value(
+        self, path: Path, name: str, converter: Callable[[str], Any]
+    ) -> Optional[Any]:
         try:
-            return int((path / name).read_text().strip())
+            return converter((path / name).read_text().strip())
         except (FileNotFoundError, ValueError):
             return None
 
@@ -217,18 +220,18 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
 
         for p in self.battery_paths:
             # Try energy_now / energy_full (or charge_ variants)
-            energy_now = self._read_float(p, "energy_now") or self._read_float(
-                p, "charge_now"
+            energy_now = self._read_value(p, "energy_now", float) or self._read_value(
+                p, "charge_now", float
             )
-            energy_full = self._read_float(p, "energy_full") or self._read_float(
-                p, "charge_full"
+            energy_full = self._read_value(p, "energy_full", float) or self._read_value(
+                p, "charge_full", float
             )
             if energy_now is not None and energy_full:
                 values.append((energy_now / energy_full) * 100.0)
                 continue
 
             # Fallback to capacity file
-            cap = self._read_int(p, "capacity")
+            cap = self._read_value(p, "capacity", int)
             if cap is not None:
                 values.append(float(cap))
 
@@ -238,12 +241,6 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
         # Weighted average by equal battery; if energy values were used they are already percentage
         avg = sum(valid) / len(valid)
         return int(round(avg))
-
-    def _read_float(self, path: Path, name: str) -> Optional[float]:
-        try:
-            return float((path / name).read_text().strip())
-        except (FileNotFoundError, ValueError):
-            return None
 
     def _get_battery_state(self) -> str:
         try:
@@ -263,6 +260,8 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
         return "unknown"
 
     def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
+        if pct == 100 and state == "charging":
+            return "󰂄", self.colors.get("limegreen", "limegreen")
         for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
                 if state == "charging":
