@@ -114,19 +114,21 @@ class BrightctlWidget(TextBox):
         """Manually refresh widget display."""
         self.update(self._generate_text())
 
+    def _change_brightness(self, delta: int) -> None:
+        """Change brightness by a given delta."""
+        b = self._get_brightness()
+        if b is not None:
+            self._set_brightness(b + delta)
+
     @expose_command()
     def increase(self) -> None:
         """Increase brightness by configured step."""
-        b = self._get_brightness()
-        if b is not None:
-            self._set_brightness(b + self.step)
+        self._change_brightness(self.step)
 
     @expose_command()
     def decrease(self) -> None:
         """Decrease brightness by configured step."""
-        b = self._get_brightness()
-        if b is not None:
-            self._set_brightness(b - self.step)
+        self._change_brightness(-self.step)
 
     @expose_command()
     def refresh(self) -> None:

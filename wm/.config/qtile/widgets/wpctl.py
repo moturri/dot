@@ -206,23 +206,22 @@ class BaseAudioWidget(base._TextBox):
         v, _ = self._get_state()
         self._set_volume(v - self.step)
 
+    def _set_mute(self, state: str) -> None:
+        if self.device:
+            run(["wpctl", "set-mute", self.device, state])
+            self._update_text()
+
     @expose_command()
     def toggle_mute(self) -> None:
-        if self.device:
-            run(["wpctl", "set-mute", self.device, "toggle"])
-            self._update_text()
+        self._set_mute("toggle")
 
     @expose_command()
     def mute(self) -> None:
-        if self.device:
-            run(["wpctl", "set-mute", self.device, "1"])
-            self._update_text()
+        self._set_mute("1")
 
     @expose_command()
     def unmute(self) -> None:
-        if self.device:
-            run(["wpctl", "set-mute", self.device, "0"])
-            self._update_text()
+        self._set_mute("0")
 
     @expose_command()
     def refresh(self) -> None:

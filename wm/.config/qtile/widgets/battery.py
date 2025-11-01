@@ -38,14 +38,13 @@ from libqtile.log_utils import logger
 from qtile_extras import widget
 
 BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
-    (90, "󰂁", "limegreen"),
-    (80, "󰂀", "palegreen"),
-    (70, "󰁿", "lightgreen"),
-    (60, "󰁾", "tan"),
-    (40, "󰁽", "moccasin"),
-    (30, "󰁻", "goldenrod"),
-    (20, "󰁺", "tomato"),
-    (0, "󰁹", "indianred"),
+    (90, "", "limegreen"),
+    (75, "", "palegreen"),
+    (60, "", "tan"),
+    (40, "", "moccasin"),
+    (30, "", "goldenrod"),
+    (20, "", "tomato"),
+    (0, "", "indianred"),
 )
 
 CHARGING_ICON: str = "󱐋"
@@ -99,7 +98,7 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
             logger.warning(
                 "BatteryWidget: No battery detected in /sys/class/power_supply"
             )
-            self.text = '<span foreground="grey">󰁹 N/A</span>'
+            self.text = '<span foreground="grey">  N/A</span>'
 
         # Allow manual refresh by clicking
         self.add_callbacks({"Button1": self._manual_refresh})
@@ -220,7 +219,7 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
         """Compose display text with icon, color, and percentage."""
         pct = self._get_battery_percentage()
         if pct is None:
-            return '<span foreground="grey">󰁹 N/A</span>'
+            return '<span foreground="grey">  N/A</span>'
 
         state = self._get_battery_state()
         new_state = _BatteryState(state, pct)
@@ -230,7 +229,7 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
 
         self._maybe_alert(pct)
         icon, color = self._icon_for(pct, state)
-        return f'<span foreground="{color}">{icon}  {pct}%</span>'
+        return f'<span foreground="{color}">{icon}   {pct}%</span>'
 
     def _get_battery_percentage(self) -> Optional[int]:
         """Read capacity or energy values and compute percentage."""
@@ -289,7 +288,7 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
     def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
         """Return appropriate icon and color for given battery level."""
         if pct >= 100 and state in ("charging", "full"):
-            return "󰂄", "limegreen"
+            return "", "limegreen"
 
         for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
