@@ -24,20 +24,18 @@ from __future__ import annotations
 import fcntl
 import os
 import select
-import subprocess
 import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
-
-_T = TypeVar("_T")
+from typing import Any, Dict, List, Optional, Tuple
 
 import pyudev  # type: ignore[import-untyped]
 from libqtile.log_utils import logger
 from qtile_extras import widget
 
 BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
+    (95, "", "orchid"),
     (90, "", "limegreen"),
     (75, "", "palegreen"),
     (60, "", "tan"),
@@ -52,26 +50,32 @@ CHARGING_ICON: str = "󱐋"
 
 @dataclass
 class _BatteryState:
-    """A snapshot of the battery's state."""
+    """A normalized snapshot of the battery's state used to avoid redundant redraws."""
 
     status: str
     capacity: Optional[int]
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _BatteryState):
+            return NotImplemented
+        return (self.status or "").lower() == (
+            other.status or ""
+        ).lower() and self.capacity == other.capacity
+
 
 class BatteryWidget(widget.TextBox):  # type: ignore[misc]
     """
-    A pure event-driven battery widget for Qtile.
-    It listens for udev power events (no polling) and updates text only when necessary.
+    Robust, notification-free, event-driven battery widget for Qtile.
+
+    • Uses udev power_supply events when available.
+    • Thread-safe and resource-clean on shutdown.
     """
 
     def __init__(
         self,
         critical: int = 25,
-        debounce_s: float = 0.2,
+        debounce_s: float = 1.0,
         battery_path: Optional[str] = None,
-        enable_alert: bool = True,
-        alert_interval_s: int = 300,
-        alert_command: Optional[List[str]] = None,
         colors: Optional[Dict[str, str]] = None,
         **config: Any,
     ) -> None:
@@ -79,77 +83,84 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
 
         self.critical: int = max(1, min(critical, 100))
         self.debounce_ns: int = int(max(debounce_s, 0.0) * 1e9)
-        self.enable_alert: bool = enable_alert
-        self.alert_interval_s: int = max(alert_interval_s, 60)
-        self.alert_command: List[str] = alert_command or ["notify-send"]
         self.colors: Dict[str, str] = colors or {}
 
-        self._stop_event: threading.Event = threading.Event()
+        self._stop_event = threading.Event()
         self._last_update_ns: int = 0
-        self._last_alert_time: float = 0.0
         self._monitor_thread: Optional[threading.Thread] = None
         self._shutdown_write_fd: Optional[int] = None
-
-        # Cache to avoid redundant redraws
-        self._cached_state: _BatteryState = _BatteryState("unknown", None)
+        self._shutdown_read_fd: Optional[int] = None
+        self._cached_state = _BatteryState("unknown", None)
+        self._energy_full_cache: Dict[Path, Optional[float]] = {}
 
         self.battery_paths: List[Path] = self._detect_batteries(battery_path)
         if not self.battery_paths:
             logger.warning(
                 "BatteryWidget: No battery detected in /sys/class/power_supply"
             )
-            self.text = '<span foreground="grey">  N/A</span>'
+            self.text = '<span foreground="grey"> N/A</span>'
 
-        # Allow manual refresh by clicking
         self.add_callbacks({"Button1": self._manual_refresh})
 
-    def _configure(self, qtile: Any, bar: Any) -> None:
-        """Start udev event thread and render initial state."""
-        super()._configure(qtile, bar)
+    # Lifecycle management
 
+    def _configure(self, qtile: Any, bar: Any) -> None:
+        super()._configure(qtile, bar)
         self._stop_event.clear()
-        self._monitor_thread = threading.Thread(target=self._event_loop, daemon=True)
+        self._monitor_thread = threading.Thread(target=self._run_monitor, daemon=True)
+
+        try:
+            self._update_state()
+            text = self._compose_text()
+            self.qtile.call_soon_threadsafe(self._update_text_safely, text)
+        except Exception as e:
+            logger.error(f"BatteryWidget: Initial update failed: {e}")
+
         self._monitor_thread.start()
 
-        # Initial draw
-        try:
-            text = self._compose_text()
-            self.qtile.call_soon_threadsafe(self._safe_update, text)
-        except Exception as e:
-            logger.error("BatteryWidget: Initial update failed: %s", e)
-
-        logger.info(
-            "BatteryWidget initialized with %d battery(ies)", len(self.battery_paths)
-        )
-
     def finalize(self) -> None:
-        """Cleanly stop background thread."""
-        self._stop_event.set()
+        """Ensure clean thread shutdown and file descriptor closure."""
         if self._shutdown_write_fd is not None:
             try:
                 os.write(self._shutdown_write_fd, b"x")
             except Exception:
                 pass
 
+        self._stop_event.set()
+
         if self._monitor_thread and self._monitor_thread.is_alive():
             self._monitor_thread.join(timeout=2.0)
 
+        for fd in (self._shutdown_read_fd, self._shutdown_write_fd):
+            if fd is not None:
+                try:
+                    os.fstat(fd)
+                    os.close(fd)
+                except Exception:
+                    pass
+
         super().finalize()
-        logger.info("BatteryWidget stopped cleanly")
+        logger.debug("BatteryWidget: Stopped cleanly")
+
+    # Event / polling loop
+
+    def _run_monitor(self) -> None:
+        """Runs the udev event monitor loop."""
+        try:
+            self._event_loop()
+        except Exception as e:
+            logger.error(f"BatteryWidget: udev monitor failed: {e}")
 
     def _event_loop(self) -> None:
-        """Listen for power-related udev events and trigger updates."""
-        try:
-            context = pyudev.Context()
-            monitor = pyudev.Monitor.from_netlink(context)
-            monitor.filter_by(subsystem="power_supply")
-            monitor.start()
-            monitor_fd = monitor.fileno()
-        except Exception as e:
-            logger.error("BatteryWidget: Failed to start udev monitor: %s", e)
-            return
+        """Main udev event monitor loop."""
+        context = pyudev.Context()
+        monitor = pyudev.Monitor.from_netlink(context)
+        monitor.filter_by(subsystem="power_supply")
+        monitor.start()
+        monitor_fd = monitor.fileno()
 
         shutdown_r, shutdown_w = self._create_shutdown_pipe()
+        self._shutdown_read_fd = shutdown_r
         self._shutdown_write_fd = shutdown_w
 
         try:
@@ -161,12 +172,11 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
                 if monitor_fd not in ready:
                     continue
 
-                device = monitor.poll(timeout=0)
+                try:
+                    device = monitor.poll(timeout=0)
+                except Exception:
+                    device = None
                 if device is None:
-                    continue
-
-                power_type: str = device.properties.get("POWER_SUPPLY_TYPE", "")
-                if power_type not in ("Battery", "Mains", "USB"):
                     continue
 
                 now_ns = time.monotonic_ns()
@@ -174,162 +184,168 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
                     continue
                 self._last_update_ns = now_ns
 
-                text = self._compose_text()
-                if text != self.text:
-                    self.qtile.call_soon_threadsafe(self._safe_update, text)
-
-        except Exception as e:
-            logger.error("BatteryWidget: Event loop error: %s", e)
+                self._safe_redraw()
 
         finally:
-            try:
-                os.close(shutdown_r)
-                os.close(shutdown_w)
-            except Exception:
-                pass
-            logger.info("BatteryWidget: Event loop terminated")
+            for fd in (shutdown_r, shutdown_w):
+                try:
+                    os.close(fd)
+                except Exception:
+                    pass
+            logger.debug("BatteryWidget: udev loop terminated")
+
+
+
+    # Core helpers
+
+    def _safe_redraw(self) -> None:
+        """Recompute text and refresh display safely."""
+        try:
+            if self._update_state():
+                text = self._compose_text()
+                self.qtile.call_soon_threadsafe(self._update_text_safely, text)
+        except Exception as e:
+            logger.error(f"BatteryWidget: redraw failed: {e}")
 
     @staticmethod
     def _create_shutdown_pipe() -> Tuple[int, int]:
-        """Create a pipe for interrupting select() on shutdown."""
         r, w = os.pipe()
         flags = fcntl.fcntl(w, fcntl.F_GETFL)
         fcntl.fcntl(w, fcntl.F_SETFL, flags | os.O_NONBLOCK)
         return r, w
 
-    def _manual_refresh(self) -> None:
-        """Force immediate text update when widget is clicked."""
-        try:
-            text = self._compose_text()
-            self._safe_update(text)
-            logger.debug("BatteryWidget: Manual refresh triggered")
-        except Exception as e:
-            logger.error("BatteryWidget: Manual refresh failed: %s", e)
-
     @staticmethod
     def _detect_batteries(manual: Optional[str]) -> List[Path]:
-        """Detect battery directories under /sys/class/power_supply."""
         if manual:
             path = Path(manual)
             return [path] if path.exists() else []
         base = Path("/sys/class/power_supply")
         return [p for p in base.glob("BAT*") if p.is_dir()]
 
-    def _compose_text(self) -> str:
-        """Compose display text with icon, color, and percentage."""
-        pct = self._get_battery_percentage()
-        if pct is None:
-            return '<span foreground="grey">  N/A</span>'
+    def _manual_refresh(self) -> None:
+        self._safe_redraw()
 
-        state = self._get_battery_state()
-        new_state = _BatteryState(state, pct)
-        if new_state == self._cached_state and self.text:
-            return self.text  # No change, no need to re-render
+    # Data collection and formatting
+
+    def _update_state(self) -> bool:
+        """
+        Fetch battery data, update the cached state, and return True if changed.
+        """
+        battery_data = {p: self._read_battery_info(p) for p in self.battery_paths}
+        pct = self._compute_percentage(battery_data)
+        status = self._derive_state(battery_data)
+
+        new_state = _BatteryState(status, pct)
+        if new_state == self._cached_state:
+            return False
+
         self._cached_state = new_state
+        return True
 
-        self._maybe_alert(pct)
-        icon, color = self._icon_for(pct, state)
-        return f'<span foreground="{color}">{icon}   {pct}%</span>'
+    def _compose_text(self) -> str:
+        """Compose the display text based on the cached battery state."""
+        state = self._cached_state
+        if state.capacity is None:
+            return '<span foreground="grey"> N/A</span>'
 
-    def _get_battery_percentage(self) -> Optional[int]:
-        """Read capacity or energy values and compute percentage."""
+        pct = state.capacity
+        status = state.status
+
+        icon, color = self._icon_for(pct, status)
+        return f'<span foreground="{color}">{icon}\u00a0  {pct}%</span>'
+
+    def _read_battery_info(self, path: Path) -> Dict[str, Optional[str]]:
+        """Read key sysfs fields for one battery safely."""
+        keys = [
+            "capacity",
+            "status",
+            "energy_now",
+            "charge_now",
+            "energy_full",
+            "charge_full",
+        ]
+        out: Dict[str, Optional[str]] = {}
+        for k in keys:
+            try:
+                out[k] = (path / k).read_text(encoding="utf-8", errors="ignore").strip()
+            except Exception:
+                out[k] = None
+        return out
+
+    def _compute_percentage(
+        self, battery_data: Dict[Path, Dict[str, Optional[str]]]
+    ) -> Optional[int]:
+        """Compute averaged capacity across batteries."""
         values: List[float] = []
-        for path in self.battery_paths:
-            cap = self._read_value(path, "capacity", int)
+        for path, data in battery_data.items():
+            cap = data.get("capacity")
             if cap is not None:
-                values.append(float(cap))
-                continue
+                try:
+                    values.append(float(int(cap)))
+                    continue
+                except Exception:
+                    pass
 
-            now = self._read_value(path, "energy_now", float) or self._read_value(
-                path, "charge_now", float
-            )
-            full = self._read_value(path, "energy_full", float) or self._read_value(
-                path, "charge_full", float
-            )
-            if now is not None and full and full > 0:
-                values.append((now / full) * 100.0)
+            now_s = data.get("energy_now") or data.get("charge_now")
+            full_s = data.get("energy_full") or data.get("charge_full")
+            try:
+                now = float(now_s) if now_s is not None else None
+                if path not in self._energy_full_cache:
+                    self._energy_full_cache[path] = float(full_s) if full_s else None
+                full = self._energy_full_cache.get(path)
+                if now is not None and full and full > 0:
+                    values.append((now / full) * 100.0)
+            except Exception:
+                continue
 
         if not values:
             return None
         avg = sum(values) / len(values)
         return int(round(max(0.0, min(100.0, avg))))
 
-    def _get_battery_state(self) -> str:
-        """Read battery or AC status."""
-        # Prioritize the battery's own status report, which can be more accurate
-        # (e.g., distinguishes between 'Charging' and 'Full').
-        for p in self.battery_paths:
-            state = self._read_value(p, "status", str)
+    def _derive_state(self, battery_data: Dict[Path, Dict[str, Optional[str]]]) -> str:
+        """Return overall charging/discharging/full/unknown."""
+        for data in battery_data.values():
+            state = data.get("status")
             if state:
                 lower = state.lower()
                 if lower in ("charging", "discharging", "full"):
                     return lower
-
-        # Fallback to checking for an online AC adapter
         for power_supply in Path("/sys/class/power_supply").glob("*"):
             try:
                 if (power_supply / "type").read_text().strip() == "Mains":
                     if (power_supply / "online").read_text().strip() == "1":
-                        return "charging"  # Assume charging if AC is on
-            except (FileNotFoundError, ValueError):
+                        return "charging"
+            except Exception:
                 continue
-
         return "unknown"
 
-    def _read_value(
-        self, path: Path, name: str, converter: Callable[[str], _T]
-    ) -> Optional[_T]:
-        """Safely read a value from a sysfs file."""
-        try:
-            return converter((path / name).read_text().strip())
-        except (FileNotFoundError, ValueError):
-            return None
-
     def _icon_for(self, pct: int, state: str) -> Tuple[str, str]:
-        """Return appropriate icon and color for given battery level."""
-        if pct >= 100 and state in ("charging", "full"):
-            return "", "limegreen"
-
+        """Choose icon and color."""
         for threshold, icon, color in BATTERY_ICONS:
             if pct >= threshold:
-                if state == "charging":
+                if state == "charging" and pct < 100:
                     icon = f"{CHARGING_ICON} {icon}"
                 return icon, self.colors.get(color, color)
-        return "󰁻", "grey"
+        return "", "grey"
 
-    def _maybe_alert(self, pct: int) -> None:
-        """Trigger low-battery alert if below threshold."""
-        if not self.enable_alert or pct > self.critical:
-            return
-        now = time.monotonic()
-        if now - self._last_alert_time < self.alert_interval_s:
-            return
-        self._last_alert_time = now
-
-        env_ok = (
-            bool(os.environ.get("DBUS_SESSION_BUS_ADDRESS"))
-            or self.alert_command[0] != "notify-send"
-        )
-        if not env_ok:
-            logger.debug("BatteryWidget: No DBUS session for notifications")
-            return
-
+    def _update_text_safely(self, text: str) -> None:
         try:
-            subprocess.Popen(
-                self.alert_command + ["Low Battery", f"{pct}% remaining"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                start_new_session=True,
-            )
-            logger.info("BatteryWidget: Low battery alert sent (%d%%)", pct)
-        except Exception as e:
-            logger.error("BatteryWidget: Failed to send alert: %s", e)
-
-    def _safe_update(self, text: str) -> None:
-        """Safely update the widget text and redraw."""
-        try:
-            self.text = text
             if getattr(self, "bar", None):
-                self.bar.draw()
+                if self.text != text:
+                    self.text = text
+                    self.bar.draw()
+            else:
+                self.text = text
         except Exception as e:
             logger.error("BatteryWidget: Update failed: %s", e)
+
+    # Public API
+
+    def get_status(self) -> Tuple[Optional[int], str]:
+        """Return (percentage, state) for external use."""
+        try:
+            data = {p: self._read_battery_info(p) for p in self.battery_paths}
+            return self._compute_percentage(data), self._derive_state(data)
+        except Exception:
+            return None, "unknown"
