@@ -36,23 +36,38 @@ qtile: Qtile = cast(Qtile, _qtile)
 logger = logging.getLogger(__name__)
 
 
-def run(cmd: List[str]) -> str | None:
+def require(command: str) -> None:
+    """Ensure a required binary is available in the system's PATH."""
+    if shutil.which(command) is None:
+        raise RuntimeError(f"Missing required dependency: '{command}'")
+
+
+def run(cmd: List[str], timeout: float = 1.0) -> str | None:
+    """
+    Run an external command safely, returning stripped stdout.
+
+    Logs errors and returns None on failure.
+    """
     try:
         return subprocess.check_output(
-            cmd, text=True, env={"LC_ALL": "C.UTF-8", **os.environ}
+            cmd,
+            text=True,
+            timeout=timeout,
+            env={"LC_ALL": "C.UTF-8", **os.environ},
         ).strip()
-    except (subprocess.SubprocessError, FileNotFoundError) as e:
+    except FileNotFoundError:
+        logger.error("Command not found: %s", cmd[0])
+        return None
+    except subprocess.TimeoutExpired:
+        logger.warning("Command timed out: %s", " ".join(cmd))
+        return None
+    except subprocess.SubprocessError as e:
         logger.warning("Command failed: %s -> %s", " ".join(cmd), e)
         return None
 
 
-def require(command: str) -> None:
-    if shutil.which(command) is None:
-        raise RuntimeError(f"Missing dependency: {command}")
-
-
 def resolve_default_device(is_input: bool = False) -> str | None:
-    output = run(["wpctl", "status"])
+    output = run(["wpctl", "status"], timeout=2.0)
     if not output:
         return None
     lines = output.splitlines()

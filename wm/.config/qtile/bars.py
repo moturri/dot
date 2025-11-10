@@ -24,11 +24,11 @@ theme = {
 def decorated_widget(widget_class: Any, **config: Any) -> Any:
     return widget_class(
         **{
-            "background": theme["bbg"],
+            "background": theme["transparent"],
             "foreground": theme["bfg"],
             "decorations": [
                 RectDecoration(
-                    use_widget_background=True,
+                    colour=theme["bbg"],
                     radius=12,
                     filled=True,
                     group=True,

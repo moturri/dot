@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
 import os
 import shutil
 import subprocess
@@ -25,6 +26,9 @@ from typing import Any, List, Optional, Tuple
 
 from libqtile.command.base import expose_command
 from libqtile.widget.textbox import TextBox
+
+logger = logging.getLogger(__name__)
+
 
 # Thresholds: (percentage, color, icon)
 DEFAULT_ICONS: Tuple[Tuple[int, str, str], ...] = (
@@ -36,8 +40,18 @@ DEFAULT_ICONS: Tuple[Tuple[int, str, str], ...] = (
 )
 
 
-def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
-    """Run a command safely and return stripped stdout, or None on failure."""
+def require(command: str) -> None:
+    """Ensure a required binary is available in the system's PATH."""
+    if shutil.which(command) is None:
+        raise RuntimeError(f"Missing required dependency: '{command}'")
+
+
+def run(cmd: List[str], timeout: float = 1.0) -> Optional[str]:
+    """
+    Run an external command safely, returning stripped stdout.
+
+    Logs errors and returns None on failure.
+    """
     try:
         return subprocess.check_output(
             cmd,
@@ -45,14 +59,15 @@ def run(cmd: List[str], timeout: float = 0.5) -> Optional[str]:
             timeout=timeout,
             env={"LC_ALL": "C.UTF-8", **os.environ},
         ).strip()
-    except (subprocess.SubprocessError, FileNotFoundError, subprocess.TimeoutExpired):
+    except FileNotFoundError:
+        logger.error("Command not found: %s", cmd[0])
         return None
-
-
-def require(command: str) -> None:
-    """Ensure the required binary is available."""
-    if shutil.which(command) is None:
-        raise RuntimeError(f"Missing dependency: {command}")
+    except subprocess.TimeoutExpired:
+        logger.warning("Command timed out: %s", " ".join(cmd))
+        return None
+    except subprocess.SubprocessError as e:
+        logger.warning("Command failed: %s -> %s", " ".join(cmd), e)
+        return None
 
 
 class BrightctlWidget(TextBox):

@@ -36,7 +36,7 @@ from qtile_extras import widget
 
 BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
     (95, "", "orchid"),
-    (90, "", "limegreen"),
+    (85, "", "limegreen"),
     (75, "", "palegreen"),
     (60, "", "tan"),
     (40, "", "moccasin"),
@@ -193,8 +193,6 @@ class BatteryWidget(widget.TextBox):  # type: ignore[misc]
                 except Exception:
                     pass
             logger.debug("BatteryWidget: udev loop terminated")
-
-
 
     # Core helpers
 
