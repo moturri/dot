@@ -8,16 +8,17 @@ group_definitions = [
         "󰣇",
         [
             "octopi",
-            "alacritty",
-            "code-oss",
+            "plasma-discover",
         ],
     ),
     (
         "2",
         "󰚩",
         [
-            "lm studio",
-            "upscayl",
+            "org.wezfurlong.wezterm",
+            "alacritty",
+            "code-oss",
+            "discord",
         ],
     ),
     (
@@ -28,7 +29,6 @@ group_definitions = [
             "zen",
             "qbittorrent",
             "brave-browser",
-            "qutebrowser",
         ],
     ),
     (
@@ -46,7 +46,6 @@ group_definitions = [
         [
             "VirtualBox Manager",
             "virt-manager",
-            "discord",
             "steam",
         ],
     ),
@@ -67,6 +66,8 @@ group_definitions = [
         "󰔂",
         [
             "stremio",
+            "stremio-enhanced",
+            "upscayl",
             "mpv",
             "mpvk",
         ],
@@ -92,9 +93,8 @@ group_definitions = [
         "󰝚",
         [
             "cider",
-            "easyeffects",
+            "jamesdsp",
             "galaxybudsclient",
-            "spotify",
             "strawberry",
             "audacity",
         ],

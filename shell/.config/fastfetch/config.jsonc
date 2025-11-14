@@ -42,7 +42,7 @@
 		{
 			"type": "packages",
 			"key": "  Packages",
-			"format": "{all}"
+			"format": "{all} ({pacman}, {flatpak-all})"
 		},
 		{
 			"type": "shell",

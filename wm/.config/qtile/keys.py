@@ -3,6 +3,7 @@ from typing import List, Union
 
 from libqtile.config import Click, Drag, Key, KeyChord
 from libqtile.lazy import lazy
+from modules.power import show_power_menu
 
 mod = "mod4"
 terminal = "kitty"
@@ -56,7 +57,7 @@ keys: List[Union[Key, KeyChord]] = [
     Key([mod], "F4", lazy.window.toggle_floating()),
     Key([mod, "control"], "r", lazy.reload_config()),
     Key([mod, "control"], "q", lazy.shutdown()),
-    Key([], "XF86PowerOff", lazy.spawn(rofi_script("rofi-power.sh"))),
+    Key([], "XF86PowerOff", lazy.function(show_power_menu)),
     Key([mod], "period", lazy.next_screen()),
     Key([mod], "comma", lazy.prev_screen()),
     Key([mod], "F3", lazy.hide_show_bar("top")),
@@ -84,10 +85,10 @@ keys += [
             Key([], "l", lazy.spawn("soffice")),
             Key([], "k", lazy.spawn("kitty")),
             Key([], "a", lazy.spawn("alacritty")),
-            Key([], "p", lazy.spawn("pcmanfm-qt")),
+            Key([], "p", lazy.spawn("thunar")),
             Key([], "z", lazy.spawn("zen-browser")),
             Key([], "c", lazy.spawn("cider")),
-            Key([], "s", lazy.spawn("stremio")),
+            Key([], "s", lazy.spawn("stremio-enhanced")),
             Key([], "b", lazy.spawn("brave")),
         ],
     )

@@ -35,9 +35,9 @@ from libqtile.log_utils import logger
 from qtile_extras import widget
 
 BATTERY_ICONS: Tuple[Tuple[int, str, str], ...] = (
-    (95, "", "orchid"),
-    (85, "", "limegreen"),
-    (75, "", "palegreen"),
+    (90, "", "orchid"),
+    (80, "", "limegreen"),
+    (70, "", "palegreen"),
     (60, "", "tan"),
     (40, "", "moccasin"),
     (30, "", "goldenrod"),

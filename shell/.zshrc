@@ -144,13 +144,11 @@ export XDG_CACHE_HOME="$HOME/.cache"
 
 alias ls="eza --icons=always"
 alias vi="nvim"
-alias cd="z"
 alias http="xh"
 alias lta="eza -lTag --icons"
 alias lta2="eza -lTag --level=2 --icons"
 alias lta3="eza -lTag --level=3 --icons"
 alias cat="bat --paging=never --style=full"
-alias sudo="sudo-rs"
 
 
 cht() {
@@ -206,3 +204,11 @@ yayfz-widget() {
 }
 zle -N yayfz-widget
 bindkey '^Y' yayfz-widget
+
+
+export LIBVA_DRIVER_NAME=iHD
+export LIBVA_DRIVERS_PATH=/usr/lib/dri
+export XDG_CURRENT_DESKTOP="KDE"
+
+export QT_STYLE_OVERRIDE="qt5ct-style"
+export GTK_THEME="FlatDark"

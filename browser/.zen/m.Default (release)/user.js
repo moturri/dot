@@ -61,3 +61,4 @@ user_pref("browser.theme.content-theme", 0);
 user_pref("zen.sidebar.experimental.float", false);
 user_pref("zen.sidebar.experimental.auto-hide", false);
 user_pref("zen.experimental.workspaces.enabled", true);
+user_pref("zen.view.show-clear-tabs-button", false);
