@@ -10,7 +10,7 @@ function run() {
 
 run greenclip daemon
 run dunst
-run /usr/lib/polkit-kde-authentication-agent-1
+run /usr/bin/lxqt-policykit-agent
 run nm-applet
 run redshift
 # run picom -b

@@ -1,28 +1,20 @@
 {
 	"logo": {
+		"type": "command-raw",
+		"source": "fortune | fmt -w 50 | head -n 4 | sed 's/^/ /'",
 		"padding": {
-			"top": 1,
+			"top": 4,
 			"left": 1,
 			"right": 1
 		},
 		"color": {
-			"1": "magenta",
-			"2": "cyan",
-			"3": "white"
+			"1": "magenta"
 		}
 	},
 	"display": {
-		"separator": "  "
+		"separator": " "
 	},
 	"modules": [
-		{
-			"type": "custom",
-			"content": ""
-		},
-		{
-			"type": "custom",
-			"content": ""
-		},
 		{
 			"type": "custom",
 			"content": ""

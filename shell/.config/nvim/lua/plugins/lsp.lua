@@ -62,9 +62,9 @@ return {
 					"codespell",
 
 					-- Debuggers
-					"debugpy",
-					"codelldb",
-					"delve",
+					-- "debugpy",
+					-- "codelldb",
+					-- "delve",
 				},
 				auto_update = true,
 				run_on_start = true,

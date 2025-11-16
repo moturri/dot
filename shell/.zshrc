@@ -208,7 +208,6 @@ bindkey '^Y' yayfz-widget
 
 export LIBVA_DRIVER_NAME=iHD
 export LIBVA_DRIVERS_PATH=/usr/lib/dri
-export XDG_CURRENT_DESKTOP="KDE"
 
-export QT_STYLE_OVERRIDE="qt5ct-style"
 export GTK_THEME="FlatDark"
+export VDPAU_DRIVER=va_gl

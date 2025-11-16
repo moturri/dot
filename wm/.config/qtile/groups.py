@@ -9,6 +9,7 @@ group_definitions = [
         [
             "octopi",
             "plasma-discover",
+            "com.github.tchx84.Flatseal",
         ],
     ),
     (
@@ -47,6 +48,7 @@ group_definitions = [
             "VirtualBox Manager",
             "virt-manager",
             "steam",
+            "retroarch",
         ],
     ),
     (
@@ -58,6 +60,8 @@ group_definitions = [
             "calibre-gui",
             "org.pwmt.zathura",
             "obsidian",
+            "Zotero",
+            "Pdfarranger",
             "xournalpp",
         ],
     ),
@@ -95,6 +99,7 @@ group_definitions = [
             "cider",
             "jamesdsp",
             "galaxybudsclient",
+            "GalaxyBudsClient",
             "strawberry",
             "audacity",
         ],
@@ -211,7 +216,7 @@ scratch_keys = {
     "localsend": "l",
     "obsidian": "o",
     "pavucontrol-qt": "v",
-    "pcmanfm-qt": "p",
+    "pcmanfm-qt": "f",
 }
 
 keys.extend(

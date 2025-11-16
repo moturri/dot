@@ -1,10 +1,11 @@
 import subprocess
 
+from libqtile.core.manager import Qtile
 from libqtile.lazy import lazy
 from qtile_extras.popup import PopupRelativeLayout, PopupText
 
 
-def show_power_menu(qtile):
+def show_power_menu(qtile: Qtile) -> None:
     """
     Minimal Qtile power menu with Nerd Fonts.
     Tailored width, centered entries, OLED-dark background.
@@ -23,12 +24,12 @@ def show_power_menu(qtile):
         lock_action = lazy.spawn(lock_cmd)
 
     entries = [
-        ("   Lock", lock_action),
-        ("󰒲   Suspend", lazy.spawn("systemctl suspend")),
-        ("   Logout", lazy.shutdown()),
-        ("󱑞   Reboot", lazy.spawn("systemctl reboot")),
-        ("󰐥   Shutdown", lazy.spawn("systemctl poweroff")),
-        ("󰜺   Cancel", None),
+        ("Lock", lock_action),
+        ("Suspend", lazy.spawn("systemctl suspend")),
+        ("Logout", lazy.shutdown()),
+        ("Reboot", lazy.spawn("systemctl reboot")),
+        ("Shutdown", lazy.spawn("systemctl poweroff")),
+        ("Cancel", None),
     ]
 
     controls = []
@@ -38,7 +39,7 @@ def show_power_menu(qtile):
 
     for label, action in entries:
         controls.append(
-            PopupText(
+            PopupText(  # type: ignore
                 text=label,
                 pos_x=(1 - entry_width) / 2,
                 pos_y=y,
@@ -54,8 +55,8 @@ def show_power_menu(qtile):
 
     layout = PopupRelativeLayout(
         qtile,
-        width=200,
-        height=320,
+        width=220,
+        height=240,
         controls=controls,
         background="000000",
         border_width=0,
@@ -63,4 +64,8 @@ def show_power_menu(qtile):
         initial_focus=None,
     )
 
-    layout.show(centered=True)
+    layout.show(
+        centered=False,
+        relative_to=2,
+        relative_to_bar=True,
+    )
