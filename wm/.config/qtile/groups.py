@@ -98,6 +98,7 @@ group_definitions = [
         [
             "cider",
             "jamesdsp",
+            "helvum",
             "galaxybudsclient",
             "GalaxyBudsClient",
             "strawberry",
@@ -186,8 +187,8 @@ scratchpad = ScratchPad(
             on_focus_lost_hide=True,
         ),
         DropDown(
-            "pavucontrol-qt",
-            "pavucontrol-qt",
+            "wiremix",
+            "alacritty -e wiremix",
             width=0.5,
             height=0.5,
             x=0.25,
@@ -215,7 +216,7 @@ scratch_keys = {
     "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
-    "pavucontrol-qt": "v",
+    "wiremix": "v",
     "pcmanfm-qt": "f",
 }
 

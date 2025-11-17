@@ -25,7 +25,7 @@ import shutil
 import subprocess
 import threading
 import time
-from typing import Any, List, Tuple, cast
+from typing import Any, Final, cast
 
 from libqtile import qtile as _qtile
 from libqtile.command.base import expose_command
@@ -36,180 +36,233 @@ qtile: Qtile = cast(Qtile, _qtile)
 logger = logging.getLogger(__name__)
 
 
-def require(command: str) -> None:
-    """Ensure a required binary is available in the system's PATH."""
-    if shutil.which(command) is None:
-        raise RuntimeError(f"Missing required dependency: '{command}'")
+class AudioDeviceError(Exception):
+    pass
 
 
-def run(cmd: List[str], timeout: float = 1.0) -> str | None:
-    """
-    Run an external command safely, returning stripped stdout.
+def require(cmd: str) -> None:
+    """Ensure a binary exists in $PATH."""
+    if shutil.which(cmd) is None:
+        raise RuntimeError(f"Missing required dependency: {cmd}")
 
-    Logs errors and returns None on failure.
-    """
+
+def run(cmd: list[str], *, timeout: float = 1.0) -> str:
+    """Run command and return stripped stdout."""
+    return subprocess.check_output(
+        cmd,
+        text=True,
+        timeout=timeout,
+        env={**os.environ, "LC_ALL": "C.UTF-8"},
+    ).strip()
+
+
+def resolve_default_device(is_input: bool) -> str | None:
+    """Return default sink/source ID via wpctl."""
     try:
-        return subprocess.check_output(
-            cmd,
-            text=True,
-            timeout=timeout,
-            env={"LC_ALL": "C.UTF-8", **os.environ},
-        ).strip()
-    except FileNotFoundError:
-        logger.error("Command not found: %s", cmd[0])
-        return None
-    except subprocess.TimeoutExpired:
-        logger.warning("Command timed out: %s", " ".join(cmd))
-        return None
-    except subprocess.SubprocessError as e:
-        logger.warning("Command failed: %s -> %s", " ".join(cmd), e)
+        output = run(["wpctl", "status"], timeout=2)
+    except subprocess.SubprocessError:
+        logger.exception("wpctl status failed")
         return None
 
-
-def resolve_default_device(is_input: bool = False) -> str | None:
-    output = run(["wpctl", "status"], timeout=2.0)
-    if not output:
-        return None
     lines = output.splitlines()
-    category = "Sources:" if is_input else "Sinks:"
-    found = False
+    target = "Sources:" if is_input else "Sinks:"
+    parsing = False
+
     for line in lines:
-        if category in line:
-            found = True
-        elif found and line.strip().startswith("*"):
-            parts = line.strip().split()
-            if len(parts) >= 2:
-                return parts[1]
+        if target in line:
+            parsing = True
+            continue
+        if parsing and line.startswith("    *"):
+            parts = line.split()
+            return parts[1] if len(parts) >= 2 else None
+
     return None
 
 
+# ------------------------------------------------------------
+# Base widget
+# ------------------------------------------------------------
 class BaseAudioWidget(base._TextBox):
+    """Lightweight PipeWire widget via wpctl subscribe."""
+
     orientations = base.ORIENTATION_HORIZONTAL
+
+    DEFAULT_OUTPUT_DEVICE: Final[str] = "@DEFAULT_AUDIO_SINK@"
+    DEFAULT_INPUT_DEVICE: Final[str] = "@DEFAULT_AUDIO_SOURCE@"
+
+    RECONNECT_DELAY: Final[float] = 3.0
+    MIN_STEP: Final[int] = 1
+    MAX_STEP: Final[int] = 25
+    MIN_MAX_VOLUME: Final[int] = 50
+    MAX_MAX_VOLUME: Final[int] = 150
+
+    SUBSCRIBE_KEYWORDS: Final[tuple[str, ...]] = ("default-node", "volume", "mute")
+
+    # ------------------------------------------------------------
 
     def __init__(
         self,
+        *,
         is_input: bool = False,
         device: str | None = None,
         step: int = 5,
         max_volume: int = 100,
         show_icon: bool = True,
-        levels: Tuple[Tuple[int, str, str], ...] | None = None,
-        muted: Tuple[str, str] | None = None,
+        levels: tuple[tuple[int, str, str], ...] | None = None,
+        muted: tuple[str, str] | None = None,
         **config: Any,
     ) -> None:
+
         require("wpctl")
 
         self.is_input = is_input
-        self.device = (
-            device
-            or resolve_default_device(is_input)
-            or ("@DEFAULT_AUDIO_SOURCE@" if is_input else "@DEFAULT_AUDIO_SINK@")
-        )
-        if self.device is None:
-            raise RuntimeError("Could not resolve a valid audio device.")
-
-        self.step = max(1, min(step, 25))
-        self.max_volume = max(50, min(max_volume, 150))
+        self.step = max(self.MIN_STEP, min(step, self.MAX_STEP))
+        self.max_volume = max(self.MIN_MAX_VOLUME, min(max_volume, self.MAX_MAX_VOLUME))
         self.show_icon = show_icon
-        self.LEVELS = levels or (
+
+        # Use provided theme or default
+        self.levels = levels or (
             (75, "salmon", "󰕾"),
             (50, "mediumpurple", "󰖀"),
             (25, "lightblue", "󰕿"),
             (0, "palegreen", "󰕿"),
         )
-        self.MUTED = muted or ("grey", "󰝟")
+        self.muted_style = muted or ("grey", "󰝟")
+
+        # Resolve device
+        self.device = (
+            device
+            or resolve_default_device(is_input)
+            or (self.DEFAULT_INPUT_DEVICE if is_input else self.DEFAULT_OUTPUT_DEVICE)
+        )
 
         super().__init__("", **config)  # type: ignore[no-untyped-call]
 
+        # Thread state
         self._stop_event = threading.Event()
+        self._last_update: float = 0.0
+
         self._thread = threading.Thread(target=self._subscribe_loop, daemon=True)
-        self._last_update = 0.0
         self._thread.start()
+
         self._update_text()
 
+    # ------------------------------------------------------------
+
     def finalize(self) -> None:
+        """Cleanup background thread."""
         self._stop_event.set()
         if self._thread.is_alive():
-            self._thread.join(timeout=1.0)
+            self._thread.join(timeout=1)
         super().finalize()  # type: ignore[no-untyped-call]
 
+    # ------------------------------------------------------------
+    # Subscription
+    # ------------------------------------------------------------
     def _subscribe_loop(self) -> None:
+        """Main event subscriber loop."""
         while not self._stop_event.is_set():
             try:
                 self._listen_events()
-            except Exception as e:
-                logger.error("wpctl subscribe crashed: %s", e)
-                self.device = resolve_default_device(self.is_input) or self.device
+            except Exception:
+                logger.exception("wpctl subscribe crashed")
+                resolved = resolve_default_device(self.is_input)
+                if resolved:
+                    self.device = resolved
+
             if not self._stop_event.is_set():
-                logger.info("Reconnecting to PipeWire in 3s...")
-                time.sleep(3)
+                time.sleep(self.RECONNECT_DELAY)
 
     def _listen_events(self) -> None:
-        proc: subprocess.Popen[str] | None = None
+        """Blocking event stream from `wpctl subscribe`."""
+        proc = subprocess.Popen(
+            ["wpctl", "subscribe"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+
+        assert proc.stdout is not None
+
         try:
-            proc = subprocess.Popen(
-                ["wpctl", "subscribe"], stdout=subprocess.PIPE, text=True
-            )
-            assert proc.stdout is not None
             for line in proc.stdout:
                 if self._stop_event.is_set():
                     break
-                if not any(key in line for key in ("default-node", "volume", "mute")):
-                    continue
-                self._debounced_update()
+                if any(k in line for k in self.SUBSCRIBE_KEYWORDS):
+                    self._debounced_update()
         finally:
-            if proc and proc.poll() is None:
+            if proc.poll() is None:
                 proc.terminate()
                 try:
                     proc.wait(timeout=1)
                 except subprocess.TimeoutExpired:
                     proc.kill()
 
-    def _debounced_update(self, delay: float = 0.2) -> None:
+    # ------------------------------------------------------------
+
+    def _debounced_update(self, delay: float = 0.1) -> None:
         now = time.monotonic()
-        if now - self._last_update < delay:
-            return
-        self._last_update = now
-        if hasattr(qtile, "call_soon_threadsafe"):
+        if now - self._last_update >= delay:
+            self._last_update = now
             qtile.call_soon_threadsafe(self._update_text)
 
-    def _get_state(self) -> Tuple[int, bool]:
-        if not self.device:
-            return 0, True
-        output = run(["wpctl", "get-volume", self.device])
-        return self._parse_state(output or "")
-
-    def _parse_state(self, output: str) -> Tuple[int, bool]:
-        parts = output.strip().split()
-        muted = "[MUTED]" in output
-        vol_token = next((t for t in parts if any(c.isdigit() for c in t)), "0")
+    # ------------------------------------------------------------
+    # State parsing
+    # ------------------------------------------------------------
+    def _get_state(self) -> tuple[int, bool]:
         try:
-            vol_float = float(vol_token)
-            volume = min(150, max(0, int(vol_float * 100)))
-        except Exception:
-            volume = 0
-        return volume, muted
+            out = run(["wpctl", "get-volume", self.device])
+            return self._parse_state(out)
+        except subprocess.SubprocessError:
+            logger.exception("Failed to read volume")
+            return 0, True
 
-    def _icon(self, vol: int, muted: bool) -> Tuple[str, str]:
+    @staticmethod
+    def _parse_state(output: str) -> tuple[int, bool]:
+        muted = "[MUTED]" in output
+
+        # first token with digits is the volume
+        for token in output.split():
+            if any(ch.isdigit() for ch in token):
+                try:
+                    vol = min(150, max(0, int(float(token) * 100)))
+                except ValueError:
+                    vol = 0
+                break
+        else:
+            vol = 0
+
+        return vol, muted
+
+    def _icon_color(self, volume: int, muted: bool) -> tuple[str, str]:
         if muted:
-            return self.MUTED
-        for threshold, color, icon in self.LEVELS:
-            if vol >= threshold:
-                return ("gold", icon) if vol > 100 else (color, icon)
-        return self.LEVELS[-1][1:]
+            return self.muted_style
+        if volume > 100:
+            return "gold", self.levels[0][2]
+        for threshold, color, icon in self.levels:
+            if volume >= threshold:
+                return color, icon
+        return self.levels[-1][1:]
+
+    # ------------------------------------------------------------
 
     def _update_text(self) -> None:
         volume, muted = self._get_state()
-        color, icon = self._icon(volume, muted)
-        text = f"{icon}  {volume}%" if self.show_icon else f"{volume}%"
-        self.update(f'<span foreground="{color}">{text}</span>')  # type: ignore[no-untyped-call]
+        color, icon = self._icon_color(volume, muted)
 
-    def _set_volume(self, vol: int) -> None:
-        if not self.device:
-            return
-        clamped = max(0, min(vol, self.max_volume))
-        run(["wpctl", "set-volume", self.device, f"{clamped}%"])
-        self._update_text()
+        label = f"{icon}  {volume}%" if self.show_icon else f"{volume}%"
+        self.update(f'<span foreground="{color}">{label}</span>')  # type: ignore[no-untyped-call]
+
+    # ------------------------------------------------------------
+    # Commands
+    # ------------------------------------------------------------
+    def _set_volume(self, value: int) -> None:
+        clamped = max(0, min(value, self.max_volume))
+        try:
+            run(["wpctl", "set-volume", self.device, f"{clamped}%"])
+            self._update_text()
+        except subprocess.SubprocessError:
+            logger.exception("set-volume failed")
 
     @expose_command()
     def volume_up(self) -> None:
@@ -222,9 +275,11 @@ class BaseAudioWidget(base._TextBox):
         self._set_volume(v - self.step)
 
     def _set_mute(self, state: str) -> None:
-        if self.device:
+        try:
             run(["wpctl", "set-mute", self.device, state])
             self._update_text()
+        except subprocess.SubprocessError:
+            logger.exception("set-mute failed")
 
     @expose_command()
     def toggle_mute(self) -> None:
@@ -243,18 +298,28 @@ class BaseAudioWidget(base._TextBox):
         self._update_text()
 
 
+# ------------------------------------------------------------
+# Specializations
+# ------------------------------------------------------------
 class AudioWidget(BaseAudioWidget):
-    def __init__(self, **config: Any) -> None:
-        super().__init__(is_input=False, **config)
+    """Output sink widget."""
+
+    pass
 
 
 class MicWidget(BaseAudioWidget):
+    """Microphone input widget."""
+
     def __init__(self, **config: Any) -> None:
-        levels = (
+        mic_levels = (
             (75, "salmon", "󰍬"),
             (50, "mediumpurple", "󰍬"),
             (25, "lightblue", "󰍬"),
             (0, "palegreen", "󰍬"),
         )
-        muted = ("grey", "󰍭")
-        super().__init__(is_input=True, levels=levels, muted=muted, **config)
+        super().__init__(
+            is_input=True,
+            levels=mic_levels,
+            muted=("grey", "󰍭"),
+            **config,
+        )

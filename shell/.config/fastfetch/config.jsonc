@@ -21,56 +21,56 @@
 		},
 		{
 			"type": "os",
-			"key": "  OS"
+			"key": "  "
 		},
 		{
 			"type": "kernel",
-			"key": "  Kernel"
+			"key": "  "
 		},
 		{
 			"type": "uptime",
-			"key": " 󰅐 Uptime"
+			"key": " 󰅐 "
 		},
 		{
 			"type": "packages",
-			"key": "  Packages",
-			"format": "{all} ({pacman}, {flatpak-all})"
+			"key": "  ",
+			"format": "{all} ({pacman}, {flatpak-all}) packages"
 		},
 		{
 			"type": "shell",
-			"key": "  Shell"
+			"key": "  "
 		},
 		{
 			"type": "de",
-			"key": "  DE"
+			"key": "  "
 		},
 		{
 			"type": "wm",
-			"key": "  WM"
+			"key": "  "
 		},
 		{
 			"type": "wmtheme",
-			"key": "  Theme"
+			"key": "  "
 		},
 		{
 			"type": "display",
-			"key": " 󰹑 Resolution"
+			"key": " 󰹑 "
 		},
 		{
 			"type": "cpu",
-			"key": "  CPU"
+			"key": "  "
 		},
 		{
 			"type": "gpu",
-			"key": "  GPU"
+			"key": "  "
 		},
 		{
 			"type": "memory",
-			"key": "  Memory"
+			"key": "  "
 		},
 		{
 			"type": "disk",
-			"key": "  Disk (/)",
+			"key": "   /",
 			"folders": "/"
 		},
 		{
