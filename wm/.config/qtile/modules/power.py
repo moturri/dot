@@ -6,10 +6,6 @@ from qtile_extras.popup import PopupRelativeLayout, PopupText
 
 
 def show_power_menu(qtile: Qtile) -> None:
-    """
-    Minimal Qtile power menu with Nerd Fonts.
-    Tailored width, centered entries, OLED-dark background.
-    """
 
     lock_cmd = "i3lock -n -c 000000"
 
@@ -66,6 +62,6 @@ def show_power_menu(qtile: Qtile) -> None:
 
     layout.show(
         centered=False,
-        relative_to=2,
+        relative_to=7,
         relative_to_bar=True,
     )

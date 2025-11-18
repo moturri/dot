@@ -204,7 +204,12 @@ class BaseAudioWidget(base._TextBox):
         now = time.monotonic()
         if now - self._last_update >= delay:
             self._last_update = now
-            qtile.call_soon_threadsafe(self._update_text)
+            if hasattr(qtile, "call_soon_threadsafe"):
+                qtile.call_soon_threadsafe(self._update_text)
+            else:
+                # Fallback for when running outside of a real qtile session
+                # e.g. during tests or config checks
+                self._update_text()
 
     # ------------------------------------------------------------
     # State parsing
