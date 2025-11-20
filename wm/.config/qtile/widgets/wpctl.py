@@ -37,6 +37,8 @@ logger = logging.getLogger(__name__)
 
 
 class AudioDeviceError(Exception):
+    """Raised when audio device operations fail."""
+
     pass
 
 
@@ -72,9 +74,17 @@ def resolve_default_device(is_input: bool) -> str | None:
         if target in line:
             parsing = True
             continue
-        if parsing and line.startswith("    *"):
-            parts = line.split()
-            return parts[1] if len(parts) >= 2 else None
+        if parsing:
+            if line.startswith(" "):
+                if "*" in line:
+                    # Extract device ID from line like "    * 123. Device Name"
+                    parts = line.split()
+                    for part in parts:
+                        if part.rstrip(".").isdigit():
+                            return part.rstrip(".")
+            else:
+                # Exited the target section
+                break
 
     return None
 
@@ -98,8 +108,6 @@ class BaseAudioWidget(base._TextBox):
 
     SUBSCRIBE_KEYWORDS: Final[tuple[str, ...]] = ("default-node", "volume", "mute")
 
-    # ------------------------------------------------------------
-
     def __init__(
         self,
         *,
@@ -112,7 +120,6 @@ class BaseAudioWidget(base._TextBox):
         muted: tuple[str, str] | None = None,
         **config: Any,
     ) -> None:
-
         require("wpctl")
 
         self.is_input = is_input
@@ -130,24 +137,32 @@ class BaseAudioWidget(base._TextBox):
         self.muted_style = muted or ("grey", "󰝟")
 
         # Resolve device
-        self.device = (
-            device
-            or resolve_default_device(is_input)
-            or (self.DEFAULT_INPUT_DEVICE if is_input else self.DEFAULT_OUTPUT_DEVICE)
-        )
+        self.device = self._resolve_device(device)
 
         super().__init__("", **config)  # type: ignore[no-untyped-call]
 
         # Thread state
         self._stop_event = threading.Event()
         self._last_update: float = 0.0
+        self._lock = threading.Lock()
 
         self._thread = threading.Thread(target=self._subscribe_loop, daemon=True)
         self._thread.start()
 
         self._update_text()
 
-    # ------------------------------------------------------------
+    def _resolve_device(self, device: str | None) -> str:
+        """Resolve device string, with fallback logic."""
+        if device:
+            return device
+
+        resolved = resolve_default_device(self.is_input)
+        if resolved:
+            return resolved
+
+        return (
+            self.DEFAULT_INPUT_DEVICE if self.is_input else self.DEFAULT_OUTPUT_DEVICE
+        )
 
     def finalize(self) -> None:
         """Cleanup background thread."""
@@ -166,9 +181,12 @@ class BaseAudioWidget(base._TextBox):
                 self._listen_events()
             except Exception:
                 logger.exception("wpctl subscribe crashed")
-                resolved = resolve_default_device(self.is_input)
-                if resolved:
-                    self.device = resolved
+                # Attempt to resolve device again on failure
+                with self._lock:
+                    resolved = resolve_default_device(self.is_input)
+                    if resolved:
+                        self.device = resolved
+                        logger.info(f"Resolved new device: {self.device}")
 
             if not self._stop_event.is_set():
                 time.sleep(self.RECONNECT_DELAY)
@@ -198,9 +216,8 @@ class BaseAudioWidget(base._TextBox):
                 except subprocess.TimeoutExpired:
                     proc.kill()
 
-    # ------------------------------------------------------------
-
     def _debounced_update(self, delay: float = 0.1) -> None:
+        """Debounce updates to prevent excessive redraws."""
         now = time.monotonic()
         if now - self._last_update >= delay:
             self._last_update = now
@@ -208,38 +225,42 @@ class BaseAudioWidget(base._TextBox):
                 qtile.call_soon_threadsafe(self._update_text)
             else:
                 # Fallback for when running outside of a real qtile session
-                # e.g. during tests or config checks
                 self._update_text()
 
     # ------------------------------------------------------------
     # State parsing
     # ------------------------------------------------------------
     def _get_state(self) -> tuple[int, bool]:
+        """Get current volume and mute state."""
         try:
-            out = run(["wpctl", "get-volume", self.device])
+            with self._lock:
+                out = run(["wpctl", "get-volume", self.device])
             return self._parse_state(out)
         except subprocess.SubprocessError:
-            logger.exception("Failed to read volume")
+            logger.exception("Failed to read volume for device: %s", self.device)
             return 0, True
 
     @staticmethod
     def _parse_state(output: str) -> tuple[int, bool]:
+        """Parse wpctl get-volume output."""
         muted = "[MUTED]" in output
+        vol = 0
 
-        # first token with digits is the volume
+        # Find first token containing digits
         for token in output.split():
             if any(ch.isdigit() for ch in token):
                 try:
-                    vol = min(150, max(0, int(float(token) * 100)))
+                    vol = int(float(token) * 100)
+                    vol = max(0, min(150, vol))
+                    break
                 except ValueError:
-                    vol = 0
-                break
-        else:
-            vol = 0
+                    logger.warning("Failed to parse volume from token: %s", token)
+                    continue
 
         return vol, muted
 
     def _icon_color(self, volume: int, muted: bool) -> tuple[str, str]:
+        """Determine icon and color based on volume and mute state."""
         if muted:
             return self.muted_style
         if volume > 100:
@@ -249,9 +270,8 @@ class BaseAudioWidget(base._TextBox):
                 return color, icon
         return self.levels[-1][1:]
 
-    # ------------------------------------------------------------
-
     def _update_text(self) -> None:
+        """Update widget display text."""
         volume, muted = self._get_state()
         color, icon = self._icon_color(volume, muted)
 
@@ -262,44 +282,54 @@ class BaseAudioWidget(base._TextBox):
     # Commands
     # ------------------------------------------------------------
     def _set_volume(self, value: int) -> None:
+        """Set volume to specified percentage."""
         clamped = max(0, min(value, self.max_volume))
         try:
-            run(["wpctl", "set-volume", self.device, f"{clamped}%"])
+            with self._lock:
+                run(["wpctl", "set-volume", self.device, f"{clamped}%"])
             self._update_text()
         except subprocess.SubprocessError:
-            logger.exception("set-volume failed")
+            logger.exception("set-volume failed for device: %s", self.device)
 
     @expose_command()
     def volume_up(self) -> None:
-        v, _ = self._get_state()
-        self._set_volume(v + self.step)
+        """Increase volume by step amount."""
+        volume, _ = self._get_state()
+        self._set_volume(volume + self.step)
 
     @expose_command()
     def volume_down(self) -> None:
-        v, _ = self._get_state()
-        self._set_volume(v - self.step)
+        """Decrease volume by step amount."""
+        volume, _ = self._get_state()
+        self._set_volume(volume - self.step)
 
     def _set_mute(self, state: str) -> None:
+        """Set mute state (0, 1, or toggle)."""
         try:
-            run(["wpctl", "set-mute", self.device, state])
+            with self._lock:
+                run(["wpctl", "set-mute", self.device, state])
             self._update_text()
         except subprocess.SubprocessError:
-            logger.exception("set-mute failed")
+            logger.exception("set-mute failed for device: %s", self.device)
 
     @expose_command()
     def toggle_mute(self) -> None:
+        """Toggle mute state."""
         self._set_mute("toggle")
 
     @expose_command()
     def mute(self) -> None:
+        """Mute audio."""
         self._set_mute("1")
 
     @expose_command()
     def unmute(self) -> None:
+        """Unmute audio."""
         self._set_mute("0")
 
     @expose_command()
     def refresh(self) -> None:
+        """Manually refresh widget state."""
         self._update_text()
 
 
@@ -307,13 +337,14 @@ class BaseAudioWidget(base._TextBox):
 # Specializations
 # ------------------------------------------------------------
 class AudioWidget(BaseAudioWidget):
-    """Output sink widget."""
+    """Output sink widget for system audio."""
 
-    pass
+    def __init__(self, **config: Any) -> None:
+        super().__init__(is_input=False, **config)
 
 
 class MicWidget(BaseAudioWidget):
-    """Microphone input widget."""
+    """Input source widget for microphone."""
 
     def __init__(self, **config: Any) -> None:
         mic_levels = (

@@ -72,6 +72,7 @@ group_definitions = [
             "stremio",
             "stremio-enhanced",
             "upscayl",
+            "kdenlive",
             "mpv",
             "mpvk",
         ],
@@ -187,8 +188,8 @@ scratchpad = ScratchPad(
             on_focus_lost_hide=True,
         ),
         DropDown(
-            "wiremix",
-            "alacritty -e wiremix",
+            "pavucontrol-qt",
+            "pavucontrol-qt",
             width=0.5,
             height=0.5,
             x=0.25,
@@ -216,7 +217,7 @@ scratch_keys = {
     "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
-    "wiremix": "v",
+    "pavucontrol-qt": "v",
     "pcmanfm-qt": "f",
 }
 

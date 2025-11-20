@@ -40,36 +40,22 @@ def decorated_widget(widget_class: Any, **config: Any) -> Any:
     )
 
 
-def spacer(length: int = 10) -> widget.Spacer:
-    return widget.Spacer(length=length)
-
-
 def clockWidget() -> List[Any]:
     return [
         decorated_widget(widget.Clock, format="   %e %b    %H:%M  "),
-        spacer(),
+        widget.Spacer(length=10),
     ]
 
 
-def systemTray() -> List[Any]:
-    return [
-        widget.Systray(padding=10),
-        # widget.StatusNotifier(padding=10), # Wayland
-    ]
+# def systemTray() -> List[Any]:
+#     return [
+#         widget.Systray(padding=10),
+#         # widget.StatusNotifier(padding=10), # Wayland
+#     ]
 
 
 def groupWidgets() -> List[Any]:
     return [
-        decorated_widget(
-            widget.GroupBox,
-            hide_unused=True,
-            highlight_method="text",
-            urgent_alert_method="text",
-            fontsize=18,
-            disable_drag=True,
-            this_current_screen_border=theme["accent"],
-            urgent_border=theme["alert"],
-        ),
         widget.TaskList(
             icon_size=24,
             max_title_width=200,
@@ -82,6 +68,18 @@ def groupWidgets() -> List[Any]:
             urgent_border=theme["alert"],
             padding=5,
         ),
+        widget.Spacer(),
+        decorated_widget(
+            widget.GroupBox,
+            hide_unused=True,
+            highlight_method="text",
+            urgent_alert_method="text",
+            fontsize=18,
+            disable_drag=True,
+            this_current_screen_border=theme["accent"],
+            urgent_border=theme["alert"],
+        ),
+        widget.Spacer(),
     ]
 
 
@@ -91,24 +89,16 @@ def systemWidgets(
 ) -> List[Any]:
     widgets: List[Any] = [
         decorated_widget(
-            widget.TextBox,
-            text=" 󰂚 ",
-            mouse_callbacks={
-                "Button1": lazy.spawn("dunstctl history-pop"),
-                "Button3": lazy.spawn("dunstctl history-clear"),
-            },
-        ),
-        decorated_widget(
             widget.Mpris2,
             name="mpris",
-            format="󰀰 ",
-            no_metadata_text="󱆵 ",
-            paused_text="󱆵 ",
+            format=" 󰀰 ",
+            no_metadata_text=" 󱆵 ",
+            paused_text=" 󱆵 ",
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
         ),
-        spacer(),
+        widget.Spacer(length=10),
         decorated_widget(
             AudioWidget,
             name="audio",
@@ -129,7 +119,17 @@ def systemWidgets(
                 "Button5": lazy.widget["mic"].volume_down(),
             },
         ),
-        spacer(),
+        widget.Spacer(length=10),
+        decorated_widget(
+            widget.TextBox,
+            text=" 󰂚 ",
+            mouse_callbacks={
+                "Button1": lazy.spawn("dunstctl history-pop"),
+                "Button3": lazy.spawn("dunstctl history-clear"),
+            },
+        ),
+        widget.Systray(padding=10),
+        widget.Spacer(length=10),
     ]
 
     if show_brightness:
@@ -142,7 +142,7 @@ def systemWidgets(
                     "Button5": lazy.widget["brightctl"].decrease(),
                 },
             ),
-            spacer(),
+            widget.Spacer(length=10),
         ]
 
     if show_battery:
@@ -157,7 +157,7 @@ def systemWidgets(
 
 def main() -> List[Any]:
     """Primary bar setup for the main screen."""
-    return clockWidget() + groupWidgets() + systemWidgets() + systemTray()
+    return clockWidget() + groupWidgets() + systemWidgets()
 
 
 def misc() -> List[Any]:
