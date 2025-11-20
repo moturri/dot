@@ -1,22 +1,5 @@
 # Copyright (c) 2025 Elton Moturi
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# MIT License
 
 import logging
 import os
@@ -29,8 +12,7 @@ from libqtile.widget.textbox import TextBox
 
 logger = logging.getLogger(__name__)
 
-
-# Thresholds: (percentage, color, icon)
+# Thresholds for brightness display: (percentage, color, icon)
 DEFAULT_ICONS: Tuple[Tuple[int, str, str], ...] = (
     (80, "gold", "󰃠"),
     (60, "orange", "󰃝"),
@@ -41,17 +23,13 @@ DEFAULT_ICONS: Tuple[Tuple[int, str, str], ...] = (
 
 
 def require(command: str) -> None:
-    """Ensure a required binary is available in the system's PATH."""
+    """Ensure a required binary exists in PATH."""
     if shutil.which(command) is None:
         raise RuntimeError(f"Missing required dependency: '{command}'")
 
 
 def run(cmd: List[str], timeout: float = 1.0) -> Optional[str]:
-    """
-    Run an external command safely, returning stripped stdout.
-
-    Logs errors and returns None on failure.
-    """
+    """Run an external command safely and return stripped stdout."""
     try:
         return subprocess.check_output(
             cmd,
@@ -71,6 +49,7 @@ def run(cmd: List[str], timeout: float = 1.0) -> Optional[str]:
 
 
 class BrightctlWidget(TextBox):
+    """Qtile widget for controlling brightness via brightnessctl."""
 
     def __init__(
         self,
@@ -79,46 +58,47 @@ class BrightctlWidget(TextBox):
         device: Optional[str] = None,
         icons: Tuple[Tuple[int, str, str], ...] = DEFAULT_ICONS,
         **config: Any,
-    ):
+    ) -> None:
         require("brightnessctl")
-        self.step = max(1, min(step, 100))
-        self.min_brightness = max(1, min(min_brightness, 100))
-        self.device = device
-        self.icons = icons
+        self.step: int = max(1, min(step, 100))
+        self.min_brightness: int = max(1, min(min_brightness, 100))
+        self.device: Optional[str] = device
+        self.icons: Tuple[Tuple[int, str, str], ...] = icons
+
         super().__init__(text=self._generate_text(), **config)  # type: ignore[no-untyped-call]
 
+    # ------------------- Core command -------------------
     def _run_brightctl(self, *args: str) -> Optional[str]:
         """Run brightnessctl with optional device argument."""
-        base_cmd = ["brightnessctl"]
+        cmd: List[str] = ["brightnessctl"]
         if self.device:
-            base_cmd += ["-d", self.device]
-        return run(base_cmd + list(args))
+            cmd += ["-d", self.device]
+        return run(cmd + list(args))
 
     def _get_brightness(self) -> Optional[int]:
-        """Return brightness percentage as integer 0–100."""
+        """Return brightness as a percentage between 0 and 100."""
         current = self._run_brightctl("get")
         maximum = self._run_brightctl("max")
         try:
-            cur = int(current or 0)
-            max_ = int(maximum or 1)
+            cur: int = int(current or 0)
+            max_: int = int(maximum or 1)
             if max_ <= 0:
                 return None
-            return min(100, (cur * 100) // max_)
-        except (ValueError, TypeError):
+            return min(100, max(self.min_brightness, (cur * 100) // max_))
+        except (TypeError, ValueError):
             return None
 
     def _set_brightness(self, percent: int) -> None:
-        """Clamp brightness and apply immediately."""
-        pct = max(self.min_brightness, min(100, percent))
+        """Clamp brightness and apply it."""
+        pct = max(self.min_brightness, min(percent, 100))
         self._run_brightctl("set", f"{pct}%")
         self.update_display()
 
     def _generate_text(self) -> str:
-        """Generate the displayed widget text."""
+        """Return the widget display text with icon and percentage."""
         brightness = self._get_brightness()
         if brightness is None:
             return '<span foreground="grey">󰃜 N/A</span>'
-
         color, icon = next(
             ((c, i) for t, c, i in self.icons if brightness >= t),
             ("grey", "󰃜"),
@@ -126,15 +106,16 @@ class BrightctlWidget(TextBox):
         return f'<span foreground="{color}">{icon}  {brightness}%</span>'
 
     def update_display(self) -> None:
-        """Manually refresh widget display."""
+        """Refresh the widget display."""
         self.update(self._generate_text())
 
     def _change_brightness(self, delta: int) -> None:
-        """Change brightness by a given delta."""
-        b = self._get_brightness()
-        if b is not None:
-            self._set_brightness(b + delta)
+        """Increase or decrease brightness by delta."""
+        current = self._get_brightness()
+        if current is not None:
+            self._set_brightness(current + delta)
 
+    # ------------------- Exposed commands -------------------
     @expose_command()
     def increase(self) -> None:
         """Increase brightness by configured step."""
@@ -147,5 +128,5 @@ class BrightctlWidget(TextBox):
 
     @expose_command()
     def refresh(self) -> None:
-        """Manually refresh widget display."""
+        """Manually refresh display."""
         self.update_display()
