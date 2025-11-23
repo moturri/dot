@@ -1,5 +1,4 @@
-# Copyright (c) 2025 Elton Moturi
-# MIT License
+# Copyright (c) 2025 Elton Moturi - MIT License
 
 import logging
 import os
@@ -25,18 +24,18 @@ DEFAULT_ICONS: Tuple[Tuple[int, str, str], ...] = (
 def require(command: str) -> None:
     """Ensure a required binary exists in PATH."""
     if shutil.which(command) is None:
+        logger.error(
+            "Missing required dependency: '%s'. Install it to use this widget.", command
+        )
         raise RuntimeError(f"Missing required dependency: '{command}'")
 
 
 def run(cmd: List[str], timeout: float = 1.0) -> Optional[str]:
     """Run an external command safely and return stripped stdout."""
+    env = os.environ.copy()
+    env.setdefault("LC_ALL", "C.UTF-8")
     try:
-        return subprocess.check_output(
-            cmd,
-            text=True,
-            timeout=timeout,
-            env={"LC_ALL": "C.UTF-8", **os.environ},
-        ).strip()
+        return subprocess.check_output(cmd, text=True, timeout=timeout, env=env).strip()
     except FileNotFoundError:
         logger.error("Command not found: %s", cmd[0])
         return None
@@ -63,7 +62,10 @@ class BrightctlWidget(TextBox):
         self.step: int = max(1, min(step, 100))
         self.min_brightness: int = max(1, min(min_brightness, 100))
         self.device: Optional[str] = device
-        self.icons: Tuple[Tuple[int, str, str], ...] = icons
+        # Sort icons descending to ensure proper matching
+        self.icons: Tuple[Tuple[int, str, str], ...] = tuple(
+            sorted(icons, key=lambda x: -x[0])
+        )
 
         super().__init__(text=self._generate_text(), **config)  # type: ignore[no-untyped-call]
 
@@ -79,13 +81,24 @@ class BrightctlWidget(TextBox):
         """Return brightness as a percentage between 0 and 100."""
         current = self._run_brightctl("get")
         maximum = self._run_brightctl("max")
+
+        if current is None or maximum is None:
+            logger.warning(
+                "Failed to read brightness: current=%s, max=%s", current, maximum
+            )
+            return None
+
         try:
-            cur: int = int(current or 0)
-            max_: int = int(maximum or 1)
+            cur = int(current)
+            max_ = int(maximum)
             if max_ <= 0:
+                logger.warning("Brightness max value is non-positive: %s", maximum)
                 return None
             return min(100, max(self.min_brightness, (cur * 100) // max_))
-        except (TypeError, ValueError):
+        except ValueError:
+            logger.exception(
+                "Failed to parse brightness: current=%s, max=%s", current, maximum
+            )
             return None
 
     def _set_brightness(self, percent: int) -> None:
@@ -100,8 +113,7 @@ class BrightctlWidget(TextBox):
         if brightness is None:
             return '<span foreground="grey">󰃜 N/A</span>'
         color, icon = next(
-            ((c, i) for t, c, i in self.icons if brightness >= t),
-            ("grey", "󰃜"),
+            ((c, i) for t, c, i in self.icons if brightness >= t), ("grey", "󰃜")
         )
         return f'<span foreground="{color}">{icon}  {brightness}%</span>'
 
@@ -110,10 +122,11 @@ class BrightctlWidget(TextBox):
         self.update(self._generate_text())
 
     def _change_brightness(self, delta: int) -> None:
-        """Increase or decrease brightness by delta."""
+        """Increase or decrease brightness by delta with clamping."""
         current = self._get_brightness()
         if current is not None:
-            self._set_brightness(current + delta)
+            new_val = max(self.min_brightness, min(current + delta, 100))
+            self._set_brightness(new_val)
 
     # ------------------- Exposed commands -------------------
     @expose_command()

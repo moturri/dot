@@ -1,5 +1,4 @@
-# Copyright (c) 2025 Elton Moturi 
-# MIT License
+# Copyright (c) 2025 Elton Moturi - MIT License
 
 from __future__ import annotations
 
@@ -36,6 +35,10 @@ class BatteryState:
 
 
 class BatteryWidget(TextBox):  # type: ignore[misc]
+    """Qtile widget that monitors battery status via sysfs."""
+
+    _monitor_thread: Optional[threading.Thread] = None
+    _ac_cache_expiry: float = 2.0  # seconds
 
     def __init__(
         self,
@@ -48,40 +51,46 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
         super().__init__("", **config)
 
         self.critical: int = max(1, min(critical, 100))
-        self.debounce_ns: int = int(max(debounce_s, 0.1) * 1_000_000_000)
+        self.debounce_s: float = max(debounce_s, 0.1)
         self.colors: Dict[str, str] = colors or {}
 
         self._stop_evt = threading.Event()
-        self._last_update_ns: int = 0
-        self._state = BatteryState("unknown", None)
+        self._last_update: float = 0.0
+        self._state: BatteryState = BatteryState("unknown", None)
 
         self._context = pyudev.Context()
-
         self.batteries: List[Path] = self._detect(battery_path)
+
         if not self.batteries:
             self.text = '<span foreground="grey">󰂃 N/A</span>'
             return
 
         self.add_callbacks({"Button1": self.update_now})
 
+        # AC cache
+        self._ac_online_cache: Optional[bool] = None
+        self._ac_last_checked: float = 0.0
+
     # ------------------------------------------------------------
     # Qtile lifecycle
     # ------------------------------------------------------------
-
     def _configure(self, qtile: Any, bar: Any) -> None:
         super()._configure(qtile, bar)
         self._stop_evt.clear()
-        threading.Thread(target=self._monitor, daemon=True).start()
+        if not self._monitor_thread or not self._monitor_thread.is_alive():
+            self._monitor_thread = threading.Thread(target=self._monitor, daemon=True)
+            self._monitor_thread.start()
         self.update_now()
 
     def finalize(self) -> None:
         self._stop_evt.set()
+        if self._monitor_thread:
+            self._monitor_thread.join(timeout=1.0)
         super().finalize()
 
     # ------------------------------------------------------------
     # Event loop
     # ------------------------------------------------------------
-
     def _monitor(self) -> None:
         monitor = pyudev.Monitor.from_netlink(self._context)
         monitor.filter_by(subsystem="power_supply")
@@ -91,19 +100,18 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
         poller.register(monitor.fileno(), select.POLLIN)
 
         while not self._stop_evt.wait(1.0):
-            if poller.poll(100):  # 100ms
+            if poller.poll(100):
                 if monitor.poll(0):
-                    now = time.monotonic_ns()
-                    if now - self._last_update_ns >= self.debounce_ns:
-                        self._last_update_ns = now
+                    now = time.monotonic()
+                    if now - self._last_update >= self.debounce_s:
+                        self._last_update = now
                         self._redraw()
 
     # ------------------------------------------------------------
     # Core
     # ------------------------------------------------------------
-
     def update_now(self) -> None:
-        self._last_update_ns = 0
+        self._last_update = 0.0
         self._redraw()
 
     def _redraw(self) -> None:
@@ -112,25 +120,20 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
             self.bar.draw()
 
     def _update_state(self) -> bool:
-        data: Dict[Path, Dict[str, Optional[str]]] = {
-            p: self._read(p) for p in self.batteries
-        }
-
+        data = {p: self._read(p) for p in self.batteries}
         pct = self._percentage(data)
         status = self._status(data)
+        new_state = BatteryState(status, pct)
 
-        new = BatteryState(status, pct)
-
-        if new == self._state:
+        if new_state == self._state:
             return False
 
-        self._state = new
+        self._state = new_state
         return True
 
     # ------------------------------------------------------------
     # Formatting
     # ------------------------------------------------------------
-
     def _format(self) -> str:
         pct = self._state.capacity
         if pct is None:
@@ -144,7 +147,6 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
     # ------------------------------------------------------------
     # Sysfs IO
     # ------------------------------------------------------------
-
     @staticmethod
     def _read(path: Path) -> Dict[str, Optional[str]]:
         keys = (
@@ -155,7 +157,6 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
             "energy_full",
             "charge_full",
         )
-
         out: Dict[str, Optional[str]] = {}
         for key in keys:
             file = path / key
@@ -165,61 +166,68 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
                 out[key] = None
         return out
 
-    def _percentage(
-        self,
-        data: Dict[Path, Dict[str, Optional[str]]],
-    ) -> Optional[int]:
+    def _percentage(self, data: Dict[Path, Dict[str, Optional[str]]]) -> Optional[int]:
         values: List[float] = []
 
         for d in data.values():
-            cap = d["capacity"]
+            cap = d.get("capacity")
             if cap is not None:
                 try:
                     values.append(float(cap))
                     continue
                 except ValueError:
-                    pass
+                    logger.debug("Invalid capacity value: %s", cap)
 
-            now = d["energy_now"] or d["charge_now"]
-            full = d["energy_full"] or d["charge_full"]
-
-            if now is None or full is None:
+            now_str = d.get("energy_now") or d.get("charge_now")
+            full_str = d.get("energy_full") or d.get("charge_full")
+            if now_str is None or full_str is None:
                 continue
 
             try:
-                n = float(now)
-                f = float(full)
-                if f > 0:
-                    values.append((n / f) * 100.0)
+                now = float(now_str)
+                full = float(full_str)
+                if full > 0:
+                    values.append((now / full) * 100.0)
             except ValueError:
-                continue
+                logger.debug(
+                    "Invalid energy/charge values: now=%s, full=%s", now_str, full_str
+                )
 
         if not values:
             return None
-
         return int(round(sum(values) / len(values)))
 
     def _status(self, data: Dict[Path, Dict[str, Optional[str]]]) -> str:
         for d in data.values():
-            s = d["status"]
+            s = d.get("status")
             if s:
                 sl = s.lower()
                 if sl in ("charging", "discharging", "full"):
                     return sl
-
         return "charging" if self._ac_online() else "discharging"
 
     def _ac_online(self) -> bool:
+        now = time.monotonic()
+        if (
+            self._ac_online_cache is not None
+            and now - self._ac_last_checked < self._ac_cache_expiry
+        ):
+            return self._ac_online_cache
+
+        online = False
         try:
             for dev in self._context.list_devices(subsystem="power_supply"):
                 if dev.get("POWER_SUPPLY_TYPE") == "Mains":
-                    online_status = dev.get("POWER_SUPPLY_ONLINE")
-                    if online_status is not None:
-                        return str(online_status) == "1"
-                    return False
-        except Exception as e:
-            logger.debug(f"BatteryWidget: AC check failed: {e}")
-        return False
+                    status = dev.get("POWER_SUPPLY_ONLINE")
+                    if status is not None:
+                        online = str(status) == "1"
+                        break
+        except Exception as exc:
+            logger.debug("BatteryWidget: AC check failed: %s", exc)
+
+        self._ac_online_cache = online
+        self._ac_last_checked = now
+        return online
 
     def _icon(self, pct: int, status: str) -> Tuple[str, str]:
         for thresh, icon, color in BATTERY_ICONS:
@@ -232,7 +240,6 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
     # ------------------------------------------------------------
     # Detection + public API
     # ------------------------------------------------------------
-
     @staticmethod
     def _detect(manual: Optional[str]) -> List[Path]:
         if manual:
@@ -240,6 +247,6 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
             return [p] if p.is_dir() else []
         return [p for p in POWER_SUPPLY.glob("BAT*") if p.is_dir()]
 
-    def get_state(self) -> Tuple[Optional[int], str]:
-        data = {p: self._read(p) for p in self.batteries}
-        return self._percentage(data), self._status(data)
+    def get_state(self) -> BatteryState:
+        """Return cached state instead of re-reading sysfs."""
+        return self._state

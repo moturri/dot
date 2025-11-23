@@ -1,5 +1,4 @@
-# Copyright (c) 2025 Elton Moturi
-# MIT License
+# Copyright (c) 2025 Elton Moturi - MIT License
 
 import logging
 import os
@@ -18,6 +17,8 @@ from libqtile.widget import base
 qtile: Qtile = cast(Qtile, _qtile)
 logger = logging.getLogger(__name__)
 
+ENV = {**os.environ, "LC_ALL": "C.UTF-8"}
+
 
 class AudioDeviceError(Exception):
     pass
@@ -33,38 +34,37 @@ def run(cmd: list[str], *, timeout: float = 1.0) -> str:
         cmd,
         text=True,
         timeout=timeout,
-        env={**os.environ, "LC_ALL": "C.UTF-8"},
+        stderr=subprocess.DEVNULL,
+        env=ENV,
     ).strip()
 
 
 def resolve_default_device(is_input: bool) -> str | None:
     try:
-        output = run(["wpctl", "status"], timeout=2)
+        out = run(["wpctl", "status"], timeout=2)
     except Exception:
         logger.exception("wpctl status failed")
         return None
 
-    lines = output.splitlines()
     target = "Sources:" if is_input else "Sinks:"
     active = False
 
-    for line in lines:
+    for line in out.splitlines():
         if target in line:
             active = True
             continue
         if active:
+            if "*" in line:
+                for p in line.split():
+                    t = p.strip(".")
+                    if t.isdigit():
+                        return t
             if not line.startswith(" "):
                 break
-            if "*" in line:
-                for part in line.split():
-                    token = part.rstrip(".")
-                    if token.isdigit():
-                        return token
     return None
 
 
 class BaseAudioWidget(base._TextBox):
-
     orientations = base.ORIENTATION_HORIZONTAL
 
     DEFAULT_OUTPUT: Final[str] = "@DEFAULT_AUDIO_SINK@"
@@ -92,7 +92,6 @@ class BaseAudioWidget(base._TextBox):
         muted: tuple[str, str] | None = None,
         **config: Any,
     ) -> None:
-
         require("wpctl")
 
         self.is_input = is_input
@@ -120,21 +119,16 @@ class BaseAudioWidget(base._TextBox):
         self._lock = threading.Lock()
         self._last = 0.0
         self._timer: threading.Timer | None = None
-
         self._thread: threading.Thread | None = None
 
         self._update()
 
     def finalize(self) -> None:
-
         self._stop.set()
-
         if self._timer:
             self._timer.cancel()
-
-        if self._thread is not None:
+        if self._thread:
             self._thread.join(timeout=1.0)
-
         super().finalize()  # type: ignore[no-untyped-call]
 
     def _configure(self, qtile: Qtile, bar: "Bar") -> None:
@@ -152,8 +146,7 @@ class BaseAudioWidget(base._TextBox):
                 new = resolve_default_device(self.is_input)
                 if new:
                     self.device = new
-            if not self._stop.wait(self.RECONNECT):
-                continue
+            self._stop.wait(self.RECONNECT)
 
     def _listen(self) -> None:
         proc = subprocess.Popen(
@@ -179,21 +172,19 @@ class BaseAudioWidget(base._TextBox):
                 pass
 
     def _debounce(self, fn: Callable[[], None], delay: float | None = None) -> None:
-        if delay is None:
-            delay = self.DEBOUNCE
+        delay = delay or self.DEBOUNCE
         now = time.monotonic()
-
-        if now - self._last >= delay:
-            self._last = now
-            self.qtile.call_soon_threadsafe(fn)
-            return
-
-        if self._timer:
-            self._timer.cancel()
 
         def call() -> None:
             self._last = time.monotonic()
             self.qtile.call_soon_threadsafe(fn)
+
+        if now - self._last >= delay:
+            call()
+            return
+
+        if self._timer:
+            self._timer.cancel()
 
         self._timer = threading.Timer(delay, call)
         self._timer.daemon = True
@@ -211,14 +202,14 @@ class BaseAudioWidget(base._TextBox):
     @staticmethod
     def _parse(output: str) -> tuple[int, bool]:
         muted = "[MUTED]" in output
-        vol = 0
-        for token in output.split():
-            if any(ch.isdigit() for ch in token):
-                try:
-                    vol = int(float(token) * 100)
-                    break
-                except Exception:
-                    continue
+        vol = next(
+            (
+                int(float(token) * 100)
+                for token in output.split()
+                if any(ch.isdigit() for ch in token)
+            ),
+            0,
+        )
         vol = max(0, min(150, vol))
         return vol, muted
 
@@ -301,9 +292,4 @@ class MicWidget(BaseAudioWidget):
             (25, "lightblue", "󰍬"),
             (0, "palegreen", "󰍬"),
         )
-        super().__init__(
-            is_input=True,
-            levels=levels,
-            muted=("grey", "󰍭"),
-            **config,
-        )
+        super().__init__(is_input=True, levels=levels, muted=("grey", "󰍭"), **config)

@@ -47,28 +47,15 @@ def clockWidget() -> List[Any]:
     ]
 
 
-# def systemTray() -> List[Any]:
-#     return [
-#         widget.Systray(padding=10),
-#         # widget.StatusNotifier(padding=10), # Wayland
-#     ]
+def systemTray() -> List[Any]:
+    return [
+        widget.Systray(padding=10),
+        # widget.StatusNotifier(padding=10), # Wayland
+    ]
 
 
 def groupWidgets() -> List[Any]:
     return [
-        widget.TaskList(
-            icon_size=24,
-            max_title_width=200,
-            highlight_method="text",
-            urgent_alert_method="text",
-            txt_floating="󱂬 ",
-            txt_maximized="󰏋 ",
-            txt_minimized="󰖰 ",
-            border=theme["accent"],
-            urgent_border=theme["alert"],
-            padding=5,
-        ),
-        widget.Spacer(),
         decorated_widget(
             widget.GroupBox,
             hide_unused=True,
@@ -79,7 +66,19 @@ def groupWidgets() -> List[Any]:
             this_current_screen_border=theme["accent"],
             urgent_border=theme["alert"],
         ),
-        widget.Spacer(),
+        widget.TaskList(
+            icon_size=24,
+            max_title_width=200,
+            highlight_method="text",
+            urgent_alert_method="text",
+            txt_floating="󱂬 ",
+            txt_maximized="󰏋 ",
+            txt_minimized="󰖰 ",
+            theme_mode="preferred",
+            border=theme["accent"],
+            urgent_border=theme["alert"],
+            padding=5,
+        ),
     ]
 
 
@@ -91,12 +90,20 @@ def systemWidgets(
         decorated_widget(
             widget.Mpris2,
             name="mpris",
-            format=" 󰀰 ",
-            no_metadata_text=" 󱆵 ",
-            paused_text=" 󱆵 ",
+            format=" 󰀰",
+            no_metadata_text=" 󱆵",
+            paused_text=" 󱆵",
             popup_hide_timeout=8,
             width=60,
             mouse_callbacks={"Button3": lazy.widget["mpris"].toggle_player()},
+        ),
+        decorated_widget(
+            widget.TextBox,
+            text=" 󰂚 ",
+            mouse_callbacks={
+                "Button1": lazy.spawn("dunstctl history-pop"),
+                "Button3": lazy.spawn("dunstctl history-clear"),
+            },
         ),
         widget.Spacer(length=10),
         decorated_widget(
@@ -119,16 +126,6 @@ def systemWidgets(
                 "Button5": lazy.widget["mic"].volume_down(),
             },
         ),
-        widget.Spacer(length=10),
-        decorated_widget(
-            widget.TextBox,
-            text=" 󰂚 ",
-            mouse_callbacks={
-                "Button1": lazy.spawn("dunstctl history-pop"),
-                "Button3": lazy.spawn("dunstctl history-clear"),
-            },
-        ),
-        widget.Systray(padding=10),
         widget.Spacer(length=10),
     ]
 
@@ -157,7 +154,7 @@ def systemWidgets(
 
 def main() -> List[Any]:
     """Primary bar setup for the main screen."""
-    return clockWidget() + groupWidgets() + systemWidgets()
+    return clockWidget() + groupWidgets() + systemWidgets() + systemTray()
 
 
 def misc() -> List[Any]:
