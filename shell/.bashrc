@@ -1,15 +1,10 @@
 #!/bin/bash
-#
-# ~/.bashrc
-#
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
 alias grep='grep --color=auto'
 PS1='[\u@\h \W]\$ '
-
-# --- Custom additions from .zshrc and improvements ---
 
 # Export common environment variables
 export TERMINAL=kitty
@@ -33,7 +28,6 @@ if command -v eza &>/dev/null; then
 	alias la="eza -la --icons"
 fi
 
-# Functions
 cht() {
 	curl -s "https://cht.sh/$1"
 }
@@ -70,57 +64,6 @@ yayfz() {
 	fi
 }
 
-# --- Git Aliases ---
-alias g="git"
-alias ga="git add"
-alias gaa="git add ."
-alias gau="git add -u"
-alias gc="git commit -v"
-alias gca="git commit -v -a"
-alias gco="git checkout"
-alias gd="git diff"
-alias gds="git diff --staged"
-alias gl="git log --oneline --decorate --graph --all"
-alias gp="git push"
-alias gpl="git pull"
-alias gs="git status -sb"
-alias gb="git branch"
-alias gba="git branch -a"
-alias gr="git remote -v"
-alias grh="git reset --hard"
-alias grs="git restore --staged"
-alias gcl="git clean -fd"
-alias gst="git stash"
-alias gsta="git stash apply"
-alias gstd="git stash drop"
-alias gstl="git stash list"
-alias gsts="git stash save"
-
-# --- Archive/Unarchive Shortcuts ---
-# Create a tar.gz archive
-mkcdgz() { mkdir -p "$1" && cd "$1" && tar -czvf "$1".tar.gz "$@"; }
-# Extract various archives
-extract() {
-	if [ -f "$1" ]; then
-		case "$1" in
-		*.tar.bz2) tar xvjf "$1" ;;
-		*.tar.gz) tar xvzf "$1" ;;
-		*.bz2) bunzip2 "$1" ;;
-		*.rar) unrar x "$1" ;;
-		*.gz) gunzip "$1" ;;
-		*.tar) tar xvf "$1" ;;
-		*.tbz2) tar xvjf "$1" ;;
-		*.tgz) tar xvzf "$1" ;;
-		*.zip) unzip "$1" ;;
-		*.Z) uncompress "$1" ;;
-		*.7z) 7za x "$1" ;;
-		*) echo "don't know how to extract '$1'..." ;;
-		esac
-	else
-		echo "'$1' is not a valid file!"
-	fi
-}
-
 # --- History and Completion Settings ---
 HISTCONTROL=ignoreboth:erasedups
 HISTSIZE=5000
@@ -142,8 +85,6 @@ if ! shopt -oq posix; then
 	fi
 fi
 
-# --- Starship and fzf setup ---
-
 # Starship prompt
 # shellcheck disable=SC2034,SC1091
 if command -v starship &>/dev/null; then
@@ -156,9 +97,8 @@ if [ -f ~/.fzf.bash ]; then
 	source ~/.fzf.bash
 fi
 
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/m/.lmstudio/bin"
-# End of LM Studio CLI section
-
 export LIBVA_DRIVER_NAME=iHD
 export LIBVA_DRIVERS_PATH=/usr/lib/dri
+
+# [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
+eval "$(atuin init bash)"
