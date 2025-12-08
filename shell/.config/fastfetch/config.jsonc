@@ -40,10 +40,10 @@
 			"type": "shell",
 			"key": "  "
 		},
-		{
-			"type": "de",
-			"key": "  "
-		},
+		// {
+		// 	"type": "de",
+		// 	"key": "  "
+		// },
 		{
 			"type": "wm",
 			"key": "  "

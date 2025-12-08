@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 import subprocess
+import threading
 from typing import Any, List, Optional, Tuple
 
 from libqtile.command.base import expose_command
@@ -56,16 +57,20 @@ class BrightctlWidget(TextBox):
         min_brightness: int = 1,
         device: Optional[str] = None,
         icons: Tuple[Tuple[int, str, str], ...] = DEFAULT_ICONS,
+        debounce_interval: float = 0.1,
         **config: Any,
     ) -> None:
         require("brightnessctl")
         self.step: int = max(1, min(step, 100))
         self.min_brightness: int = max(1, min(min_brightness, 100))
         self.device: Optional[str] = device
-        # Sort icons descending to ensure proper matching
         self.icons: Tuple[Tuple[int, str, str], ...] = tuple(
             sorted(icons, key=lambda x: -x[0])
         )
+
+        self._max_brightness_cache: Optional[int] = None
+        self._debounce_interval = debounce_interval
+        self._update_timer: Optional[threading.Timer] = None
 
         super().__init__(text=self._generate_text(), **config)  # type: ignore[no-untyped-call]
 
@@ -77,35 +82,50 @@ class BrightctlWidget(TextBox):
             cmd += ["-d", self.device]
         return run(cmd + list(args))
 
+    def _get_max_brightness(self) -> Optional[int]:
+        """Cache and return maximum brightness."""
+        if self._max_brightness_cache is None:
+            max_val = self._run_brightctl("max")
+            if max_val is not None:
+                try:
+                    self._max_brightness_cache = int(max_val)
+                except ValueError:
+                    logger.exception("Failed to parse max brightness: %s", max_val)
+        return self._max_brightness_cache
+
     def _get_brightness(self) -> Optional[int]:
         """Return brightness as a percentage between 0 and 100."""
         current = self._run_brightctl("get")
-        maximum = self._run_brightctl("max")
+        max_ = self._get_max_brightness()
 
-        if current is None or maximum is None:
+        if current is None or max_ is None:
             logger.warning(
-                "Failed to read brightness: current=%s, max=%s", current, maximum
+                "Failed to read brightness: current=%s, max=%s", current, max_
             )
             return None
 
         try:
             cur = int(current)
-            max_ = int(maximum)
             if max_ <= 0:
-                logger.warning("Brightness max value is non-positive: %s", maximum)
+                logger.warning("Brightness max value is non-positive: %s", max_)
                 return None
             return min(100, max(self.min_brightness, (cur * 100) // max_))
         except ValueError:
             logger.exception(
-                "Failed to parse brightness: current=%s, max=%s", current, maximum
+                "Failed to parse brightness: current=%s, max=%s", current, max_
             )
             return None
 
     def _set_brightness(self, percent: int) -> None:
-        """Clamp brightness and apply it."""
+        """Clamp brightness and apply it asynchronously."""
         pct = max(self.min_brightness, min(percent, 100))
-        self._run_brightctl("set", f"{pct}%")
-        self.update_display()
+        cmd = ["brightnessctl"]
+        if self.device:
+            cmd += ["-d", self.device]
+        cmd += ["set", f"{pct}%"]
+
+        threading.Thread(target=run, args=(cmd,), daemon=True).start()
+        self.update_display_debounced()
 
     def _generate_text(self) -> str:
         """Return the widget display text with icon and percentage."""
@@ -118,8 +138,17 @@ class BrightctlWidget(TextBox):
         return f'<span foreground="{color}">{icon}  {brightness}%</span>'
 
     def update_display(self) -> None:
-        """Refresh the widget display."""
+        """Refresh the widget display immediately."""
         self.update(self._generate_text())
+
+    def update_display_debounced(self) -> None:
+        """Debounce updates to prevent rapid screen refreshes."""
+        if self._update_timer:
+            self._update_timer.cancel()
+        self._update_timer = threading.Timer(
+            self._debounce_interval, self.update_display
+        )
+        self._update_timer.start()
 
     def _change_brightness(self, delta: int) -> None:
         """Increase or decrease brightness by delta with clamping."""

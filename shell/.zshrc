@@ -206,14 +206,8 @@ zle -N yayfz-widget
 bindkey '^Y' yayfz-widget
 
 
-export LIBVA_DRIVER_NAME=iHD
-export LIBVA_DRIVERS_PATH=/usr/lib/dri
-
-export GTK_THEME="FlatDark"
-export VDPAU_DRIVER=va_gl
-
 export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 eval "$(atuin init zsh)"

@@ -120,16 +120,16 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
             self.bar.draw()
 
     def _update_state(self) -> bool:
-        data = {p: self._read(p) for p in self.batteries}
-        pct = self._percentage(data)
-        status = self._status(data)
+        # Only read sysfs when necessary
+        battery_data = {p: self._read(p) for p in self.batteries}
+        pct = self._percentage(battery_data)
+        status = self._status(battery_data)
         new_state = BatteryState(status, pct)
 
-        if new_state == self._state:
-            return False
-
-        self._state = new_state
-        return True
+        if new_state != self._state:
+            self._state = new_state
+            return True
+        return False
 
     # ------------------------------------------------------------
     # Formatting
@@ -157,21 +157,20 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
             "energy_full",
             "charge_full",
         )
-        out: Dict[str, Optional[str]] = {}
-        for key in keys:
-            file = path / key
-            try:
-                out[key] = file.read_text(encoding="utf-8", errors="ignore").strip()
-            except Exception:
-                out[key] = None
-        return out
+        return {
+            key: (
+                (path / key).read_text(errors="ignore").strip()
+                if (path / key).exists()
+                else None
+            )
+            for key in keys
+        }
 
     def _percentage(self, data: Dict[Path, Dict[str, Optional[str]]]) -> Optional[int]:
         values: List[float] = []
 
         for d in data.values():
-            cap = d.get("capacity")
-            if cap is not None:
+            if cap := d.get("capacity"):
                 try:
                     values.append(float(cap))
                     continue
@@ -180,12 +179,11 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
 
             now_str = d.get("energy_now") or d.get("charge_now")
             full_str = d.get("energy_full") or d.get("charge_full")
-            if now_str is None or full_str is None:
+            if not now_str or not full_str:
                 continue
 
             try:
-                now = float(now_str)
-                full = float(full_str)
+                now, full = float(now_str), float(full_str)
                 if full > 0:
                     values.append((now / full) * 100.0)
             except ValueError:
@@ -193,14 +191,11 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
                     "Invalid energy/charge values: now=%s, full=%s", now_str, full_str
                 )
 
-        if not values:
-            return None
-        return int(round(sum(values) / len(values)))
+        return int(round(sum(values) / len(values))) if values else None
 
     def _status(self, data: Dict[Path, Dict[str, Optional[str]]]) -> str:
         for d in data.values():
-            s = d.get("status")
-            if s:
+            if s := d.get("status"):
                 sl = s.lower()
                 if sl in ("charging", "discharging", "full"):
                     return sl
@@ -214,16 +209,11 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
         ):
             return self._ac_online_cache
 
-        online = False
-        try:
-            for dev in self._context.list_devices(subsystem="power_supply"):
-                if dev.get("POWER_SUPPLY_TYPE") == "Mains":
-                    status = dev.get("POWER_SUPPLY_ONLINE")
-                    if status is not None:
-                        online = str(status) == "1"
-                        break
-        except Exception as exc:
-            logger.debug("BatteryWidget: AC check failed: %s", exc)
+        online = any(
+            dev.get("POWER_SUPPLY_TYPE") == "Mains"
+            and dev.get("POWER_SUPPLY_ONLINE") == "1"
+            for dev in self._context.list_devices(subsystem="power_supply")
+        )
 
         self._ac_online_cache = online
         self._ac_last_checked = now
@@ -232,9 +222,11 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
     def _icon(self, pct: int, status: str) -> Tuple[str, str]:
         for thresh, icon, color in BATTERY_ICONS:
             if pct >= thresh:
-                if status == "charging" and pct < 100:
-                    return f"{CHARGING_ICON}{icon}", color
-                return icon, color
+                return (
+                    (f"{CHARGING_ICON}{icon}", color)
+                    if status == "charging" and pct < 100
+                    else (icon, color)
+                )
         return "󰂎", "red"
 
     # ------------------------------------------------------------

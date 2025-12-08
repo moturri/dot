@@ -61,7 +61,7 @@ def show_power_menu(qtile: Qtile) -> None:
     )
 
     layout.show(
-        centered=False,
-        relative_to=7,
+        centered=True,
+        relative_to=5,
         relative_to_bar=True,
     )

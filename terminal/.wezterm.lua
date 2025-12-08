@@ -15,7 +15,7 @@ config.force_reverse_video_cursor = true
 config.scrollback_lines = 10000
 config.front_end = "OpenGL"
 config.max_fps = 60
-config.hide_tab_bar_if_only_one_tab = true
+config.hide_tab_bar_if_only_one_tab = false
 config.tab_bar_at_bottom = false
 config.use_fancy_tab_bar = false
 config.window_close_confirmation = "NeverPrompt"
@@ -56,7 +56,7 @@ config.colors = {
 
 config.leader = { key = "a", mods = "ALT", timeout_milliseconds = 2000 }
 config.keys = {
-	{ mods = "LEADER", key = "c", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
+	{ mods = "LEADER", key = "c", action = wezterm.action.SpawnTab },
 	{ mods = "LEADER", key = "x", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
 	{ mods = "LEADER", key = "b", action = wezterm.action.ActivateTabRelative(-1) },
 	{ mods = "LEADER", key = "n", action = wezterm.action.ActivateTabRelative(1) },

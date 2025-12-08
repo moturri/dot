@@ -97,8 +97,6 @@ if [ -f ~/.fzf.bash ]; then
 	source ~/.fzf.bash
 fi
 
-export LIBVA_DRIVER_NAME=iHD
-export LIBVA_DRIVERS_PATH=/usr/lib/dri
 
 # [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 eval "$(atuin init bash)"

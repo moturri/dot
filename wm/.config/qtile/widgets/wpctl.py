@@ -30,13 +30,17 @@ def require(cmd: str) -> None:
 
 
 def run(cmd: list[str], *, timeout: float = 1.0) -> str:
-    return subprocess.check_output(
-        cmd,
-        text=True,
-        timeout=timeout,
-        stderr=subprocess.DEVNULL,
-        env=ENV,
-    ).strip()
+    try:
+        return subprocess.check_output(
+            cmd,
+            text=True,
+            timeout=timeout,
+            stderr=subprocess.DEVNULL,
+            env=ENV,
+        ).strip()
+    except subprocess.SubprocessError:
+        logger.exception("wpctl invocation failed: %s", cmd)
+        raise
 
 
 def resolve_default_device(is_input: bool) -> str | None:
@@ -55,8 +59,8 @@ def resolve_default_device(is_input: bool) -> str | None:
             continue
         if active:
             if "*" in line:
-                for p in line.split():
-                    t = p.strip(".")
+                for token in line.split():
+                    t = token.strip(".")
                     if t.isdigit():
                         return t
             if not line.startswith(" "):
@@ -70,7 +74,7 @@ class BaseAudioWidget(base._TextBox):
     DEFAULT_OUTPUT: Final[str] = "@DEFAULT_AUDIO_SINK@"
     DEFAULT_INPUT: Final[str] = "@DEFAULT_AUDIO_SOURCE@"
 
-    RECONNECT: Final[float] = 2.5
+    RECONNECT: Final[float] = 2.0
     STEP_MIN: Final[int] = 1
     STEP_MAX: Final[int] = 25
     MAXVOL_MIN: Final[int] = 50
@@ -92,6 +96,7 @@ class BaseAudioWidget(base._TextBox):
         muted: tuple[str, str] | None = None,
         **config: Any,
     ) -> None:
+
         require("wpctl")
 
         self.is_input = is_input
@@ -107,13 +112,14 @@ class BaseAudioWidget(base._TextBox):
         )
         self.muted_style = muted or ("grey", "󰝟")
 
+        resolved = resolve_default_device(is_input)
         self.device = (
             device
-            or resolve_default_device(is_input)
+            or resolved
             or (self.DEFAULT_INPUT if is_input else self.DEFAULT_OUTPUT)
         )
 
-        super().__init__("", **config)  # type: ignore[no-untyped-call]
+        super().__init__("", **config)  # type: ignore
 
         self._stop = threading.Event()
         self._lock = threading.Lock()
@@ -128,11 +134,11 @@ class BaseAudioWidget(base._TextBox):
         if self._timer:
             self._timer.cancel()
         if self._thread:
-            self._thread.join(timeout=1.0)
-        super().finalize()  # type: ignore[no-untyped-call]
+            self._thread.join(timeout=1)
+        super().finalize()  # type: ignore
 
     def _configure(self, qtile: Qtile, bar: "Bar") -> None:
-        super()._configure(qtile, bar)  # type: ignore[no-untyped-call]
+        super()._configure(qtile, bar)  # type: ignore
         if self._thread is None:
             self._thread = threading.Thread(target=self._loop, daemon=True)
             self._thread.start()
@@ -155,6 +161,7 @@ class BaseAudioWidget(base._TextBox):
             stderr=subprocess.DEVNULL,
             text=True,
             bufsize=1,
+            env=ENV,
         )
 
         try:
@@ -162,56 +169,54 @@ class BaseAudioWidget(base._TextBox):
             for line in proc.stdout:
                 if self._stop.is_set():
                     break
-                if any(k in line for k in self.SUBSCRIBE_KEYS):
+                if any(key in line for key in self.SUBSCRIBE_KEYS):
                     self._debounce(self._update)
         finally:
             try:
                 proc.terminate()
-                proc.wait(timeout=1)
+                proc.wait(timeout=0.8)
             except Exception:
-                pass
+                logger.debug("Failed to cleanly terminate wpctl subscribe")
 
     def _debounce(self, fn: Callable[[], None], delay: float | None = None) -> None:
         delay = delay or self.DEBOUNCE
         now = time.monotonic()
 
-        def call() -> None:
+        def invoke() -> None:
             self._last = time.monotonic()
             self.qtile.call_soon_threadsafe(fn)
 
         if now - self._last >= delay:
-            call()
+            invoke()
             return
 
         if self._timer:
             self._timer.cancel()
 
-        self._timer = threading.Timer(delay, call)
+        self._timer = threading.Timer(delay, invoke)
         self._timer.daemon = True
         self._timer.start()
 
     def _get_state(self) -> tuple[int, bool]:
         try:
             with self._lock:
-                out = run(["wpctl", "get-volume", self.device], timeout=0.6)
+                raw = run(["wpctl", "get-volume", self.device], timeout=0.5)
         except Exception:
             logger.exception("Failed reading volume for %s", self.device)
             return 0, True
-        return self._parse(out)
+        return self._parse(raw)
 
     @staticmethod
     def _parse(output: str) -> tuple[int, bool]:
         muted = "[MUTED]" in output
-        vol = next(
-            (
-                int(float(token) * 100)
-                for token in output.split()
-                if any(ch.isdigit() for ch in token)
-            ),
-            0,
-        )
-        vol = max(0, min(150, vol))
-        return vol, muted
+
+        for token in output.split():
+            if token.replace(".", "", 1).isdigit():
+                vol = int(float(token) * 100)
+                vol = max(0, min(150, vol))
+                return vol, muted
+
+        return 0, muted
 
     def _icon(self, volume: int, muted: bool) -> tuple[str, str]:
         if muted:
@@ -226,14 +231,17 @@ class BaseAudioWidget(base._TextBox):
     def _update(self) -> None:
         volume, muted = self._get_state()
         color, icon = self._icon(volume, muted)
-        label = f"{icon}  {volume}%" if self.show_icon else f"{volume}%"
-        self.update(f'<span foreground="{color}">{label}</span>')  # type: ignore[no-untyped-call]
+        if self.show_icon:
+            text = f"{icon}  {volume}%"
+        else:
+            text = f"{volume}%"
+        self.update(f'<span foreground="{color}">{text}</span>')  # type: ignore
 
     def _set_volume(self, value: int) -> None:
         value = max(0, min(value, self.max_volume))
         try:
             with self._lock:
-                run(["wpctl", "set-volume", self.device, f"{value}%"], timeout=0.6)
+                run(["wpctl", "set-volume", self.device, f"{value}%"], timeout=0.5)
         except Exception:
             logger.exception("Failed to set volume for %s", self.device)
             return
@@ -268,9 +276,9 @@ class BaseAudioWidget(base._TextBox):
     def _mute(self, state: str) -> None:
         try:
             with self._lock:
-                run(["wpctl", "set-mute", self.device, state], timeout=0.6)
+                run(["wpctl", "set-mute", self.device, state], timeout=0.5)
         except Exception:
-            logger.exception("mute op failed for %s", self.device)
+            logger.exception("Mute operation failed for %s", self.device)
             return
         self._debounce(self._update, self.USER_DEBOUNCE)
 
