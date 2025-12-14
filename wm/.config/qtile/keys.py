@@ -49,7 +49,6 @@ keys: List[Union[Key, KeyChord]] = [
     Key([mod, "shift"], "e", lazy.spawn(rofi_emoji)),
     Key([mod], "v", lazy.spawn(rofi_clipboard)),
     Key([mod], "t", lazy.spawn(rofi_script("rofi-websearch.sh"))),
-    Key([mod], "F12", lazy.spawn(rofi_script("rofi-keys.sh"))),
     Key([mod, "shift"], "a", lazy.spawn(rofi_script("rofi-display.sh"))),
     Key([mod, "shift"], "i", lazy.spawn(rofi_script("rofi-hotspot.sh"))),
     Key([mod], "w", lazy.window.kill()),

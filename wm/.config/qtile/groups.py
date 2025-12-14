@@ -206,6 +206,15 @@ scratchpad = ScratchPad(
             y=0.1,
             opacity=1,
         ),
+        DropDown(
+            "keybindings",
+            "nsxiv /home/m/.config/qtile/images/keybindings",
+            width=0.7,
+            height=0.7,
+            x=0.15,
+            y=0.1,
+            opacity=1,
+        ),
     ],
 )
 
@@ -220,6 +229,7 @@ scratch_keys = {
     "obsidian": "o",
     "pavucontrol-qt": "v",
     "pcmanfm-qt": "f",
+    "keybindings": "k",
 }
 
 keys.extend(

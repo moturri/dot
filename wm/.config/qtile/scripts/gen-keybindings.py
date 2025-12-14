@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#  Qtile keybindings image generator  #
+#  Qtile keybindings image generator - Dark Mode Edition  #
 
 import getopt
 import os
@@ -158,20 +158,37 @@ class KeyboardPNGFactory:
         self.modifiers: List[str] = modifiers.split("-")
         self.key_pos: Dict[str, Button] = self.calculate_pos(20, 140)
 
+    def rgb_background(self, context: Context) -> None:
+        """Pure OLED black background"""
+        context.set_source_rgb(0.0, 0.0, 0.0)
+
+    def rgb_text(self, context: Context) -> None:
+        """Light gray text for readability"""
+        context.set_source_rgb(0.85, 0.85, 0.85)
+
+    def rgb_border(self, context: Context) -> None:
+        """Subtle dark gray borders"""
+        context.set_source_rgb(0.2, 0.2, 0.2)
+
     def rgb_red(self, context: Context) -> None:
-        context.set_source_rgb(0.8431372549, 0.3725490196, 0.3725490196)
+        """Darker red for modifiers"""
+        context.set_source_rgb(0.6, 0.15, 0.15)
 
     def rgb_green(self, context: Context) -> None:
-        context.set_source_rgb(0.6862745098, 0.6862745098, 0)
+        """Darker green for groups"""
+        context.set_source_rgb(0.15, 0.5, 0.15)
 
     def rgb_yellow(self, context: Context) -> None:
-        context.set_source_rgb(1, 0.6862745098, 0)
+        """Darker amber for windows"""
+        context.set_source_rgb(0.7, 0.5, 0.0)
 
     def rgb_cyan(self, context: Context) -> None:
-        context.set_source_rgb(0.5137254902, 0.6784313725, 0.6784313725)
+        """Darker cyan for layouts"""
+        context.set_source_rgb(0.15, 0.4, 0.5)
 
     def rgb_violet(self, context: Context) -> None:
-        context.set_source_rgb(0.831372549, 0.5215686275, 0.6784313725)
+        """Darker violet for other"""
+        context.set_source_rgb(0.5, 0.2, 0.5)
 
     def calculate_pos(self, x: float, y: float) -> Dict[str, Button]:
         pos = Pos(x, y)
@@ -235,9 +252,16 @@ class KeyboardPNGFactory:
     def render(self, filename: str) -> None:
         surface = ImageSurface(cairo.FORMAT_ARGB32, 1280, 800)
         context = Context(surface)
+
+        # Set OLED black background
         with context:
-            context.set_source_rgb(1, 1, 1)
+            self.rgb_background(context)
             context.paint()
+
+        # Set text color for header
+        self.rgb_text(context)
+        context.set_font_size(16)
+        context.move_to(20, 100)
 
         if len([i for i in self.modifiers if i]):
             context.show_text("Modifiers: " + ", ".join(self.modifiers))
@@ -270,9 +294,10 @@ class KeyboardPNGFactory:
 
         # draw mouse base
         context.rectangle(830, 660, 244, 90)
-        context.set_source_rgb(0, 0, 0)
+        self.rgb_border(context)
         context.stroke()
         context.set_font_size(28)
+        self.rgb_text(context)
         context.move_to(900, 720)
         context.show_text("MOUSE")
 
@@ -319,7 +344,7 @@ class KeyboardPNGFactory:
             self.show_multiline(context, x + COMMAND_X, y + COMMAND_Y, k)
 
         context.rectangle(x, y, width, height)
-        context.set_source_rgb(0, 0, 0)
+        self.rgb_border(context)
         context.stroke()
 
         if fn:
@@ -328,6 +353,7 @@ class KeyboardPNGFactory:
         else:
             context.set_font_size(14)
 
+        self.rgb_text(context)
         context.move_to(x + BUTTON_NAME_X, y + BUTTON_NAME_Y)
         context.show_text(self.translate(key))
 
@@ -338,7 +364,7 @@ class KeyboardPNGFactory:
             c_width *= CUSTOM_KEYS[key.key]
 
         context.set_font_size(10)
-        context.set_source_rgb(0, 0, 0)
+        self.rgb_text(context)
         context.move_to(x, y)
         words = key.command.split(" ")
         words.reverse()
@@ -451,7 +477,7 @@ def get_kb_map(config_path: Optional[str] = None) -> Dict[str, Dict[str, KInfo]]
 help_doc: str = """
 usage: ./gen-keybindings.py [-h] [-c CONFIGFILE] [-o OUTPUT_DIR]
 
-Qtile keybindings image generator
+Qtile keybindings image generator (Dark Mode Edition)
 
 optional arguments:
     -h, --help          show this help message and exit
@@ -461,6 +487,7 @@ optional arguments:
     -o OUTPUT_DIR, --output-dir OUTPUT_DIR
                         set directory to export all images to
 """
+
 if __name__ == "__main__":
     config_path: Optional[str] = None
     output_dir: str = ""

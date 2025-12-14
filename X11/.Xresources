@@ -80,3 +80,7 @@ XTerm*translations: #override \
 
 Xcursor.theme: material_cursors
 Xcursor.size: 21
+
+Nsxiv.background: #000000
+Nsxiv.window.background: #000000
+Nsxiv.window.foreground: #FFFFFF
