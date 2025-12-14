@@ -83,6 +83,7 @@ group_definitions = [
         [
             "bitwarden",
             "Bleachbit",
+            "partitionmanager",
             "firewall-config",
             "timeshift-gtk",
             "kapitano",

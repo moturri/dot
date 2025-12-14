@@ -1,11 +1,5 @@
 #!/bin/sh
 
-export XDG_CURRENT_DESKTOP=qtile
-export DESKTOP_SESSION=qtile
-export XDG_SESSION_TYPE=x11
 exec qtile start
 
-# export XDG_CURRENT_DESKTOP=dwm
-# export DESKTOP_SESSION=dwm
-# export XDG_SESSION_TYPE=x11
 # exec dwm
