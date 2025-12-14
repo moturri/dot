@@ -329,6 +329,9 @@ class KInfo:
         if hasattr(key, "desc") and key.desc:
             return key.desc
 
+        if not hasattr(key, "commands") or not key.commands:
+            return ""
+
         cmd = key.commands[0]
         command = cmd.name
         if command in self.NAME_MAP:
@@ -343,6 +346,9 @@ class KInfo:
         return command
 
     def get_scope(self, key):
+        if not hasattr(key, "commands") or not key.commands:
+            return
+
         selectors = key.commands[0].selectors
         if len(selectors):
             return selectors[0][0]
@@ -357,13 +363,37 @@ class MInfo(KInfo):
 
 def get_kb_map(config_path=None):
     from libqtile.confreader import Config
+    from libqtile.config import KeyChord
 
     c = Config(config_path)
     if config_path:
         c.load()
 
-    kb_map = {}
+    all_keys = []
     for key in c.keys:
+        if isinstance(key, KeyChord):
+            key.desc = "Enter chord"
+            all_keys.append(key)
+
+            for sub_key in key.submappings:
+                prefix = f"Chord ({key.key}): "
+                current_desc = ""
+                if hasattr(sub_key, "desc") and sub_key.desc:
+                    current_desc = sub_key.desc
+                else:
+                    if hasattr(sub_key, "commands") and sub_key.commands:
+                        cmd = sub_key.commands[0]
+                        command = cmd.name.replace("_", " ")
+                        if len(cmd.args) and isinstance(cmd.args[0], str):
+                            command += f" {cmd.args[0]}"
+                        current_desc = command
+                sub_key.desc = prefix + current_desc
+                all_keys.append(sub_key)
+        else:
+            all_keys.append(key)
+
+    kb_map = {}
+    for key in all_keys:
         mod = "-".join(key.modifiers)
         if mod not in kb_map:
             kb_map[mod] = {}
@@ -383,7 +413,7 @@ def get_kb_map(config_path=None):
 
 
 help_doc = """
-usage: gen-keybinding-img [-h] [-c CONFIGFILE] [-o OUTPUT_DIR]
+usage: gen-keybinding [-h] [-c CONFIGFILE] [-o OUTPUT_DIR]
 
 Qtile keybindings image generator
 
