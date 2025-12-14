@@ -1,105 +1,182 @@
 #!/usr/bin/env python3
-
-#######################################
 #  Qtile keybindings image generator  #
-#######################################
 
 import getopt
 import os
 import sys
+from typing import Any, Dict, List, Optional, Union
 
-import cairocffi as cairo
-from cairocffi import ImageSurface
+import cairocffi as cairo  # type: ignore
+from cairocffi import Context, ImageSurface
 
 this_dir = os.path.dirname(__file__)
 base_dir = os.path.abspath(os.path.join(this_dir, ".."))
 sys.path.insert(0, base_dir)
 
-BUTTON_NAME_Y = 65
-BUTTON_NAME_X = 10
+from libqtile.config import Key, KeyChord, Mouse
+from libqtile.confreader import Config
 
-COMMAND_Y = 20
-COMMAND_X = 10
+BUTTON_NAME_Y: int = 65
+BUTTON_NAME_X: int = 10
 
-LEGEND = ["modifiers", "layout", "group", "window", "other"]
+COMMAND_Y: int = 20
+COMMAND_X: int = 10
 
-CUSTOM_KEYS = {
-    "Backspace": 2,
+LEGEND: List[str] = ["modifiers", "layout", "group", "window", "other"]
+
+CUSTOM_KEYS: Dict[str, float] = {
+    "Backspace": 2.0,
     "Tab": 1.5,
     "\\": 1.5,
     "Return": 2.45,
-    "shift": 2,
-    "space": 5,
+    "shift": 2.0,
+    "space": 5.0,
 }
 
 
 class Button:
-    def __init__(self, key, x, y, width, height):
-        self.key = key
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+    def __init__(
+        self, key: str, x: float, y: float, width: float, height: float
+    ) -> None:
+        self.key: str = key
+        self.x: float = x
+        self.y: float = y
+        self.width: float = width
+        self.height: float = height
 
 
 class Pos:
-    WIDTH = 78
-    HEIGHT = 70
-    GAP = 5
+    WIDTH: int = 78
+    HEIGHT: int = 70
+    GAP: int = 5
 
-    def __init__(self, x, y):
-        self.x = x
-        self.row_x = x
-        self.y = y
-        self.custom_width = {}
+    def __init__(self, x: float, y: float) -> None:
+        self.x: float = x
+        self.row_x: float = x
+        self.y: float = y
+        self.custom_width: Dict[str, float] = {}
         for i, val in CUSTOM_KEYS.items():
             self.custom_width[i] = val * self.WIDTH
 
-    def get_pos(self, name):
+    def get_pos(self, name: str) -> Button:
+        width: float
         if name in self.custom_width:
             width = self.custom_width[name]
         else:
-            width = self.WIDTH
+            width = float(self.WIDTH)
 
-        info = Button(name, self.x, self.y, width, self.HEIGHT)
+        info = Button(name, self.x, self.y, width, float(self.HEIGHT))
 
         self.x = self.x + self.GAP + width
 
         return info
 
-    def skip_x(self, times=1):
+    def skip_x(self, times: float = 1.0) -> None:
         self.x = self.x + self.GAP + times * self.WIDTH
 
-    def next_row(self):
+    def next_row(self) -> None:
         self.x = self.row_x
         self.y = self.y + self.GAP + self.HEIGHT
 
 
-class KeyboardPNGFactory:
-    def __init__(self, modifiers, keys):
-        self.keys = keys
-        self.modifiers = modifiers.split("-")
-        self.key_pos = self.calculate_pos(20, 140)
+class KInfo:
+    NAME_MAP: Dict[str, str] = {
+        "togroup": "to group",
+        "toscreen": "to screen",
+    }
 
-    def rgb_red(self, context):
+    KEY_MAP: Dict[str, str] = {
+        "grave": "`",
+        "semicolon": ";",
+        "slash": "/",
+        "backslash": "\\",
+        "comma": ",",
+        "period": ".",
+        "bracketleft": "[",
+        "bracketright": "]",
+        "quote": "'",
+        "minus": "-",
+        "equals": "=",
+    }
+
+    def __init__(self, key: Union[Key, KeyChord, Mouse]) -> None:
+        key_name = getattr(key, "key", "")
+        if not key_name:
+            key_name = getattr(key, "button", "")
+
+        if key_name in self.KEY_MAP:
+            self.key: str = self.KEY_MAP[key_name]
+        else:
+            self.key = key_name
+        self.command: str = self.get_command(key)
+        self.scope: Optional[str] = self.get_scope(key)
+
+    def get_command(self, key: Union[Key, KeyChord, Mouse]) -> str:
+        if not isinstance(key, Mouse) and hasattr(key, "desc") and key.desc:
+            return key.desc
+
+        if isinstance(key, KeyChord):
+            return ""
+
+        if not hasattr(key, "commands") or not key.commands:
+            return ""
+
+        cmd = key.commands[0]
+        command: str = cmd.name
+        if command in self.NAME_MAP:
+            command = self.NAME_MAP[command]
+
+        command = command.replace("_", " ")
+
+        if len(cmd.args):
+            if isinstance(cmd.args[0], str):
+                command += " " + cmd.args[0]
+
+        return command
+
+    def get_scope(self, key: Union[Key, KeyChord, Mouse]) -> Optional[str]:
+        if isinstance(key, KeyChord):
+            return None
+
+        if not hasattr(key, "commands") or not key.commands:
+            return None
+
+        selectors = key.commands[0].selectors
+        if len(selectors):
+            return selectors[0][0]
+        return None
+
+
+class MInfo(KInfo):
+    def __init__(self, mouse: Mouse) -> None:
+        super().__init__(mouse)
+
+
+class KeyboardPNGFactory:
+    def __init__(self, modifiers: str, keys: Dict[str, KInfo]) -> None:
+        self.keys: Dict[str, KInfo] = keys
+        self.modifiers: List[str] = modifiers.split("-")
+        self.key_pos: Dict[str, Button] = self.calculate_pos(20, 140)
+
+    def rgb_red(self, context: Context) -> None:
         context.set_source_rgb(0.8431372549, 0.3725490196, 0.3725490196)
 
-    def rgb_green(self, context):
+    def rgb_green(self, context: Context) -> None:
         context.set_source_rgb(0.6862745098, 0.6862745098, 0)
 
-    def rgb_yellow(self, context):
+    def rgb_yellow(self, context: Context) -> None:
         context.set_source_rgb(1, 0.6862745098, 0)
 
-    def rgb_cyan(self, context):
+    def rgb_cyan(self, context: Context) -> None:
         context.set_source_rgb(0.5137254902, 0.6784313725, 0.6784313725)
 
-    def rgb_violet(self, context):
+    def rgb_violet(self, context: Context) -> None:
         context.set_source_rgb(0.831372549, 0.5215686275, 0.6784313725)
 
-    def calculate_pos(self, x, y):
+    def calculate_pos(self, x: float, y: float) -> Dict[str, Button]:
         pos = Pos(x, y)
 
-        key_pos = {}
+        key_pos: Dict[str, Button] = {}
         for c in "`1234567890-=":
             key_pos[c] = pos.get_pos(c)
 
@@ -155,9 +232,9 @@ class KeyboardPNGFactory:
 
         return key_pos
 
-    def render(self, filename):
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1280, 800)
-        context = cairo.Context(surface)
+    def render(self, filename: str) -> None:
+        surface = ImageSurface(cairo.FORMAT_ARGB32, 1280, 800)
+        context = Context(surface)
         with context:
             context.set_source_rgb(1, 1, 1)
             context.paint()
@@ -167,22 +244,29 @@ class KeyboardPNGFactory:
         else:
             context.show_text("No modifiers used.")
 
-        for i in self.key_pos.values():
-            if i.key in ["FN_KEYS"]:
+        for key_button in self.key_pos.values():
+            if key_button.key in ["FN_KEYS"]:
                 continue
 
-            self.draw_button(context, i.key, i.x, i.y, i.width, i.height)
+            self.draw_button(
+                context,
+                key_button.key,
+                key_button.x,
+                key_button.y,
+                key_button.width,
+                key_button.height,
+            )
 
         # draw functional
-        fn = [i for i in keys.values() if i.key[:4] == "XF86"]
+        fn = [i for i in self.keys.values() if i.key[:4] == "XF86"]
         if len(fn):
             fn_pos = self.key_pos["FN_KEYS"]
-            x = fn_pos.x
-            for i in fn:
+            x_pos = fn_pos.x
+            for fn_key in fn:
                 self.draw_button(
-                    context, i.key, x, fn_pos.y, fn_pos.width, fn_pos.height
+                    context, fn_key.key, x_pos, fn_pos.y, fn_pos.width, fn_pos.height
                 )
-                x += Pos.GAP + Pos.WIDTH
+                x_pos += Pos.GAP + Pos.WIDTH
 
         # draw mouse base
         context.rectangle(830, 660, 244, 90)
@@ -194,7 +278,15 @@ class KeyboardPNGFactory:
 
         surface.write_to_png(filename)
 
-    def draw_button(self, context, key, x, y, width, height):
+    def draw_button(
+        self,
+        context: Context,
+        key: str,
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+    ) -> None:
         fn = False
         if key[:4] == "XF86":
             fn = True
@@ -239,9 +331,9 @@ class KeyboardPNGFactory:
         context.move_to(x + BUTTON_NAME_X, y + BUTTON_NAME_Y)
         context.show_text(self.translate(key))
 
-    def show_multiline(self, context, x, y, key):
+    def show_multiline(self, context: Context, x: float, y: float, key: KInfo) -> None:
         """Cairo doesn't support multiline. Added with word wrapping."""
-        c_width = 14
+        c_width: float = 14.0
         if key.key in CUSTOM_KEYS:
             c_width *= CUSTOM_KEYS[key.key]
 
@@ -250,7 +342,10 @@ class KeyboardPNGFactory:
         context.move_to(x, y)
         words = key.command.split(" ")
         words.reverse()
-        printable = last_word = words.pop()
+        printable: str = ""
+        last_word: Optional[str] = None
+        if words:
+            printable = last_word = words.pop()
         while len(words):
             last_word = words.pop()
             if len(printable + " " + last_word) < c_width:
@@ -265,7 +360,7 @@ class KeyboardPNGFactory:
         if last_word is not None:
             context.show_text(printable)
 
-    def set_key_color(self, context, key):
+    def set_key_color(self, context: Context, key: KInfo) -> None:
         if key.scope == "group":
             self.rgb_green(context)
         elif key.scope == "layout":
@@ -275,8 +370,8 @@ class KeyboardPNGFactory:
         else:
             self.rgb_violet(context)
 
-    def translate(self, text):
-        dictionary = {
+    def translate(self, text: str) -> str:
+        dictionary: Dict[str, str] = {
             "period": ",",
             "comma": ".",
             "Left": "←",
@@ -297,91 +392,30 @@ class KeyboardPNGFactory:
         return dictionary[text]
 
 
-class KInfo:
-    NAME_MAP = {
-        "togroup": "to group",
-        "toscreen": "to screen",
-    }
-
-    KEY_MAP = {
-        "grave": "`",
-        "semicolon": ";",
-        "slash": "/",
-        "backslash": "\\",
-        "comma": ",",
-        "period": ".",
-        "bracketleft": "[",
-        "bracketright": "]",
-        "quote": "'",
-        "minus": "-",
-        "equals": "=",
-    }
-
-    def __init__(self, key):
-        if key.key in self.KEY_MAP:
-            self.key = self.KEY_MAP[key.key]
-        else:
-            self.key = key.key
-        self.command = self.get_command(key)
-        self.scope = self.get_scope(key)
-
-    def get_command(self, key):
-        if hasattr(key, "desc") and key.desc:
-            return key.desc
-
-        if not hasattr(key, "commands") or not key.commands:
-            return ""
-
-        cmd = key.commands[0]
-        command = cmd.name
-        if command in self.NAME_MAP:
-            command = self.NAME_MAP[command]
-
-        command = command.replace("_", " ")
-
-        if len(cmd.args):
-            if isinstance(cmd.args[0], str):
-                command += " " + cmd.args[0]
-
-        return command
-
-    def get_scope(self, key):
-        if not hasattr(key, "commands") or not key.commands:
-            return
-
-        selectors = key.commands[0].selectors
-        if len(selectors):
-            return selectors[0][0]
-
-
-class MInfo(KInfo):
-    def __init__(self, mouse):
-        self.key = mouse.button
-        self.command = self.get_command(mouse)
-        self.scope = self.get_scope(mouse)
-
-
-def get_kb_map(config_path=None):
-    from libqtile.confreader import Config
-    from libqtile.config import KeyChord
-
-    c = Config(config_path)
+def get_kb_map(config_path: Optional[str] = None) -> Dict[str, Dict[str, KInfo]]:
+    c: Any = Config(config_path)  # type: ignore
     if config_path:
         c.load()
 
-    all_keys = []
+    all_keys: List[Union[Key, KeyChord]] = []
+    key: Union[Key, KeyChord]
     for key in c.keys:
         if isinstance(key, KeyChord):
             key.desc = "Enter chord"
             all_keys.append(key)
 
+            sub_key: Union[Key, KeyChord]
             for sub_key in key.submappings:
                 prefix = f"Chord ({key.key}): "
                 current_desc = ""
                 if hasattr(sub_key, "desc") and sub_key.desc:
                     current_desc = sub_key.desc
                 else:
-                    if hasattr(sub_key, "commands") and sub_key.commands:
+                    if (
+                        not isinstance(sub_key, KeyChord)
+                        and hasattr(sub_key, "commands")
+                        and sub_key.commands
+                    ):
                         cmd = sub_key.commands[0]
                         command = cmd.name.replace("_", " ")
                         if len(cmd.args) and isinstance(cmd.args[0], str):
@@ -392,15 +426,17 @@ def get_kb_map(config_path=None):
         else:
             all_keys.append(key)
 
-    kb_map = {}
-    for key in all_keys:
-        mod = "-".join(key.modifiers)
+    kb_map: Dict[str, Dict[str, KInfo]] = {}
+    key2: Union[Key, KeyChord]
+    for key2 in all_keys:
+        mod = "-".join(key2.modifiers)
         if mod not in kb_map:
             kb_map[mod] = {}
 
-        info = KInfo(key)
+        info = KInfo(key2)
         kb_map[mod][info.key] = info
 
+    mouse: Mouse
     for mouse in c.mouse:
         mod = "-".join(mouse.modifiers)
         if mod not in kb_map:
@@ -412,8 +448,8 @@ def get_kb_map(config_path=None):
     return kb_map
 
 
-help_doc = """
-usage: gen-keybinding [-h] [-c CONFIGFILE] [-o OUTPUT_DIR]
+help_doc: str = """
+usage: ./gen-keybindings.py [-h] [-c CONFIGFILE] [-o OUTPUT_DIR]
 
 Qtile keybindings image generator
 
@@ -426,8 +462,8 @@ optional arguments:
                         set directory to export all images to
 """
 if __name__ == "__main__":
-    config_path = None
-    output_dir = ""
+    config_path: Optional[str] = None
+    output_dir: str = ""
     try:
         opts, args = getopt.getopt(
             sys.argv[1:], "hc:o:", ["help=", "config=", "output-dir="]
