@@ -13,4 +13,5 @@ run dunst
 run /usr/bin/lxqt-policykit-agent
 run nm-applet
 run redshift
+run xrdb ~/.Xresources
 # run picom -b

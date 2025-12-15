@@ -186,12 +186,3 @@ shell/.config/ranger/plugins/ranger_devicons/
 GEMINI.md
 PROJECT_LOG.md
 project_log.md
-
-# Generated keybinding images
-control-mod1.png
-mod4-control.png
-mod4-shift.png
-mod4.png
-
-# Qtile images directory
-/wm/.config/qtile/images/

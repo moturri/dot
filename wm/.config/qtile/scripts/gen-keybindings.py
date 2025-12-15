@@ -123,9 +123,15 @@ class KInfo:
 
         cmd = key.commands[0]
         command: str = cmd.name
-        if command in self.NAME_MAP:
+        # Handle lazy.function
+        if command == "function" and len(cmd.args) and hasattr(cmd.args[0], "__name__"):
+            command = cmd.args[0].__name__
+        # Handle lazy.widget
+        elif len(cmd.selectors) and cmd.selectors[0][0] == "widget":
+            widget_name = cmd.selectors[0][1]
+            command = f"{widget_name} {command}"
+        elif command in self.NAME_MAP:
             command = self.NAME_MAP[command]
-
         command = command.replace("_", " ")
 
         if len(cmd.args):
