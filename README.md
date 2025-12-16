@@ -1,28 +1,48 @@
 # Arch Qtile Dotfiles
 
-This repository contains my personal dotfiles for a suckless-inspired approach.
-Specifically tailored for [Arch Linux](https://archlinux.org/) and [Qtile](https://qtile.org/).
-The configs are for various tools and environments, ensuring
-a streamlined and personalized experience across my Linux setup.
+This repository contains my personal dotfiles, tailored for an Arch Linux environment running the Qtile window manager. The configurations are designed for a dark, efficient, and visually consistent workflow across various applications, with a "suckless-inspired" philosophy.
 
 ## Key Configurations
 
-- **Window Manager ([Qtile](https://qtile.org/)):** The [Qtile setup](wm/.config/qtile/config.py) features a multi-screen configuration with custom bars, layouts (`MonadTall`, `MonadWide`, `MonadThreeCol`), and a startup script for essential applications.
-- **Terminal ([Kitty](https://sw.kovidgoyal.net/kitty/)):** [Kitty](terminal/.config/kitty/kitty.conf) is the primary terminal emulator, configured with "JetBrainsMonoNL Nerd Font," a powerline-style tab bar, and custom keybindings for a streamlined workflow.
-- **Shell ([Zsh](https://www.zsh.org/)):** The [Zsh configuration](shell/.zshrc) is managed by `zim` and includes numerous aliases, `fzf`-integrated functions, and a customized `starship` prompt.
-- **Editor ([Neovim](https://neovim.io/)):** The [Neovim configuration](shell/.config/nvim/init.lua) is managed in Lua and uses `lazy.nvim` for plugin management.
-- **Browser ([Zen Browser](https://github.com/zen-browser/desktop)):** [Zen Browser](browser/.zen/m.Default%20(release)/user.js) is configured for a minimal and privacy-focused experience, with a dark mode, GTK theme integration, and various performance and privacy enhancements.
+### Window Manager (Qtile)
+
+- **Configuration:** [`wm/.config/qtile/config.py`](wm/.config/qtile/config.py)
+- **Description:** The Qtile setup features a multi-screen configuration with custom bars defined in `wm/.config/qtile/bars.py`. It uses a variety of layouts, including `MonadTall`, `MonadWide`, and `MonadThreeCol`. The widgets have been refactored to be more robust and event-driven.
+    - **Battery Widget:** The `BatteryWidget` in `wm/.config/qtile/widgets/battery.py` is a purely event-driven component, using `pyudev` and `select` for listening to power events.
+    - **Audio Widget:** The `BaseAudioWidget` in `wm/.config/qtile/widgets/wpctl.py` is an event-driven PipeWire audio widget using `wpctl subscribe`.
+    - **Brightness Widget:** The `BrightctlWidget` in `wm/.config/qtile/widgets/brightctl.py` uses `brightnessctl` to control screen brightness.
+    - **Scripts:** The `wm/.config/qtile/scripts/` directory contains various utility scripts for autostart, keybinding generation, and monitor setup.
+
+### Terminal (Kitty)
+
+- **Configuration:** [`terminal/.config/kitty/kitty.conf`](terminal/.config/kitty/kitty.conf)
+- **Description:** Kitty is the primary terminal emulator, configured with the "JetBrainsMonoNL Nerd Font". It features a powerline-style tab bar and custom keybindings for a streamlined workflow.
+
+### Shell (Zsh)
+
+- **Configuration:** [`shell/.zshrc`](shell/.zshrc)
+- **Description:** Zsh is configured using `zim` for plugin management. The configuration includes numerous aliases (e.g., `ls` -> `eza`, `cat` -> `bat`), custom functions that integrate with `fzf` for interactive workflows (e.g., `tldrr`, `yayfz`), and a customized `starship` prompt.
+
+### Editor (Neovim)
+
+- **Configuration:** [`shell/.config/nvim/init.lua`](shell/.config/nvim/init.lua)
+- **Description:** Neovim is the primary text editor. The configuration is managed in Lua and uses `lazy.nvim` for plugin management, ensuring a fast and modular setup.
+
+### Browser (Zen Browser)
+
+- **Configuration:** [`browser/.zen/m.Default (release)/user.js`](browser/.zen/m.Default%20(release)/user.js)
+- **Description:** Zen Browser is configured for a minimal and privacy-focused experience, with a dark mode, GTK theme integration, and various performance and privacy enhancements.
 
 ### Theming
 
-- **[GTK/Qt](gtkqt/):** Consistent look and feel across GTK and Qt applications.
-- **[X11](X11/):** Xresources for theming X applications, including a Dracula-OLED theme for XTerm.
+- **GTK/Qt:** Configurations for GTK and Qt applications are managed in the `gtkqt/` directory, ensuring a consistent look and feel.
+- **X11:** The `X11/` directory contains X11-related configurations such as `.xprofile` for session startup and `.Xresources` for X application theming.
 
 ### Other Tools
 
-- **[Rofi](https://github.com/davatorium/rofi):** Application launcher with [custom scripts](wm/.config/rofi/scripts/).
-- **[Dunst](https://dunst-project.org/):** Notification daemon with a [dark theme and custom rules](wm/.config/dunst/dunstrc).
-- **[Picom](https://github.com/yshui/picom):** Lightweight compositor with a [minimal configuration](wm/.config/picom/picom.conf).
+- **Rofi:** Used as an application launcher and for various scripts. The configuration is in `wm/.config/rofi/`.
+- **Dunst:** The notification daemon, configured in `wm/.config/dunst/dunstrc` with a dark theme and custom rules.
+- **Picom:** The compositor, configured in `wm/.config/picom/picom.conf` for a lightweight experience without excessive effects.
 
 ## Usage
 
@@ -36,13 +56,16 @@ This would create symlinks from the files in this repository to their correspond
 
 ## Dependencies
 
-The Qtile configurations and some other scripts within this repository rely
-on the following tools:
+The configurations in this repository rely on several external tools, including:
 
-- [brightnessctl](https://github.com/Hummer12007/brightnessctl) — for screen
-  brightness control (`BrightctlWidget`)
-- [pyudev](https://github.com/pyudev/pyudev) — for monitoring ACPI battery events (`BatteryWidget`)
-- [pipewire](https://pipewire.org) — for low-latency audio/video
-- [wireplumber](https://gitlab.freedesktop.org/pipewire/wireplumber) — for managing audio devices via `wpctl`
-- [stow](https://www.gnu.org/software/stow/) — for managing symlinks and
-  maintaining clean dotfile deployment
+- `brightnessctl`
+- `pyudev`
+- `pipewire`
+- `wireplumber`
+- `stow`
+- `zsh`
+- `neovim`
+- `kitty`
+- `rofi`
+- `dunst`
+- `picom`

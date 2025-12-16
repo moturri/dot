@@ -87,7 +87,6 @@ keys += [
             Key([], "p", lazy.spawn("thunar")),
             Key([], "z", lazy.spawn("zen-browser")),
             Key([], "c", lazy.spawn("cider")),
-            Key([], "s", lazy.spawn("stremio-enhanced")),
             Key([], "b", lazy.spawn("brave")),
         ],
     )
