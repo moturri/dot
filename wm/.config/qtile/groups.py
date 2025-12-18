@@ -198,8 +198,8 @@ scratchpad = ScratchPad(
             opacity=1,
         ),
         DropDown(
-            "thunar",
-            "thunar",
+            "pcmanfm-qt",
+            "pcmanfm-qt",
             width=0.7,
             height=0.7,
             x=0.15,
@@ -228,7 +228,7 @@ scratch_keys = {
     "localsend": "l",
     "obsidian": "o",
     "pavucontrol-qt": "v",
-    "thunar": "f",
+    "pcmanfm-qt": "f",
     "keybindings": "k",
 }
 
