@@ -1,7 +1,1 @@
-headerbar {
-	background: none;
-}
-
-window {
-	border: none;
-}
+@import 'colors.css';
