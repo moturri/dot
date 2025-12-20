@@ -94,6 +94,7 @@ floating_layout = layout.Floating(
         Match(wm_class="remote-viewer"),
         Match(wm_class="nm-connection-editor"),
         Match(wm_class="wihotspot"),
+        Match(wm_class="Picture-in-Picture"),
     ],
 )
 
