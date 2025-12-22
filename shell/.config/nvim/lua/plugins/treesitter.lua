@@ -14,6 +14,14 @@ local languages = {
 	"vim",
 	"vimdoc",
 	"rust",
+	"regex",
+	"latex",
+	"yaml",
+	"scss",
+	"svelte",
+	"tsx",
+	"typst",
+	"vue",
 }
 return {
 	{
