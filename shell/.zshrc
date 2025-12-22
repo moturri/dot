@@ -141,6 +141,7 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
+# export PATH="$HOME/.local/bin:$PATH"
 
 alias ls="eza --icons=always"
 alias vi="nvim"
@@ -149,6 +150,14 @@ alias lta="eza -lTag --icons"
 alias lta2="eza -lTag --level=2 --icons"
 alias lta3="eza -lTag --level=3 --icons"
 alias cat="bat --paging=never --style=full"
+
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+
+eval "$(atuin init zsh)"
 
 
 cht() {
@@ -204,10 +213,3 @@ yayfz-widget() {
 }
 zle -N yayfz-widget
 bindkey '^Y' yayfz-widget
-
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-
-eval "$(atuin init zsh)"

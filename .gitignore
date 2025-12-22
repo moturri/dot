@@ -176,6 +176,19 @@ qtile/.config/qtile/__pycache__/colors.cpython-312.pyc
 qtile/.config/qtile/__pycache__/config.cpython-312.pyc
 qtile/.config/qtile/__pycache__/keybinds.cpython-312.pyc
 
+# Qtile
+wm/.config/qtile/__pycache__/
+wm/.config/qtile/widgets/__pycache__/
+wm/.config/qtile/modules/__pycache__/
+
+# General
+*.log
+.DS_Store
+*.swp
+*~
+*.bak
+*.tmp
+
 # Neovim
 shell/.config/nvim/lazy-lock.json
 

@@ -2,115 +2,143 @@
 
 set -euo pipefail
 
-declare -A DEFAULTS=(
-	[session]="m"
-	[profile]="default"
-)
+readonly SCRIPT_NAME="${0##*/}"
+readonly SESSION="${1:-m}"
+readonly PROFILE="${2:-default}"
+readonly CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/create_ap"
+readonly ENV_FILE="$CONFIG_DIR/env_$PROFILE"
+readonly TMUX_AP_WINDOW_NAME="AP"
+readonly TMUX_WIRED_AP_WINDOW_NAME="AP-Wired"
 
-SESSION="${1:-${DEFAULTS[session]}}"
-PROFILE="${2:-${DEFAULTS[profile]}}"
-ENV_FILE="$HOME/.config/create_ap/env_$PROFILE"
-
-rofi_err() {
-	rofi -dmenu -p " $1" <<<"" >/dev/null
+die() {
+	rofi -dmenu -p "✗ [$SCRIPT_NAME] $1" <<<"" >/dev/null
 	exit 1
 }
 
-notify_warn() {
-	notify-send "AP Warning" " $1"
+notify() {
+	command -v notify-send >/dev/null && notify-send "AP" "$1" || true
 }
 
-if ! locale | grep -q "UTF-8"; then
-	export LANG="en_US.UTF-8"
-	notify_warn "Locale forced to UTF-8 for proper icon rendering."
-fi
+check_deps() {
+	local missing=()
+	local deps=(tmux rofi create_ap iw nmcli)
 
-deps=(tmux rofi create_ap iw kitty)
-SUDO_CMD="sudo-rs"
-if ! command -v "$SUDO_CMD" &>/dev/null; then
-	SUDO_CMD="sudo"
-fi
-deps+=("$SUDO_CMD")
+	for cmd in "${deps[@]}"; do
+		command -v "$cmd" >/dev/null || missing+=("$cmd")
+	done
 
-for cmd in "${deps[@]}"; do
-	command -v "$cmd" >/dev/null || rofi_err "Missing required command: $cmd"
-done
+	[[ ${#missing[@]} -eq 0 ]] || die "Missing: ${missing[*]}"
 
-detect_iface() {
-	iw dev 2>/dev/null | awk '/Interface/ {print $2; exit}'
-}
-WIFI_INTERFACE="$(detect_iface || true)"
-[[ -z "$WIFI_INTERFACE" ]] && rofi_err "No wireless interface detected via iw dev."
-
-if [[ ! -f "$ENV_FILE" ]]; then
-	rofi_err "Missing profile env file:\n$ENV_FILE"
-fi
-
-if [[ $(stat -c "%a" "$ENV_FILE") -gt 600 ]]; then
-	notify_warn "Env file too permissive:\n$ENV_FILE\nRun: chmod 600 \"$ENV_FILE\""
-fi
-
-# shellcheck source=/dev/null
-. "$ENV_FILE"
-
-trim() {
-	local var="$1"
-	var="${var#"${var%%[![:space:]]*}"}"
-	echo "${var%"${var##*[![:space:]]}"}"
+	# Detect sudo command
+	if command -v sudo-rs >/dev/null; then
+		echo "sudo-rs"
+	elif command -v doas >/dev/null; then
+		echo "doas"
+	elif command -v sudo >/dev/null; then
+		echo "sudo"
+	else
+		die "No privilege escalation tool found"
+	fi
 }
 
-SSID="$(trim "${SSID:-}")"
-PASSWORD="$(trim "${PASSWORD:-}")"
-
-if [[ -z "$SSID" || -z "$PASSWORD" ]]; then
-	rofi_err "SSID or PASSWORD not set in:\n$ENV_FILE"
-fi
-
-cleanup() {
-	trap - INT TERM EXIT
+detect_wifi_interface() {
+	local iface
+	iface=$(iw dev 2>/dev/null | awk '/Interface/ {print $2; exit}')
+	[[ -n "$iface" ]] || die "No wireless interface found"
+	echo "$iface"
 }
-trap cleanup INT TERM EXIT
+
+load_credentials() {
+	[[ -f "$ENV_FILE" ]] || die "Config not found:\n$ENV_FILE"
+
+	local perms
+	perms=$(stat -c "%a" "$ENV_FILE" 2>/dev/null || stat -f "%Lp" "$ENV_FILE" 2>/dev/null)
+	[[ "$perms" -le 600 ]] || notify "⚠ Insecure permissions on $ENV_FILE"
+
+	# shellcheck source=/dev/null
+	. "$ENV_FILE"
+
+	SSID="${SSID// /}"
+	PASSWORD="${PASSWORD// /}"
+
+	[[ -n "$SSID" && -n "$PASSWORD" ]] || die "SSID/PASSWORD not set"
+}
 
 get_channel() {
-	iw dev "$WIFI_INTERFACE" info 2>/dev/null | grep -oE 'channel [0-9]+' | awk '{print $2}' || true
+	local channel
+	channel=$(iw dev "$WIFI_INTERFACE" info 2>/dev/null | awk '/channel/ {print $2; exit}')
+
+	if [[ -z "$channel" ]]; then
+		channel=$(rofi -dmenu -p "󰖩 Channel (1/6/11):" -filter "6")
+		[[ -n "$channel" ]] || die "No channel specified"
+	fi
+
+	echo "$channel"
 }
 
-create_ap_tmux() {
+select_wired_interface() {
+	local devices
+	devices=$(nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null |
+		awk -F: '$2=="ethernet" && $3=="connected" {print $1}')
+
+	[[ -n "$devices" ]] || die "No active ethernet connection"
+
+	local count
+	count=$(echo "$devices" | wc -l)
+
+	if [[ $count -eq 1 ]]; then
+		echo "$devices"
+	else
+		local selected
+		selected=$(echo "$devices" | rofi -dmenu -i -p "󰞹 Select interface:")
+		[[ -n "$selected" ]] || exit 0
+		echo "$selected"
+	fi
+}
+
+ensure_session() {
+	tmux has-session -t "$SESSION" 2>/dev/null || tmux new-session -d -s "$SESSION"
+}
+
+create_hotspot() {
 	local channel
 	channel=$(get_channel)
 
-	if [[ -z "$channel" ]]; then
-		channel=$(rofi -dmenu -p "󰖩 No channel detected. Enter manually (1,6,11):")
-		[[ -z "$channel" ]] && rofi_err "No channel provided."
-	fi
-
-	if ! tmux has-session -t "$SESSION" 2>/dev/null; then
-		tmux new-session -d -s "$SESSION"
-	fi
-
-	tmux new-window -t "$SESSION:" -n "create_ap" \
-		"$SUDO_CMD create_ap '$WIFI_INTERFACE' '$WIFI_INTERFACE' '$SSID' '$PASSWORD' -c $channel; read -n1 -r -p 'Press any key to exit...'"
-	tmux attach-session -t "$SESSION"
+	ensure_session
+	tmux new-window -t "$SESSION:" -n "$TMUX_AP_WINDOW_NAME" \
+		"$SUDO_CMD create_ap '$WIFI_INTERFACE' '$WIFI_INTERFACE' '$SSID' '$PASSWORD' -c '$channel' || read -n1 -r -p 'Press any key...'"
 }
 
-attach_tmux_session() {
-	tmux attach-session -t "$SESSION" || rofi_err "No tmux session '$SESSION' found."
+create_wired_hotspot() {
+	local channel upstream
+	channel=$(get_channel)
+	upstream=$(select_wired_interface)
+
+	ensure_session
+	tmux new-window -t "$SESSION:" -n "$TMUX_WIRED_AP_WINDOW_NAME" \
+		"$SUDO_CMD create_ap '$WIFI_INTERFACE' '$upstream' '$SSID' '$PASSWORD' -c '$channel' || read -n1 -r -p 'Press any key...'"
 }
 
-launch_tmux_kitty() {
-	tmux has-session -t "$SESSION" 2>/dev/null || tmux new-session -d -s "$SESSION"
-	kitty -e tmux attach-session -t "$SESSION" &
-}
+
 
 main() {
-	local options=("󰖩  Create Hotspot" "  Attach to Session" "󰯅  Launch Session Only")
+	SUDO_CMD=$(check_deps)
+	readonly SUDO_CMD
+	WIFI_INTERFACE=$(detect_wifi_interface)
+	readonly WIFI_INTERFACE
+	load_credentials
+
+	local -a options=(
+		"󰖩  WiFi → WiFi"
+		"󰈀  Ethernet → WiFi"
+	)
+
 	local choice
-	choice=$(printf '%s\n' "${options[@]}" | rofi -dmenu -i -p "󰀂 ")
+	choice=$(printf '%s\n' "${options[@]}" | rofi -dmenu -i -p "󰀂 Hotspot")
 
 	case "$choice" in
-	"󰖩  Create Hotspot") create_ap_tmux ;;
-	"  Attach to Session") attach_tmux_session ;;
-	"󰯅  Launch Session Only") launch_tmux_kitty ;;
+	"${options[0]}") create_hotspot ;;
+	"${options[1]}") create_wired_hotspot ;;
 	*) exit 0 ;;
 	esac
 }

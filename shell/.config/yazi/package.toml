@@ -3,5 +3,5 @@ deps = []
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:dracula"
-rev = "ffe6e3a"
+rev = "9276ffa"
 hash = "5d16bf24ca0980168814fc1abd307c07"
