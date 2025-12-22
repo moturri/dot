@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Stow](https://img.shields.io/badge/managed%20by-Stow-green.svg)](https://www.gnu.org/software/stow/)
 [![Arch Linux](https://img.shields.io/badge/Arch%20Linux-passing-blueviolet.svg)](https://archlinux.org/)
+
 This repository contains my personal dotfiles, tailored for an Arch Linux environment running the Qtile window manager. The configurations are designed for a dark, efficient, and visually consistent workflow across various applications, with a "suckless-inspired" philosophy.
 
 ## Table of Contents

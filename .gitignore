@@ -199,3 +199,6 @@ shell/.config/ranger/plugins/ranger_devicons/
 GEMINI.md
 PROJECT_LOG.md
 project_log.md
+
+# Gitignore
+.gitignore
