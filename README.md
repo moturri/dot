@@ -63,26 +63,26 @@ The following table lists the primary dependencies for this setup, grouped by ca
 
 | Category         | Dependency      | Description                                                        |
 | :--------------- | :-------------- | :----------------------------------------------------------------- |
-| **Core**         | `stow`          | A symlink farm manager for deploying the dotfiles.                 |
-|                  | `pipewire`      | A modern server for handling audio and video streams.              |
-|                  | `wireplumber`   | A session and policy manager for PipeWire.                         |
-|                  | `pyudev`        | A Python binding for libudev, used by some Qtile widgets.          |
-|                  | `brightnessctl` | A utility for controlling screen brightness.                       |
-| **Shell**        | `zsh`           | A powerful and extensible command-line shell.                      |
-|                  | `fish`          | A smart and user-friendly command-line shell.                      |
-|                  | `starship`      | A minimal, fast, and infinitely customizable prompt for any shell. |
-|                  | `atuin`         | A modern, encrypted, and synchronized shell history manager.       |
-|                  | `neovim`        | A highly extensible, Vim-based text editor.                        |
-|                  | `yazi`          | A modern, terminal-based file manager written in Rust.             |
-|                  | `fastfetch`     | A fast and lightweight system information tool.                    |
-|                  | `tealdeer`      | A fast and modern `tldr` client implemented in Rust.               |
-| **Graphical UI** | `kitty`         | The primary terminal emulator, offering speed and features.        |
-|                  | `wezterm`       | A powerful, cross-platform terminal emulator and multiplexer.      |
-|                  | `alacritty`     | A simple, fast, and GPU-accelerated terminal emulator.             |
-|                  | `rofi`          | A versatile application launcher and window switcher.              |
-|                  | `dunst`         | A lightweight and customizable notification daemon.                |
-|                  | `picom`         | A lightweight compositor for X11, providing visual effects.        |
-|                  | `greenclip`     | A simple and efficient clipboard manager.                          |
+| **Core**         | `stow`          | - symlink farm manager for deploying the dotfiles.                 |
+|                  | `pipewire`      | - modern server for handling audio and video streams.              |
+|                  | `wireplumber`   | - session and policy manager for PipeWire.                         |
+|                  | `pyudev`        | - Python binding for libudev, used by some Qtile widgets.          |
+|                  | `brightnessctl` | - utility for controlling screen brightness.                       |
+| **Shell**        | `zsh`           | - powerful and extensible command-line shell.                      |
+|                  | `fish`          | - smart and user-friendly command-line shell.                      |
+|                  | `starship`      | - minimal, fast, and infinitely customizable prompt for any shell. |
+|                  | `atuin`         | - modern, encrypted, and synchronized shell history manager.       |
+|                  | `neovim`        | - highly extensible, Vim-based text editor.                        |
+|                  | `yazi`          | - modern, terminal-based file manager written in Rust.             |
+|                  | `fastfetch`     | - fast and lightweight system information tool.                    |
+|                  | `tealdeer`      | - fast and modern `tldr` client implemented in Rust.               |
+| **Graphical UI** | `kitty`         | - primary terminal emulator, offering speed and features.          |
+|                  | `wezterm`       | - powerful, cross-platform terminal emulator and multiplexer.      |
+|                  | `alacritty`     | - simple, fast, and GPU-accelerated terminal emulator.             |
+|                  | `rofi`          | - versatile application launcher and window switcher.              |
+|                  | `dunst`         | - lightweight and customizable notification daemon.                |
+|                  | `picom`         | - lightweight compositor for X11, providing visual effects.        |
+|                  | `greenclip`     | - simple and efficient clipboard manager.                          |
 
 ## Contributing
 
