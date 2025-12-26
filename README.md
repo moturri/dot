@@ -1,33 +1,33 @@
 # Arch Linux Dotfiles
 
-This repository contains a curated collection of personal dotfiles for an Arch Linux system running the Qtile window manager. The configurations are designed to create an efficient, powerful, and visually consistent development environment.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The guiding philosophy is a preference for tools that are simple, lightweight, and adhere to the "do one thing well" principle. This "suckless-inspired" approach is balanced with a pragmatic selection of more complex tools when they offer significant workflow enhancements.
+## Project Overview
 
-## Core Components
+This repository contains a curated collection of personal dotfiles for an Arch Linux system running the Qtile window manager. The configurations are designed to create an efficient, powerful, and visually consistent development environment, guided by a "suckless-inspired" philosophy that favors simplicity and modularity.
 
-This setup is built around a few key components that define the user experience:
+### Core Components
 
-- **Window Manager (Qtile):** As a tiling window manager configured in Python, Qtile provides a high degree of flexibility and control. The configuration is modular and includes a multi-screen setup, custom status bars, and a variety of layouts. To maximize efficiency, the widgets are event-driven. The main configuration can be found in [`wm/.config/qtile/config.py`](wm/.config/qtile/config.py).
+- **Window Manager (Qtile):** A flexible, Python-based tiling window manager with a modular, multi-screen setup, custom status bars, and event-driven widgets for maximum efficiency. The main configuration can be found in [`wm/.config/qtile/config.py`](wm/.config/qtile/config.py).
 - **Terminal Emulators:** A selection of high-performance terminal emulators are configured:
   - **Kitty:** The primary terminal, offering a balance of speed, features, and extensive configurability.
-  - **Wezterm:** A powerful, cross-platform terminal emulator and multiplexer written in Rust and configured in Lua.
+  - **Wezterm:** A powerful, cross-platform terminal emulator and multiplexer written in Rust.
   - **Alacritty:** A simple, fast, and GPU-accelerated terminal emulator.
 - **Shell Environment:**
-  - **Zsh:** A powerful and flexible shell, with plugin management handled by `zim`. It is configured with a rich set of aliases, custom functions, and a sleek `starship` prompt.
-  - **Fish:** A user-friendly shell with excellent out-of-the-box features like syntax highlighting and autosuggestions.
-- **Text Editor (Neovim):** The configuration for this highly extensible, Vim-based text editor is written in Lua and uses `lazy.nvim` for fast and modular plugin management.
+  - **Zsh:** A powerful and flexible shell with plugin management handled by `zim`.
+  - **Fish:** A user-friendly shell with excellent out-of-the-box features.
+- **Text Editor (Neovim):** A highly extensible, Vim-based text editor configured in Lua with `lazy.nvim` for fast, modular plugin management.
 - **File Manager (Yazi):** A modern, terminal-based file manager written in Rust, designed for speed and usability.
 
-## Theming and Aesthetics
+### Theming and Aesthetics
 
 A consistent visual theme is maintained across the entire environment:
 
 - **GTK/Qt Theming:** Centralized configurations in the [`gtkqt/`](gtkqt/) directory ensure a uniform appearance for both GTK and Qt applications.
-- **Icons and Cursors:** Custom icon and cursor themes are used to provide a polished and cohesive visual experience.
-- **Fonts:** Nerd Fonts are used to provide a rich set of icons and symbols in the terminal and status bars, with JetBrainsMono Nerd Font being the preferred typeface.
+- **Icons and Cursors:** Custom icon and cursor themes provide a polished and cohesive visual experience.
+- **Fonts:** JetBrainsMono Nerd Font is used to provide a rich set of icons and symbols in the terminal and status bars.
 
-## Installation
+## Installation Guide
 
 These dotfiles are managed using **GNU Stow**, a symlink farm manager that simplifies the process of deploying and managing configurations.
 
@@ -36,8 +36,32 @@ These dotfiles are managed using **GNU Stow**, a symlink farm manager that simpl
 - **Operating System:** Arch Linux (adaptable to other Linux distributions).
 - **Window Manager:** Qtile.
 - **Symlink Manager:** GNU Stow.
+- **Dependencies:** Ensure the tools listed in the table below are installed.
 
-### Steps
+| Category         | Dependency      | Description                                                      |
+| :--------------- | :-------------- | :--------------------------------------------------------------- |
+| **Core**         | `stow`          | Symlink farm manager for deploying the dotfiles.                 |
+|                  | `pipewire`      | Modern server for handling audio and video streams.              |
+|                  | `wireplumber`   | Session and policy manager for PipeWire.                         |
+|                  | `pyudev`        | Python binding for `libudev`, used by some Qtile widgets.        |
+|                  | `brightnessctl` | Utility for controlling screen brightness.                       |
+| **Shell**        | `zsh`           | Powerful and extensible command-line shell.                      |
+|                  | `fish`          | Smart and user-friendly command-line shell.                      |
+|                  | `starship`      | Minimal, fast, and infinitely customizable prompt for any shell. |
+|                  | `atuin`         | Modern, encrypted, and synchronized shell history manager.       |
+|                  | `neovim`        | Highly extensible, Vim-based text editor.                        |
+|                  | `yazi`          | Modern, terminal-based file manager written in Rust.             |
+|                  | `fastfetch`     | Fast and lightweight system information tool.                    |
+|                  | `tealdeer`      | Fast and modern `tldr` client implemented in Rust.               |
+| **Graphical UI** | `kitty`         | Primary terminal emulator, offering speed and features.          |
+|                  | `wezterm`       | Powerful, cross-platform terminal emulator and multiplexer.      |
+|                  | `alacritty`     | Simple, fast, and GPU-accelerated terminal emulator.             |
+|                  | `rofi`          | Versatile application launcher and window switcher.              |
+|                  | `dunst`         | Lightweight and customizable notification daemon.                |
+|                  | `picom`         | Lightweight compositor for X11, providing visual effects.        |
+|                  | `greenclip`     | Simple and efficient clipboard manager.                          |
+
+### Installation Steps
 
 1.  **Clone the repository:**
     ```bash
@@ -48,45 +72,48 @@ These dotfiles are managed using **GNU Stow**, a symlink farm manager that simpl
     cd ~/.dot
     ```
 3.  **Deploy the dotfiles:**
-    To deploy all dotfiles at once, run:
+    To deploy all configurations, run:
     ```bash
     stow .
     ```
-    Alternatively, to deploy a specific set of configurations (e.g., for Qtile), you can run:
+    To deploy a specific set of configurations (e.g., for Qtile), you can stow the corresponding directory:
     ```bash
     stow wm
     ```
 
-## Dependencies
+## Usage Examples
 
-The following table lists the primary dependencies for this setup, grouped by category.
+The Zsh configuration includes several custom functions and aliases to streamline common tasks:
 
-| Category         | Dependency      | Description                                                        |
-| :--------------- | :-------------- | :----------------------------------------------------------------- |
-| **Core**         | `stow`          | - symlink farm manager for deploying the dotfiles.                 |
-|                  | `pipewire`      | - modern server for handling audio and video streams.              |
-|                  | `wireplumber`   | - session and policy manager for PipeWire.                         |
-|                  | `pyudev`        | - Python binding for libudev, used by some Qtile widgets.          |
-|                  | `brightnessctl` | - utility for controlling screen brightness.                       |
-| **Shell**        | `zsh`           | - powerful and extensible command-line shell.                      |
-|                  | `fish`          | - smart and user-friendly command-line shell.                      |
-|                  | `starship`      | - minimal, fast, and infinitely customizable prompt for any shell. |
-|                  | `atuin`         | - modern, encrypted, and synchronized shell history manager.       |
-|                  | `neovim`        | - highly extensible, Vim-based text editor.                        |
-|                  | `yazi`          | - modern, terminal-based file manager written in Rust.             |
-|                  | `fastfetch`     | - fast and lightweight system information tool.                    |
-|                  | `tealdeer`      | - fast and modern `tldr` client implemented in Rust.               |
-| **Graphical UI** | `kitty`         | - primary terminal emulator, offering speed and features.          |
-|                  | `wezterm`       | - powerful, cross-platform terminal emulator and multiplexer.      |
-|                  | `alacritty`     | - simple, fast, and GPU-accelerated terminal emulator.             |
-|                  | `rofi`          | - versatile application launcher and window switcher.              |
-|                  | `dunst`         | - lightweight and customizable notification daemon.                |
-|                  | `picom`         | - lightweight compositor for X11, providing visual effects.        |
-|                  | `greenclip`     | - simple and efficient clipboard manager.                          |
+- **`tldrr`**: An interactive `tldr` client that uses `fzf` to search for and display cheat sheets.
+  ```bash
+  # Bound to Ctrl+F
+  tldrr
+  ```
+- **`yayfz`**: An interactive `yay` helper that uses `fzf` to search for and view information about packages in the Arch User Repository (AUR).
+  ```bash
+  h
+  # Bound to Ctrl+Y
+  yayfz
+  ```
+- **`cht`**: A simple script to quickly fetch cheat sheets from `cht.sh`.
+  ```bash
+  # Get a cheat sheet for tar
+  cht tar
+  ```
+- **Enhanced Commands**:
+  - `ls` is aliased to `eza --icons=always` for modern, icon-rich directory listings.
+  - `cat` is aliased to `bat --paging=never --style=full` for syntax-highlighted file viewing.
 
-## Contributing
+## Contribution Guidelines
 
-Contributions and suggestions for improvement are always welcome. Please feel free to open an issue or submit a pull request.
+Contributions, issues, and feature requests are welcome. If you have any suggestions for improvement, please feel free to open an issue or submit a pull request.
+
+1.  Fork the repository.
+2.  Create a new branch: `git checkout -b feature/...`.
+3.  Make your changes and commit them: `git commit -m '...'`.
+4.  Push to the branch: `git push origin feature/...`.
+5.  Open a pull request.
 
 ## License
 
