@@ -3,7 +3,7 @@
     fg0:    #2A2A2A;       // Default dark text
     fg1:    #000000;       // Selected text (true black)
     fg2:    #5A5A5A;       // Dimmed (prompt)
-    purple: #9A40FF;       // Dracula accent
+    purple: #573598;       // Custom accent purple
 }
 
 @import "base.rasi"

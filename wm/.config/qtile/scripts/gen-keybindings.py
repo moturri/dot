@@ -169,32 +169,32 @@ class KeyboardPNGFactory:
         context.set_source_rgb(0.0, 0.0, 0.0)
 
     def rgb_text(self, context: Context) -> None:
-        """Light gray text for readability"""
-        context.set_source_rgb(0.85, 0.85, 0.85)
+        """Bright white text for maximum contrast"""
+        context.set_source_rgb(0.95, 0.95, 0.95)
 
     def rgb_border(self, context: Context) -> None:
-        """Subtle dark gray borders"""
-        context.set_source_rgb(0.2, 0.2, 0.2)
+        """Medium gray borders for visibility"""
+        context.set_source_rgb(0.35, 0.35, 0.35)
 
     def rgb_red(self, context: Context) -> None:
-        """Darker red for modifiers"""
-        context.set_source_rgb(0.6, 0.15, 0.15)
+        """Vibrant red for modifiers - good OLED efficiency"""
+        context.set_source_rgb(0.9, 0.2, 0.2)
 
     def rgb_green(self, context: Context) -> None:
-        """Darker green for groups"""
-        context.set_source_rgb(0.15, 0.5, 0.15)
+        """Bright green for groups - OLED friendly"""
+        context.set_source_rgb(0.2, 0.8, 0.3)
 
     def rgb_yellow(self, context: Context) -> None:
-        """Darker amber for windows"""
-        context.set_source_rgb(0.7, 0.5, 0.0)
+        """Bright amber/gold for windows"""
+        context.set_source_rgb(1.0, 0.7, 0.0)
 
     def rgb_cyan(self, context: Context) -> None:
-        """Darker cyan for layouts"""
-        context.set_source_rgb(0.15, 0.4, 0.5)
+        """Bright cyan for layouts"""
+        context.set_source_rgb(0.2, 0.8, 0.9)
 
     def rgb_violet(self, context: Context) -> None:
-        """Darker violet for other"""
-        context.set_source_rgb(0.5, 0.2, 0.5)
+        """Bright magenta for other"""
+        context.set_source_rgb(0.9, 0.3, 0.9)
 
     def calculate_pos(self, x: float, y: float) -> Dict[str, Button]:
         pos = Pos(x, y)

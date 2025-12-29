@@ -3,7 +3,7 @@
     fg0:    #E6E6E6;       // Light grey text
     fg1:    #FFFFFF;       // White text (selected)
     fg2:    #A0A0A0;       // Dim text (prompts)
-    purple: #9A40FF;       // Dracula accent purple
+    purple: #573598;       // Custom accent purple
 }
 
 @import "base.rasi"
