@@ -119,11 +119,6 @@ def systemWidgets(
         widgets += [
             decorated_widget(
                 BrightctlWidget,
-                name="brightctl",
-                mouse_callbacks={
-                    "Button4": lazy.widget["brightctl"].increase(),
-                    "Button5": lazy.widget["brightctl"].decrease(),
-                },
             ),
             widget.Spacer(length=10),
         ]

@@ -172,3 +172,10 @@ class BrightctlWidget(TextBox):
     def refresh(self) -> None:
         """Manually refresh display."""
         self.update_display()
+
+    def button_press(self, x: int, y: int, button: int) -> None:
+        if button == 4:  # Scroll up
+            self.increase()
+        elif button == 5:  # Scroll down
+            self.decrease()
+
