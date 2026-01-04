@@ -136,7 +136,7 @@ def parse_volume_output(output: str) -> AudioState:
     return AudioState(volume=0, muted=muted)
 
 
-class BaseAudioWidget(base._TextBox):  # type: ignore[misc]
+class BaseAudioWidget(base._TextBox):
     """Base widget for audio device control via WirePlumber."""
 
     orientations = base.ORIENTATION_HORIZONTAL
@@ -199,7 +199,7 @@ class BaseAudioWidget(base._TextBox):  # type: ignore[misc]
             or (self.DEFAULT_INPUT if is_input else self.DEFAULT_OUTPUT)
         )
 
-        super().__init__("", **config)
+        super().__init__("", **config)  # type: ignore[no-untyped-call]
 
         self._stop = threading.Event()
         self._lock = threading.Lock()
@@ -223,10 +223,10 @@ class BaseAudioWidget(base._TextBox):  # type: ignore[misc]
                 logger.warning("Monitor thread did not terminate cleanly")
             self._thread = None
 
-        super().finalize()
+        super().finalize()  # type: ignore[no-untyped-call]
 
     def _configure(self, qtile: Qtile, bar: Bar) -> None:
-        super()._configure(qtile, bar)
+        super()._configure(qtile, bar)  # type: ignore[no-untyped-call]
         if self._thread is None:
             self._thread = threading.Thread(
                 target=self._loop,
@@ -357,7 +357,7 @@ class BaseAudioWidget(base._TextBox):  # type: ignore[misc]
 
     def _update(self) -> None:
         state = self._get_state()
-        self.update(self._format_text(state))
+        self.update(self._format_text(state))  # type: ignore[no-untyped-call]
 
     def button_press(self, x: int, y: int, button: int) -> None:
         button_actions: dict[int, Callable[[], None]] = {
