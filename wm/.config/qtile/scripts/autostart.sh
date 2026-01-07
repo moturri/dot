@@ -2,16 +2,22 @@
 
 set -euo pipefail
 
+# Run a command only if it's not already running
 function run() {
-	if ! pgrep -f "$1" >/dev/null; then
+	# Check for exact process name match
+	if ! pgrep -x "$1" >/dev/null; then
+		# Execute all arguments in the background
 		"$@" &
 	fi
 }
 
+# Load X resources
+xrdb ~/.Xresources &
+
+# Start daemons and applets
 run greenclip daemon
 run dunst
-run /usr/bin/lxqt-policykit-agent
+run lxqt-policykit-agent
 run nm-applet
 run redshift
-run xrdb ~/.Xresources
-# run picom -b
+run picom
