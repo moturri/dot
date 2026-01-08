@@ -206,6 +206,8 @@ class BaseAudioWidget(base._TextBox):
         self._last_update = 0.0
         self._timer: threading.Timer | None = None
         self._thread: threading.Thread | None = None
+        self._proc: subprocess.Popen[str] | None = None
+        self._proc_lock = threading.Lock()
         self._cached_state: AudioState | None = None
 
         self._update()
@@ -216,6 +218,10 @@ class BaseAudioWidget(base._TextBox):
         if self._timer:
             self._timer.cancel()
             self._timer = None
+
+        with self._proc_lock:
+            if self._proc:
+                self._terminate_process(self._proc)
 
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=self.THREAD_JOIN_TIMEOUT)
@@ -262,6 +268,8 @@ class BaseAudioWidget(base._TextBox):
             bufsize=1,
             env=ENV,
         )
+        with self._proc_lock:
+            self._proc = proc
 
         try:
             if proc.stdout is None:
@@ -274,6 +282,8 @@ class BaseAudioWidget(base._TextBox):
                 if any(key in line for key in self.SUBSCRIBE_KEYS):
                     self._debounce(self._update)
         finally:
+            with self._proc_lock:
+                self._proc = None
             self._terminate_process(proc)
 
     def _terminate_process(self, proc: subprocess.Popen[str]) -> None:

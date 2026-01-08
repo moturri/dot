@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 import os
 import shutil
+import select
 import subprocess
 import threading
 import time
@@ -25,6 +26,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Final, Iterator
 
+import pyudev  # type: ignore[import-untyped]
+from libqtile.bar import Bar
 from libqtile.command.base import expose_command
 from libqtile.widget.textbox import TextBox
 
@@ -118,6 +121,9 @@ class BrightctlWidget(TextBox):
     DEBOUNCE_MAX: Final[float] = 1.0
     COMMAND_TIMEOUT: Final[float] = 0.5
     SET_COMMAND_TIMEOUT: Final[float] = 1.0
+    THREAD_JOIN_TIMEOUT: Final[float] = 1.0
+    POLL_TIMEOUT: Final[int] = 1000
+    MONITOR_INTERVAL: Final[float] = 1.0
 
     def __init__(
         self,
@@ -154,13 +160,46 @@ class BrightctlWidget(TextBox):
         self._cached_state: BrightnessState | None = None
         self._last_update = 0.0
 
+        self._stop_evt = threading.Event()
+        self._monitor_thread: threading.Thread | None = None
+
+        try:
+            self._context = pyudev.Context()
+        except Exception as e:
+            logger.exception("Failed to initialize udev context")
+            raise BrightnessError("Could not initialize udev") from e
+
         super().__init__(text=self._generate_text(), **config)  # type: ignore[no-untyped-call]
+
+    def _configure(self, qtile: Any, bar: Bar) -> None:
+        """Start monitor thread on configure."""
+        super()._configure(qtile, bar)  # type: ignore[no-untyped-call]
+        self._stop_evt.clear()
+
+        if not self._monitor_thread or not self._monitor_thread.is_alive():
+            self._monitor_thread = threading.Thread(
+                target=self._monitor_loop,
+                daemon=True,
+                name="BrightctlWidget-Monitor",
+            )
+            self._monitor_thread.start()
+
+        self.update_display()
 
     def finalize(self) -> None:
         """Clean up resources on widget destruction."""
+        self._stop_evt.set()
+
         if self._update_timer:
             self._update_timer.cancel()
             self._update_timer = None
+
+        if self._monitor_thread and self._monitor_thread.is_alive():
+            self._monitor_thread.join(timeout=self.THREAD_JOIN_TIMEOUT)
+            if self._monitor_thread.is_alive():
+                logger.warning("Brightness monitor thread did not terminate cleanly")
+            self._monitor_thread = None
+
         super().finalize()  # type: ignore[no-untyped-call]
 
     @contextmanager
@@ -173,6 +212,24 @@ class BrightctlWidget(TextBox):
             yield
         finally:
             self._lock.release()
+
+    def _monitor_loop(self) -> None:
+        """Listen for udev events and trigger updates."""
+        try:
+            monitor = pyudev.Monitor.from_netlink(self._context)
+            monitor.filter_by(subsystem="backlight")
+            monitor.start()
+
+            poller = select.poll()
+            poller.register(monitor.fileno(), select.POLLIN)
+
+            while not self._stop_evt.wait(self.MONITOR_INTERVAL):
+                if poller.poll(self.POLL_TIMEOUT):
+                    if monitor.poll(0):
+                        self._debounced_update()
+
+        except Exception:
+            logger.exception("Brightness monitor loop crashed")
 
     def _build_command(self, *args: str) -> list[str]:
         """Build brightnessctl command with optional device argument."""

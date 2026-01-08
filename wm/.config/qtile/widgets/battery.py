@@ -81,7 +81,6 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
     CRITICAL_MAX: Final[int] = 100
     DEBOUNCE_MIN: Final[float] = 0.1
     DEBOUNCE_MAX: Final[float] = 10.0
-    AC_CACHE_EXPIRY: Final[float] = 2.0
     POLL_TIMEOUT: Final[int] = 100
     MONITOR_INTERVAL: Final[float] = 1.0
     THREAD_JOIN_TIMEOUT: Final[float] = 1.0
@@ -107,9 +106,7 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
         self._last_update = 0.0
         self._state = BatteryState(status="unknown", capacity=None)
         self._monitor_thread: threading.Thread | None = None
-
-        self._ac_online_cache: bool | None = None
-        self._ac_last_checked = 0.0
+        self._ac_online: bool = False
 
         self.battery_levels = tuple(
             BatteryIcon(threshold=t, icon=i, color=c) for t, i, c in BATTERY_ICONS
@@ -117,6 +114,7 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
 
         try:
             self._context = pyudev.Context()
+            self._ac_online = self._check_ac_online()
         except Exception as e:
             logger.exception("Failed to initialize udev context")
             raise BatteryError("Could not initialize udev") from e
@@ -168,7 +166,10 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
 
             while not self._stop_evt.wait(self.MONITOR_INTERVAL):
                 if poller.poll(self.POLL_TIMEOUT):
-                    if monitor.poll(0):
+                    # Drain all pending events
+                    while dev := monitor.poll(0):
+                        if dev.get("POWER_SUPPLY_TYPE") == "Mains":
+                            self._ac_online = dev.get("POWER_SUPPLY_ONLINE") == "1"
                         self._debounced_redraw()
 
         except Exception:
@@ -302,26 +303,18 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
         return "charging" if self._is_ac_online() else "discharging"
 
     def _is_ac_online(self) -> bool:
-        now = time.monotonic()
+        return self._ac_online
 
-        if (
-            self._ac_online_cache is not None
-            and now - self._ac_last_checked < self.AC_CACHE_EXPIRY
-        ):
-            return self._ac_online_cache
-
+    def _check_ac_online(self) -> bool:
         try:
-            online = any(
+            return any(
                 dev.get("POWER_SUPPLY_TYPE") == "Mains"
                 and dev.get("POWER_SUPPLY_ONLINE") == "1"
                 for dev in self._context.list_devices(subsystem="power_supply")
             )
-            self._ac_online_cache = online
-            self._ac_last_checked = now
-            return online
         except Exception:
             logger.exception("Failed to check AC adapter status")
-            return self._ac_online_cache or False
+            return self._ac_online
 
     @staticmethod
     def _detect_batteries(manual: str | None) -> list[Path]:

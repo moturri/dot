@@ -106,28 +106,20 @@ def systemWidgets(
             },
         ),
         widget.Spacer(length=10),
-        decorated_widget(
-            AudioWidget,
-        ),
-        decorated_widget(
-            MicWidget,
-        ),
+        decorated_widget(AudioWidget),
+        decorated_widget(MicWidget),
         widget.Spacer(length=10),
     ]
 
     if show_brightness:
         widgets += [
-            decorated_widget(
-                BrightctlWidget,
-            ),
+            decorated_widget(BrightctlWidget),
             widget.Spacer(length=10),
         ]
 
     if show_battery:
         widgets += [
-            decorated_widget(
-                BatteryWidget,
-            ),
+            decorated_widget(BatteryWidget),
         ]
 
     return widgets
