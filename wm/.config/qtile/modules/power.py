@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 
 from libqtile.core.manager import Qtile
@@ -9,12 +10,7 @@ def show_power_menu(qtile: Qtile) -> None:
 
     lock_cmd = "i3lock -n -c 000000"
 
-    if (
-        subprocess.call(
-            ["which", "i3lock"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
-        != 0
-    ):
+    if not shutil.which("i3lock"):
         lock_action = lazy.spawn("notify-send 'i3lock not found'")
     else:
         lock_action = lazy.spawn(lock_cmd)

@@ -106,14 +106,23 @@ def systemWidgets(
             },
         ),
         widget.Spacer(length=10),
-        decorated_widget(AudioWidget),
-        decorated_widget(MicWidget),
+        decorated_widget(
+            AudioWidget,
+            name="audio",
+        ),
+        decorated_widget(
+            MicWidget,
+            name="mic",
+        ),
         widget.Spacer(length=10),
     ]
 
     if show_brightness:
         widgets += [
-            decorated_widget(BrightctlWidget),
+            decorated_widget(
+                BrightctlWidget,
+                name="brightctl",
+            ),
             widget.Spacer(length=10),
         ]
 

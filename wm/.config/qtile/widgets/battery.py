@@ -8,11 +8,15 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final, Iterator
+from typing import Any, Final, Iterator, cast
 
 import pyudev  # type: ignore[import-untyped]
+from libqtile import qtile as _qtile
+from libqtile.core.manager import Qtile
 from libqtile.log_utils import logger
 from qtile_extras.widget import TextBox
+
+qtile: Qtile = cast(Qtile, _qtile)
 
 # Battery icon thresholds: (percentage, icon, color)
 BATTERY_ICONS: tuple[tuple[int, str, str], ...] = (
@@ -178,12 +182,12 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
     def _debounced_redraw(self) -> None:
         now = time.monotonic()
         if now - self._last_update >= self.debounce_s:
-            self._redraw()
+            qtile.call_soon_threadsafe(self._redraw)
             self._last_update = now
 
     @contextmanager
     def _state_lock(self) -> Iterator[None]:
-        if not self._lock.acquire(timeout=1.0):
+        if not self._lock.acquire(timeout=0.5):
             logger.warning("Failed to acquire battery state lock")
             yield
             return
@@ -194,14 +198,13 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
 
     def update_now(self) -> None:
         self._last_update = 0.0
-        self._redraw()
+        qtile.call_soon_threadsafe(self._redraw)
 
     def _redraw(self) -> None:
         try:
             if self._update_state():
                 with self._state_lock():
-                    self.text = self._format_display()
-                self.bar.draw()
+                    self.update(self._format_display())
         except Exception:
             logger.exception("Error redrawing battery widget")
 
@@ -313,7 +316,7 @@ class BatteryWidget(TextBox):  # type: ignore[misc]
                 for dev in self._context.list_devices(subsystem="power_supply")
             )
         except Exception:
-            logger.exception("Failed to check AC adapter status")
+            logger.warning("Failed to check AC adapter status, using cached value")
             return self._ac_online
 
     @staticmethod

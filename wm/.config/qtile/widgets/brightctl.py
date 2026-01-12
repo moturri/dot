@@ -24,13 +24,16 @@ import threading
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Final, Iterator
+from typing import Any, Final, Iterator, cast
 
 import pyudev  # type: ignore[import-untyped]
+from libqtile import qtile as _qtile
 from libqtile.bar import Bar
 from libqtile.command.base import expose_command
+from libqtile.core.manager import Qtile
 from libqtile.widget.textbox import TextBox
 
+qtile: Qtile = cast(Qtile, _qtile)
 logger = logging.getLogger(__name__)
 
 ENV: Final[dict[str, str]] = {**os.environ, "LC_ALL": "C.UTF-8"}
@@ -205,7 +208,7 @@ class BrightctlWidget(TextBox):
     @contextmanager
     def _operation_lock(self) -> Iterator[None]:
         """Context manager for brightness operations with timeout."""
-        acquired = self._lock.acquire(timeout=2.0)
+        acquired = self._lock.acquire(timeout=0.5)
         if not acquired:
             raise BrightnessError("Failed to acquire operation lock")
         try:
@@ -345,18 +348,18 @@ class BrightctlWidget(TextBox):
         """Debounce display updates to prevent rapid refreshes."""
         now = time.monotonic()
 
-        def do_update() -> None:
+        def invoke() -> None:
             self._last_update = time.monotonic()
-            self.update_display()
+            qtile.call_soon_threadsafe(self.update_display)
 
         if now - self._last_update >= self.debounce_interval:
-            do_update()
+            invoke()
             return
 
         if self._update_timer:
             self._update_timer.cancel()
 
-        self._update_timer = threading.Timer(self.debounce_interval, do_update)
+        self._update_timer = threading.Timer(self.debounce_interval, invoke)
         self._update_timer.daemon = True
         self._update_timer.start()
 

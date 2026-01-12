@@ -245,10 +245,12 @@ class BaseAudioWidget(base._TextBox):
         while not self._stop.is_set():
             try:
                 self._listen()
-            except Exception:
-                logger.exception(
-                    "wpctl subscribe crashed for %s device, attempting recovery",
+            except Exception as e:
+                logger.error(
+                    "wpctl subscribe crashed for %s device (%s: %s), attempting recovery",
                     "input" if self.is_input else "output",
+                    type(e).__name__,
+                    e,
                 )
                 new = resolve_default_device(self.is_input)
                 if new and new != self.device:
