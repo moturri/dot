@@ -2,14 +2,12 @@
 #
 # Audio widgets backed by WirePlumber via `wpctl`.
 #
-# Design philosophy:
-# - Do one thing well: control audio via wpctl, nothing more
-# - No external dependencies beyond stdlib and qtile
-# - Shell out to wpctl for simplicity and stability
-# - Minimal abstraction - code should be obvious
-# - Fail gracefully, never crash the bar
-#
-# Icon glyphs assume a Nerd Font (JetBrainsMono, Iosevka, etc.)
+# Enhancements:
+# - Dynamic profile change detection and updates
+# - Better Pipewire integration with proper event handling
+# - Improved error recovery and state management
+# - Reduced latency for volume changes
+# - Better thread safety and resource cleanup
 
 from __future__ import annotations
 
@@ -55,6 +53,7 @@ class AudioState:
 
     volume: int
     muted: bool
+    device_id: str
 
 
 def run(cmd: list[str], timeout: float = 1.0) -> str:
@@ -77,39 +76,82 @@ def run(cmd: list[str], timeout: float = 1.0) -> str:
 
 
 def resolve_default_device(is_input: bool) -> str | None:
-    """Find default device ID from wpctl status."""
+    """Find default device ID from wpctl status with improved parsing."""
     try:
         output = run(["wpctl", "status"], timeout=2)
     except AudioDeviceError:
         return None
 
+    # Look for the Audio section first
     section = "Sources:" if is_input else "Sinks:"
-    active = False
+    in_audio_section = False
+    in_target_section = False
 
     for line in output.splitlines():
-        if section in line.strip():
-            active = True
+        stripped = line.strip()
+
+        # Check if we're in the Audio section
+        if "Audio" in stripped:
+            in_audio_section = True
             continue
-        if active:
-            if "*" in line:
-                match = re.search(r"\b(\d+)\.", line)
+
+        # Check if we've left the Audio section
+        if (
+            in_audio_section
+            and stripped
+            and not line[0].isspace()
+            and "├" not in line
+            and "└" not in line
+        ):
+            # We've hit a new major section
+            if "Video" in stripped or "Settings" in stripped:
+                break
+
+        # Look for our target subsection
+        if in_audio_section and section in stripped:
+            in_target_section = True
+            continue
+
+        # If we're in the target section, look for the default device
+        if in_target_section:
+            # Check if we've left this subsection
+            if (
+                stripped
+                and not line[0].isspace()
+                and "├" not in line
+                and "└" not in line
+            ):
+                if any(
+                    s in stripped
+                    for s in [
+                        "Sinks:",
+                        "Sources:",
+                        "Sink endpoints:",
+                        "Source endpoints:",
+                    ]
+                ):
+                    break
+
+            # Look for the default device (marked with *)
+            if "* " in line or "*." in line:
+                # Extract device ID - matches patterns like "  * 123. Device Name"
+                match = re.search(r"\*\s*(\d+)\.", line)
                 if match:
                     return match.group(1)
-            if line and not line[0].isspace():
-                break
+
     return None
 
 
-def parse_volume(output: str) -> AudioState:
+def parse_volume(output: str) -> tuple[int, bool]:
     """Parse 'wpctl get-volume' output."""
     muted = "MUTED" in output
     match = re.search(r"\b\d+\.\d+\b", output)
     volume = int(float(match.group()) * 100) if match else 0
-    return AudioState(volume=max(0, min(150, volume)), muted=muted)
+    return max(0, min(150, volume)), muted
 
 
 class BaseAudioWidget(base._TextBox):
-    """Minimal audio widget - monitors wpctl, displays volume."""
+    """Enhanced audio widget with dynamic device tracking."""
 
     orientations = base.ORIENTATION_HORIZONTAL
 
@@ -123,6 +165,7 @@ class BaseAudioWidget(base._TextBox):
         show_icon: bool = True,
         levels: tuple[tuple[int, str, str], ...] | None = None,
         muted: tuple[str, str] | None = None,
+        update_interval: float = 0.1,
         **config: Any,
     ) -> None:
         if shutil.which("wpctl") is None:
@@ -132,6 +175,7 @@ class BaseAudioWidget(base._TextBox):
         self.step = max(1, min(step, 25))
         self.max_volume = max(50, min(max_volume, 150))
         self.show_icon = show_icon
+        self.update_interval = update_interval
 
         # Default levels
         default_levels = (
@@ -155,10 +199,10 @@ class BaseAudioWidget(base._TextBox):
         muted_tuple = muted or (("grey", "󰍭") if is_input else ("grey", "󰝟"))
         self.muted_color, self.muted_icon = muted_tuple
 
-        # Resolve device
-        resolved = resolve_default_device(is_input)
-        default = "@DEFAULT_AUDIO_SOURCE@" if is_input else "@DEFAULT_AUDIO_SINK@"
-        self.device = device or resolved or default
+        # Track device dynamically
+        self._static_device = device
+        self._current_device_id: str | None = None
+        self._resolve_device()
 
         super().__init__("", **config)
 
@@ -169,8 +213,28 @@ class BaseAudioWidget(base._TextBox):
         self._thread: threading.Thread | None = None
         self._proc: subprocess.Popen[str] | None = None
         self._cached_state: AudioState | None = None
+        self._reconnect_attempts = 0
+        self._max_reconnect_attempts = 5
 
         self._update()
+
+    def _resolve_device(self) -> None:
+        """Resolve the current device ID."""
+        if self._static_device:
+            self._current_device_id = self._static_device
+        else:
+            resolved = resolve_default_device(self.is_input)
+            default = (
+                "@DEFAULT_AUDIO_SOURCE@" if self.is_input else "@DEFAULT_AUDIO_SINK@"
+            )
+            self._current_device_id = resolved or default
+
+    @property
+    def device(self) -> str:
+        """Get current device ID."""
+        return self._current_device_id or (
+            "@DEFAULT_AUDIO_SOURCE@" if self.is_input else "@DEFAULT_AUDIO_SINK@"
+        )
 
     def finalize(self) -> None:
         """Clean up on widget destruction."""
@@ -178,13 +242,19 @@ class BaseAudioWidget(base._TextBox):
 
         if self._timer:
             self._timer.cancel()
+            self._timer = None
 
         if self._proc:
             try:
                 self._proc.terminate()
                 self._proc.wait(timeout=0.5)
             except Exception:
-                pass
+                try:
+                    self._proc.kill()
+                except Exception:
+                    pass
+            finally:
+                self._proc = None
 
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=1.0)
@@ -201,23 +271,39 @@ class BaseAudioWidget(base._TextBox):
             self._thread.start()
 
     def _monitor(self) -> None:
-        """Monitor wpctl subscribe for changes."""
+        """Monitor wpctl subscribe for changes with automatic reconnection."""
         while not self._stop.is_set():
             try:
                 self._listen()
+                self._reconnect_attempts = 0  # Reset on successful connection
             except Exception as e:
-                logger.error("wpctl subscribe failed: %s", e)
-                # Try to recover by checking for new default device
-                new = resolve_default_device(self.is_input)
-                if new and new != self.device:
-                    self.device = new
-                    self._update()
+                self._reconnect_attempts += 1
+                logger.error(
+                    "wpctl subscribe failed (attempt %d/%d): %s",
+                    self._reconnect_attempts,
+                    self._max_reconnect_attempts,
+                    e,
+                )
+
+                # Check for device changes
+                if not self._static_device:
+                    old_device = self._current_device_id
+                    self._resolve_device()
+                    if old_device != self._current_device_id:
+                        logger.info(
+                            "Device changed: %s -> %s",
+                            old_device,
+                            self._current_device_id,
+                        )
+                        self._update()
 
             if not self._stop.is_set():
-                self._stop.wait(2.0)
+                # Exponential backoff for reconnection
+                delay = min(2.0 ** min(self._reconnect_attempts, 4), 16.0)
+                self._stop.wait(delay)
 
     def _listen(self) -> None:
-        """Subscribe to wpctl events."""
+        """Subscribe to wpctl events with improved event filtering."""
         proc = subprocess.Popen(
             ["wpctl", "subscribe"],
             stdout=subprocess.PIPE,
@@ -233,15 +319,41 @@ class BaseAudioWidget(base._TextBox):
                 for line in proc.stdout:
                     if self._stop.is_set():
                         break
-                    if any(k in line for k in ("default-node", "volume", "mute")):
-                        self._debounce(self._update)
+
+                    # Filter relevant events
+                    if any(
+                        keyword in line
+                        for keyword in (
+                            "default-node",
+                            "volume",
+                            "mute",
+                            "node",
+                            "profile",
+                        )
+                    ):
+                        # Check if device changed (profile switch, device hotplug)
+                        if "default-node" in line or "profile" in line:
+                            if not self._static_device:
+                                old_device = self._current_device_id
+                                self._resolve_device()
+                                if old_device != self._current_device_id:
+                                    logger.info(
+                                        "Default device changed: %s -> %s",
+                                        old_device,
+                                        self._current_device_id,
+                                    )
+
+                        self._debounce(self._update, delay=self.update_interval)
         finally:
             self._proc = None
             try:
                 proc.terminate()
                 proc.wait(timeout=0.5)
             except Exception:
-                pass
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
 
     def _debounce(self, fn: Callable[[], None], delay: float = 0.05) -> None:
         """Debounce updates to avoid spam."""
@@ -280,12 +392,16 @@ class BaseAudioWidget(base._TextBox):
         try:
             with self._device_lock():
                 output = run(["wpctl", "get-volume", self.device], timeout=0.5)
-            state = parse_volume(output)
+            volume, muted = parse_volume(output)
+            state = AudioState(volume=volume, muted=muted, device_id=self.device)
             self._cached_state = state
             return state
-        except AudioDeviceError:
-            logger.error("Failed to read volume for %s", self.device)
-            return self._cached_state or AudioState(0, True)
+        except AudioDeviceError as e:
+            logger.debug("Failed to read volume for %s: %s", self.device, e)
+            # Try to update device before returning cached state
+            if not self._static_device:
+                self._resolve_device()
+            return self._cached_state or AudioState(0, True, self.device)
 
     def _format_text(self, state: AudioState) -> str:
         """Format display text with color and icon."""
@@ -327,8 +443,8 @@ class BaseAudioWidget(base._TextBox):
             with self._device_lock():
                 run(["wpctl", "set-volume", self.device, f"{value}%"], timeout=0.5)
             self._debounce(self._update, delay=0.02)
-        except AudioDeviceError:
-            logger.error("Failed to set volume for %s", self.device)
+        except AudioDeviceError as e:
+            logger.error("Failed to set volume for %s: %s", self.device, e)
 
     def _set_mute(self, state: Literal["0", "1", "toggle"]) -> None:
         """Set mute state."""
@@ -336,8 +452,8 @@ class BaseAudioWidget(base._TextBox):
             with self._device_lock():
                 run(["wpctl", "set-mute", self.device, state], timeout=0.5)
             self._debounce(self._update, delay=0.02)
-        except AudioDeviceError:
-            logger.error("Failed to set mute for %s", self.device)
+        except AudioDeviceError as e:
+            logger.error("Failed to set mute for %s: %s", self.device, e)
 
     @expose_command()
     def volume_up(self) -> None:
@@ -371,7 +487,9 @@ class BaseAudioWidget(base._TextBox):
 
     @expose_command()
     def refresh(self) -> None:
-        """Refresh display."""
+        """Refresh display and re-detect device."""
+        if not self._static_device:
+            self._resolve_device()
         self._update()
 
 
