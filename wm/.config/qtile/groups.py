@@ -2,55 +2,17 @@ from keys import keys, mod
 from libqtile.config import DropDown, Group, Key, Match, ScratchPad
 from libqtile.lazy import lazy
 
+
+def centered(width: float, height: float) -> tuple[float, float]:
+    return (1 - width) / 2, (1 - height) / 2
+
+
 group_definitions = [
-    (
-        "1",
-        "󰣇",
-        [
-            "octopi",
-            "plasma-discover",
-            "com.github.tchx84.Flatseal",
-        ],
-    ),
-    (
-        "2",
-        "󰚩",
-        [
-            "org.wezfurlong.wezterm",
-            "alacritty",
-            "code-oss",
-            "discord",
-        ],
-    ),
-    (
-        "3",
-        "󰆋",
-        [
-            "firefox",
-            "zen",
-            "qbittorrent",
-            "brave-browser",
-        ],
-    ),
-    (
-        "4",
-        "󰖺",
-        [
-            "steam_app_291550",
-            "CombatMaster.x86_64",
-            "steam_app_2281730",
-        ],
-    ),
-    (
-        "5",
-        "",
-        [
-            "VirtualBox Manager",
-            "virt-manager",
-            "steam",
-            "retroarch",
-        ],
-    ),
+    ("1", "󰣇", ["octopi", "plasma-discover", "com.github.tchx84.Flatseal"]),
+    ("2", "󰚩", ["org.wezfurlong.wezterm", "alacritty", "code-oss", "discord"]),
+    ("3", "󰆋", ["firefox", "zen", "qbittorrent", "brave-browser"]),
+    ("4", "󰖺", ["steam_app_291550", "CombatMaster.x86_64", "steam_app_2281730"]),
+    ("5", "", ["VirtualBox Manager", "virt-manager", "steam", "retroarch"]),
     (
         "6",
         "󱉟",
@@ -68,14 +30,7 @@ group_definitions = [
     (
         "7",
         "󰔂",
-        [
-            "stremio",
-            "stremio-enhanced",
-            "upscayl",
-            "kdenlive",
-            "mpv",
-            "mpvk",
-        ],
+        ["stremio", "stremio-enhanced", "upscayl", "kdenlive", "mpv", "mpvk"],
     ),
     (
         "8",
@@ -110,10 +65,12 @@ group_definitions = [
     ("0", "󰶍", ["Mail"]),
 ]
 
+
 groups = [
     Group(name, label=label, matches=[Match(wm_class=cls) for cls in classes])
     for name, label, classes in group_definitions
 ]
+
 
 for group in groups:
     keys.extend(
@@ -129,6 +86,14 @@ for group in groups:
     )
 
 
+ax, ay = centered(0.4, 0.4)
+bx, by = centered(0.4, 0.5)
+kx, ky = centered(0.8, 0.8)
+lx, ly = centered(0.5, 0.6)
+px, py = centered(0.5, 0.5)
+fx, fy = centered(0.7, 0.7)
+
+
 scratchpad = ScratchPad(
     "scratchpad",
     [
@@ -137,8 +102,8 @@ scratchpad = ScratchPad(
             "arandr",
             width=0.4,
             height=0.4,
-            x=0.3,
-            y=0.1,
+            x=ax,
+            y=ay,
             opacity=0.9,
         ),
         DropDown(
@@ -146,26 +111,17 @@ scratchpad = ScratchPad(
             "alacritty -e bluetui",
             width=0.4,
             height=0.5,
-            x=0.3,
-            y=0.1,
+            x=bx,
+            y=by,
             opacity=1,
         ),
-        # DropDown(
-        #     "impala",
-        #     "alacritty -e impala",
-        #     width=0.6,
-        #     height=0.7,
-        #     x=0.2,
-        #     y=0.1,
-        #     opacity=1,
-        # ),
         DropDown(
             "kitty",
             "kitty",
             width=0.8,
             height=0.8,
-            x=0.1,
-            y=0.1,
+            x=kx,
+            y=ky,
             opacity=1,
             on_focus_lost_hide=True,
         ),
@@ -173,9 +129,9 @@ scratchpad = ScratchPad(
             "localsend",
             "localsend",
             width=0.5,
-            height=0.5,
-            x=0.25,
-            y=0.1,
+            height=0.6,
+            x=lx,
+            y=ly,
             opacity=0.9,
         ),
         DropDown(
@@ -183,8 +139,8 @@ scratchpad = ScratchPad(
             "obsidian",
             width=0.8,
             height=0.8,
-            x=0.1,
-            y=0.1,
+            x=kx,
+            y=ky,
             opacity=1,
             on_focus_lost_hide=True,
         ),
@@ -193,8 +149,8 @@ scratchpad = ScratchPad(
             "pavucontrol-qt",
             width=0.5,
             height=0.5,
-            x=0.25,
-            y=0.1,
+            x=px,
+            y=py,
             opacity=1,
         ),
         DropDown(
@@ -202,8 +158,8 @@ scratchpad = ScratchPad(
             "pcmanfm-qt",
             width=0.7,
             height=0.7,
-            x=0.15,
-            y=0.1,
+            x=fx,
+            y=fy,
             opacity=1,
         ),
         DropDown(
@@ -211,19 +167,20 @@ scratchpad = ScratchPad(
             "nsxiv /home/m/.config/qtile/images/keybindings",
             width=0.7,
             height=0.7,
-            x=0.15,
-            y=0.1,
+            x=fx,
+            y=fy,
             opacity=1,
         ),
     ],
 )
 
+
 groups.append(scratchpad)
+
 
 scratch_keys = {
     "arandr": "a",
     "bluetui": "b",
-    # "impala": "i",
     "kitty": "x",
     "localsend": "l",
     "obsidian": "o",
@@ -231,6 +188,7 @@ scratch_keys = {
     "pcmanfm-qt": "f",
     "keybindings": "k",
 }
+
 
 keys.extend(
     [

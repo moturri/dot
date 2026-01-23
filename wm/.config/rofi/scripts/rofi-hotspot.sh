@@ -119,8 +119,6 @@ create_wired_hotspot() {
 		"$SUDO_CMD create_ap '$WIFI_INTERFACE' '$upstream' '$SSID' '$PASSWORD' -c '$channel' || read -n1 -r -p 'Press any key...'"
 }
 
-
-
 main() {
 	SUDO_CMD=$(check_deps)
 	readonly SUDO_CMD

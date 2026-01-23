@@ -9,6 +9,12 @@ XTerm*allowColorOps: true
 XTerm*dynamicColors: true
 
 ! ────── Dracula OLED Theme ──────
+! Generic settings for wider compatibility
+*foreground:  #f8f8f2
+*background:  #000000
+*cursorColor: #ff79c6
+
+! XTerm specific
 XTerm*foreground:  #f8f8f2
 XTerm*background:  #000000
 XTerm*cursorColor: #ff79c6
@@ -83,4 +89,4 @@ Xcursor.size: 21
 
 Nsxiv.background: #000000
 Nsxiv.window.background: #000000
-Nsxiv.window.foreground: #FFFFFF
+Nsxiv.window.foreground: #ffffff

@@ -1,6 +1,6 @@
 * {
     bg0:    #000000;       // Pure black for all backgrounds
-    fg0:    #E6E6E6;       // Light grey text
+    fg0:    #eff0f1;       // Light grey text
     fg1:    #FFFFFF;       // White text (selected)
     fg2:    #A0A0A0;       // Dim text (prompts)
     purple: #573598;       // Custom accent purple
