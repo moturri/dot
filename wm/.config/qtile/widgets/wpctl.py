@@ -204,7 +204,7 @@ class BaseAudioWidget(base._TextBox):
         self._current_device_id: str | None = None
         self._resolve_device()
 
-        super().__init__("", **config)
+        super().__init__("", **config)  # type: ignore
 
         self._stop = threading.Event()
         self._lock = threading.Lock()
@@ -259,10 +259,10 @@ class BaseAudioWidget(base._TextBox):
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=1.0)
 
-        super().finalize()
+        super().finalize()  # type: ignore
 
     def _configure(self, qtile: Qtile, bar: Bar) -> None:
-        super()._configure(qtile, bar)
+        super()._configure(qtile, bar)  # type: ignore
         if self._thread is None:
             name = f"AudioWidget-{'Input' if self.is_input else 'Output'}"
             self._thread = threading.Thread(
@@ -423,7 +423,7 @@ class BaseAudioWidget(base._TextBox):
     def _update(self) -> None:
         """Update widget display."""
         state = self._get_state()
-        self.update(self._format_text(state))
+        self.update(self._format_text(state))  # type: ignore
 
     def button_press(self, x: int, y: int, button: int) -> None:
         """Handle mouse clicks."""
