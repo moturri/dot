@@ -111,11 +111,11 @@ TerminalService=kitty.desktop
 XftAntialias=true
 XftHintStyle=hintslight
 XftSubPixel=none
-fixed=JetBrains Mono NL Medium,10,-1,5,500,0,0,0,0,0,0,0,0,0,0,1,Regular
-font=Inter Variable,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
-menuFont=Inter Variable,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+fixed=JetBrains Mono NL Medium,12,-1,5,500,0,0,0,0,0,0,0,0,0,0,1,Regular
+font=Inter Variable Medium,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+menuFont=Inter Variable Medium,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 smallestReadableFont=Inter Variable,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
-toolBarFont=Inter Variable,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+toolBarFont=Inter Variable Medium,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 
 [Icons]
 Theme=BeautySolar
