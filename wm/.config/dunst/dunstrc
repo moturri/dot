@@ -1,6 +1,6 @@
 [global]
 # Font and formatting
-font = Inter Variable Medium 12
+font = Inter Variable Medium 11
 format = "<b>%s</b>\n%b"
 word_wrap = yes
 ignore_newline = no
