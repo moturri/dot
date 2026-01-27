@@ -27,8 +27,6 @@ zmodule fzf
 zmodule archive
 # Manages all python venvs in one place.
 zmodule pvenv
-# Sets up zoxide in zsh.
-zmodule kiesman99/zim-zoxide
 # Adds aliases and better defaults for exa.
 zmodule exa
 # Provides a convenient way to load ssh-agent.

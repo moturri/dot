@@ -160,6 +160,9 @@ export NVM_DIR="$HOME/.nvm"
 eval "$(atuin init zsh)"
 
 
+eval "$(zoxide init zsh)"
+
+
 cht() {
     curl -s "https://cht.sh/$1"
 }

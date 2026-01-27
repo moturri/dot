@@ -86,7 +86,6 @@ for group in groups:
     )
 
 
-ax, ay = centered(0.4, 0.4)
 bx, by = centered(0.4, 0.5)
 kx, ky = centered(0.8, 0.8)
 lx, ly = centered(0.5, 0.6)
@@ -102,8 +101,8 @@ scratchpad = ScratchPad(
             "arandr",
             width=0.4,
             height=0.4,
-            x=ax,
-            y=ay,
+            x=bx,
+            y=by,
             opacity=0.9,
         ),
         DropDown(
