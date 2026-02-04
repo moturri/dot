@@ -134,5 +134,5 @@ user_pref("privacy.clearOnShutdown.formdata", true);
 user_pref("privacy.clearOnShutdown.sites", true);
 
 // HARD PRIVACY CUTS
-user_pref("webgl.disabled", true);
-user_pref("media.peerconnection.enabled", false);
+user_pref("webgl.disabled", false);
+user_pref("media.peerconnection.enabled", true);
